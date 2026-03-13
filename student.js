@@ -74,16 +74,15 @@ document.addEventListener('click', async (e) => {
     }
 });
 
-// ==========================================
 // 2. OTURUM KONTROLÜ VE SPLASH EKRANI KAPATMA
-// ==========================================
 async function initStudentPortal() {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) { window.location.href = 'index.html'; return; }
 
     currentStudentId = user.id;
 
-    const { data: profile } = await supabaseClient.from('profiles').select('full_name').eq('id', currentStudentId).single();
+    // YENİ: xp değerini de çekiyoruz
+    const { data: profile } = await supabaseClient.from('profiles').select('full_name, xp').eq('id', currentStudentId).single();
     if (profile) { 
         const nameEl = document.getElementById('studentNameDisplay');
         if(nameEl) nameEl.innerText = profile.full_name; 
@@ -93,11 +92,21 @@ async function initStudentPortal() {
             const firstName = profile.full_name.split(' ')[0]; 
             welcomeEl.innerText = firstName;
         }
+
+        // YENİ: XP ve Seviye Hesaplama (Her 100 XP = 1 Seviye)
+        const currentXp = profile.xp || 0;
+        const currentLevel = Math.floor(currentXp / 100) + 1;
+        
+        const elXp = document.getElementById('studentXpText');
+        const elLevel = document.getElementById('studentLevelText');
+        
+        // Ekrana havalı bir şekilde yazdırıyoruz
+        if(elXp) elXp.innerText = currentXp;
+        if(elLevel) elLevel.innerText = currentLevel;
     }
 
     switchTab('homeworks');
 
-    // VERİLER YÜKLENDİĞİNDE PERDEYİ %100 KALDIR!
     setTimeout(() => {
         const splash = document.getElementById('splashScreen');
         if(splash) {
@@ -106,6 +115,7 @@ async function initStudentPortal() {
         }
     }, 400);
 }
+
 
 // ==========================================
 // 3. SEKMELER ARASI GEÇİŞ
