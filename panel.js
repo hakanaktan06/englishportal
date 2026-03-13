@@ -797,55 +797,91 @@ if(newLessonForm) {
 
 async function fetchStudentLessons(studentId) {
     // Dersleri çek
+    const newLessonForm = document.getElementById('newLessonForm');
+if(newLessonForm) {
+    newLessonForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const studentId = document.getElementById('profStudentId').value;
+        const lDate = document.getElementById('lessonDate').value;
+        const lTime = document.getElementById('lessonTime').value; // Saat eklendi
+        const lDuration = document.getElementById('lessonDuration').value; // Süre eklendi
+        const lTopic = document.getElementById('lessonTopic').value;
+
+        const { error } = await supabaseClient.from('private_lessons').insert([{
+            student_id: studentId, lesson_date: lDate, lesson_time: lTime, duration_hours: lDuration, topic: lTopic
+        }]);
+
+        if (error) showToast("Ders kaydedilemedi!", "error");
+        else {
+            showToast("Ders başarıyla profile işlendi.", "success");
+            document.getElementById('lessonTopic').value = '';
+            document.getElementById('lessonDuration').value = '';
+            fetchStudentLessons(studentId);
+        }
+    });
+}
+
+async function fetchStudentLessons(studentId) {
     const { data: lessons } = await supabaseClient.from('private_lessons').select('*').eq('student_id', studentId).order('lesson_date', { ascending: false });
     
     const list = document.getElementById('lessonList');
     const pdfList = document.getElementById('pdfLessonList');
+    if(!list || !pdfList) return;
+    
     list.innerHTML = ''; pdfList.innerHTML = '';
 
     if (!lessons || lessons.length === 0) {
-        list.innerHTML = '<p class="text-gray-400 text-sm italic">Henüz özel ders kaydı girilmemiş.</p>';
-        pdfList.innerHTML = '<p class="text-gray-500 italic">Bu ay kayıtlı ders bulunmamaktadır.</p>';
+        list.innerHTML = '<p class="text-gray-400 text-sm italic p-4 text-center">Henüz seans kaydı girilmemiş.</p>';
+        pdfList.innerHTML = '<p class="text-gray-500 italic">Bu dönem kayıtlı seans bulunmamaktadır.</p>';
     } else {
         lessons.forEach(l => {
             const date = new Date(l.lesson_date).toLocaleDateString('tr-TR');
-            // Paneldeki Liste
+            const time = l.lesson_time ? l.lesson_time : '';
+            const duration = l.duration_hours ? `${l.duration_hours} Saat` : '';
+            
+            // Ekranda Görünen Havalı Kart Tasarımı
             list.innerHTML += `
-                <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex justify-between items-start">
-                    <div>
-                        <span class="text-[10px] font-black bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md">${date}</span>
-                        <p class="text-sm font-bold text-gray-700 mt-2 leading-snug">${l.topic}</p>
+                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-start hover:border-indigo-200 transition">
+                    <div class="flex-1">
+                        <div class="flex flex-wrap gap-2 mb-2">
+                            <span class="text-[10px] font-black bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-1 rounded-md">📅 ${date}</span>
+                            ${time ? `<span class="text-[10px] font-black bg-purple-50 border border-purple-100 text-purple-700 px-2 py-1 rounded-md">⏰ ${time}</span>` : ''}
+                            ${duration ? `<span class="text-[10px] font-black bg-orange-50 border border-orange-100 text-orange-700 px-2 py-1 rounded-md">⏳ ${duration}</span>` : ''}
+                        </div>
+                        <p class="text-sm font-bold text-gray-700 mt-1 leading-snug">${l.topic}</p>
                     </div>
-                    <button onclick="deleteLesson('${l.id}')" class="text-red-300 hover:text-red-500 transition text-lg">&times;</button>
+                    <button onclick="deleteLesson('${l.id}')" class="text-gray-300 hover:text-red-500 transition text-2xl leading-none ml-3" title="Kaydı Sil">&times;</button>
                 </div>`;
             
-            // PDF İçindeki Liste
+            // PDF İçindeki Profesyonel Rapor Tasarımı
             pdfList.innerHTML += `
-                <div class="mb-3">
-                    <p class="text-xs font-black text-indigo-600">${date}</p>
-                    <p class="text-sm font-bold text-gray-800">${l.topic}</p>
+                <div class="mb-4 border-b border-gray-100 pb-3">
+                    <p class="text-xs font-black text-indigo-600 tracking-wider">${date} ${time ? `| Saat: ${time}` : ''} ${duration ? `| Süre: ${duration}` : ''}</p>
+                    <p class="text-sm font-bold text-gray-800 mt-1">${l.topic}</p>
                 </div>`;
         });
     }
 
-    // PDF İçin Çocuğun Sınav Sonuçlarını Çek
+    // PDF İçin Sınav Sonuçları
     const { data: results } = await supabaseClient.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: false }).limit(5);
     const pdfQuizList = document.getElementById('pdfQuizList');
-    pdfQuizList.innerHTML = '';
-
-    if (!results || results.length === 0) {
-        pdfQuizList.innerHTML = '<p class="text-gray-500 italic">Öğrenci henüz sınava girmemiştir.</p>';
-    } else {
-        results.forEach(r => {
-            let color = r.score >= 80 ? 'text-green-600' : (r.score >= 50 ? 'text-yellow-600' : 'text-red-600');
-            pdfQuizList.innerHTML += `
-                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-2">
-                    <span class="text-sm font-bold text-gray-700">${r.quizzes.title}</span>
-                    <span class="text-sm font-black ${color}">${r.score} Puan</span>
-                </div>`;
-        });
+    if(pdfQuizList) {
+        pdfQuizList.innerHTML = '';
+        if (!results || results.length === 0) {
+            pdfQuizList.innerHTML = '<p class="text-gray-500 italic">Öğrenci henüz sınava girmemiştir.</p>';
+        } else {
+            results.forEach(r => {
+                let color = r.score >= 80 ? 'text-green-600' : (r.score >= 50 ? 'text-yellow-600' : 'text-red-600');
+                pdfQuizList.innerHTML += `
+                    <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-2">
+                        <span class="text-sm font-bold text-gray-700">${r.quizzes.title}</span>
+                        <span class="text-sm font-black ${color}">${r.score} Puan</span>
+                    </div>`;
+            });
+        }
     }
 }
+
 
 window.deleteLesson = async function(id) {
     const onay = await customConfirm("Ders kaydını silmek istediğine emin misin?");
