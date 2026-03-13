@@ -8,9 +8,10 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 let currentStudentId = null;
 let currentQuizQuestions = []; 
 let activeTakingQuizId = null;
+let quizTimerInterval = null; // Sınav sayacı için
 
-// MOBİL KAYDIRMA FİX (Tüm ekranın donmasını engeller)
-document.querySelector('main').addEventListener('touchstart', function() {}, {passive: true});
+// MOBİL KAYDIRMA FİX
+document.querySelector('main')?.addEventListener('touchstart', function() {}, {passive: true});
 
 // ==========================================
 // UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
@@ -42,7 +43,6 @@ function customConfirm(message, btnText = "Evet, Sil") {
 
         if(!modal) { resolve(confirm(message)); return; }
 
-        // Metni VE buton yazısını dinamik yapıyoruz!
         document.getElementById('customConfirmMessage').innerText = message;
         btnOk.innerText = btnText; 
         
@@ -61,11 +61,11 @@ function customConfirm(message, btnText = "Evet, Sil") {
     });
 }
 
-
-// ÇIKIŞ MOTORU (SAĞ ÜSTTEKİ BUTON)
+// ==========================================
+// ÇIKIŞ MOTORU
+// ==========================================
 document.addEventListener('click', async (e) => {
     if (e.target.closest('#studentLogoutBtn')) {
-        // İkinci parametre olarak butonun üstünde ne yazacağını gönderiyoruz!
         const onay = await customConfirm("Oturumunu kapatmak istediğine emin misin?", "Evet, Çıkış Yap");
         if(!onay) return;
         const { error } = await supabaseClient.auth.signOut();
@@ -74,10 +74,8 @@ document.addEventListener('click', async (e) => {
     }
 });
 
-
-
 // ==========================================
-// 2. OTURUM KONTROLÜ VE BAŞLANGIÇ
+// 2. OTURUM KONTROLÜ VE SPLASH EKRANI KAPATMA
 // ==========================================
 async function initStudentPortal() {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
@@ -87,11 +85,9 @@ async function initStudentPortal() {
 
     const { data: profile } = await supabaseClient.from('profiles').select('full_name').eq('id', currentStudentId).single();
     if (profile) { 
-        // Sağ üstteki küçük isim
         const nameEl = document.getElementById('studentNameDisplay');
         if(nameEl) nameEl.innerText = profile.full_name; 
         
-        // YENİ: Ana ekrandaki büyük karşılama ismi (Sadece ilk adını alır)
         const welcomeEl = document.getElementById('welcomeStudentName');
         if(welcomeEl) {
             const firstName = profile.full_name.split(' ')[0]; 
@@ -100,8 +96,16 @@ async function initStudentPortal() {
     }
 
     switchTab('homeworks');
-}
 
+    // VERİLER YÜKLENDİĞİNDE PERDEYİ %100 KALDIR!
+    setTimeout(() => {
+        const splash = document.getElementById('splashScreen');
+        if(splash) {
+            splash.classList.add('opacity-0');
+            setTimeout(() => splash.classList.add('hidden'), 700);
+        }
+    }, 400);
+}
 
 // ==========================================
 // 3. SEKMELER ARASI GEÇİŞ
@@ -134,13 +138,9 @@ function switchTab(target) {
     if (target === 'quizzes') fetchQuizzes();
 }
 
-const btnHw = document.getElementById('btn-homeworks');
-const btnAct = document.getElementById('btn-activities');
-const btnQuiz = document.getElementById('btn-quizzes');
-
-if(btnHw) btnHw.addEventListener('click', (e) => { e.preventDefault(); switchTab('homeworks'); });
-if(btnAct) btnAct.addEventListener('click', (e) => { e.preventDefault(); switchTab('activities'); });
-if(btnQuiz) btnQuiz.addEventListener('click', (e) => { e.preventDefault(); switchTab('quizzes'); });
+document.getElementById('btn-homeworks')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('homeworks'); });
+document.getElementById('btn-activities')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('activities'); });
+document.getElementById('btn-quizzes')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('quizzes'); });
 
 // ==========================================
 // 4. ÖDEVLER VE YENİ TESLİM MOTORU 
@@ -160,18 +160,9 @@ async function fetchMyHomeworks() {
         const dueDate = new Date(hw.due_date).toLocaleDateString('tr-TR');
         const isCompleted = hw.status === 'Tamamlandı';
         
-        let actionAreaHtml = '';
-        if (isCompleted) {
-            actionAreaHtml = `
-                <div class="w-full bg-green-50 text-green-700 font-bold py-2.5 rounded-lg text-xs text-center border border-green-100 flex items-center justify-center gap-1.5 mt-auto">
-                    <span>✅</span> TESLİM EDİLDİ
-                </div>`;
-        } else {
-            actionAreaHtml = `
-                <button onclick="openHomeworkModal('${hw.id}', '${hw.title.replace(/'/g, "\\'")}')" class="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 rounded-lg transition">
-                    ÖDEVİ TAMAMLA
-                </button>`;
-        }
+        let actionAreaHtml = isCompleted 
+            ? `<div class="w-full bg-green-50 text-green-700 font-bold py-2.5 rounded-lg text-xs text-center border border-green-100 flex items-center justify-center gap-1.5 mt-auto"><span>✅</span> TESLİM EDİLDİ</div>`
+            : `<button onclick="openHomeworkModal('${hw.id}', '${hw.title.replace(/'/g, "\\'")}')" class="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 rounded-lg transition">ÖDEVİ TAMAMLA</button>`;
 
         container.innerHTML += `
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-200 transition flex flex-col h-full relative overflow-hidden">
@@ -207,14 +198,10 @@ if(hwSubmitForm) {
         
         btn.innerText = "⏳ Gönderiliyor...";
 
-        const { error } = await supabaseClient
-            .from('homeworks')
-            .update({ status: 'Tamamlandı', student_note: note })
-            .eq('id', hwId);
+        const { error } = await supabaseClient.from('homeworks').update({ status: 'Tamamlandı', student_note: note }).eq('id', hwId);
 
-        if (error) {
-            showToast("Hata: " + error.message, "error");
-        } else {
+        if (error) showToast("Hata: " + error.message, "error");
+        else {
             showToast("Harikasın! Ödevin başarıyla teslim edildi.", "success");
             closeHomeworkModal();
             fetchMyHomeworks(); 
@@ -222,7 +209,6 @@ if(hwSubmitForm) {
         btn.innerText = "BİTİRDİM, GÖNDER";
     });
 }
-
 
 // ==========================================
 // 5. ETKİNLİKLER 
@@ -279,8 +265,6 @@ async function fetchQuizzes() {
     });
 }
 
-let quizTimerInterval = null; // Sayacı hafızada tutar
-
 window.startQuiz = async function(quizId, quizTitle) {
     activeTakingQuizId = quizId;
     document.getElementById('takingQuizTitle').innerText = quizTitle;
@@ -288,17 +272,13 @@ window.startQuiz = async function(quizId, quizTitle) {
     const timerContainer = document.getElementById('quizTimerContainer');
     const timerDisplay = document.getElementById('quizTimerDisplay');
     
-    // Eski sayacı sıfırla
     if(quizTimerInterval) clearInterval(quizTimerInterval);
-    timerContainer.classList.add('hidden');
+    if(timerContainer) timerContainer.classList.add('hidden');
 
     container.innerHTML = '<p class="text-center text-gray-400 font-medium text-sm py-10 animate-pulse">Sınav Yükleniyor...</p>';
     document.getElementById('quizTakingModal').classList.remove('hidden');
 
-    // Sınav süresini çekmek için (Ana tablodan)
     const { data: quizInfo } = await supabaseClient.from('quizzes').select('time_limit').eq('id', quizId).single();
-
-    // Soruları Çek
     const { data: questions, error } = await supabaseClient.from('questions').select('*').eq('quiz_id', quizId).order('created_at', { ascending: true });
     
     if (error || !questions || questions.length === 0) {
@@ -334,9 +314,8 @@ window.startQuiz = async function(quizId, quizTitle) {
             </div>`;
     });
 
-    // SAYAÇ MOTORUNU BAŞLAT
-    if (quizInfo && quizInfo.time_limit > 0) {
-        let timeLeft = quizInfo.time_limit * 60; // Saniyeye çevir
+    if (quizInfo && quizInfo.time_limit > 0 && timerContainer) {
+        let timeLeft = quizInfo.time_limit * 60; 
         timerContainer.classList.remove('hidden');
         
         quizTimerInterval = setInterval(() => {
@@ -347,7 +326,7 @@ window.startQuiz = async function(quizId, quizTitle) {
             if (timeLeft <= 0) {
                 clearInterval(quizTimerInterval);
                 showToast("SÜRE DOLDU! Sınav otomatik olarak gönderiliyor...", "error");
-                document.getElementById('quizForm').dispatchEvent(new Event('submit')); // Formu zorla tetikle
+                document.getElementById('quizForm').dispatchEvent(new Event('submit')); 
             }
             timeLeft--;
         }, 1000);
@@ -355,18 +334,19 @@ window.startQuiz = async function(quizId, quizTitle) {
 };
 
 window.closeQuizModal = async function() {
-    const onay = await customConfirm("Sınavdan çıkarsan verilerin kaydedilmez. Emin misin?", "Evet, Çık");
+    const onay = await customConfirm("Sınavdan çıkarsan verilerin kaydedilmez. Emin misin?", "Evet, Sınavı Kapat");
     if(onay) { 
-        if(quizTimerInterval) clearInterval(quizTimerInterval); // Çıkarsa sayacı durdur
+        if(quizTimerInterval) clearInterval(quizTimerInterval); 
         document.getElementById('quizTakingModal').classList.add('hidden'); 
     }
 }
-
 
 const quizFormEl = document.getElementById('quizForm');
 if(quizFormEl) {
     quizFormEl.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if(quizTimerInterval) clearInterval(quizTimerInterval); // Sınav bitince sayacı durdur
+
         let correctAnswers = 0;
         let examDetails = [];
 
@@ -398,12 +378,6 @@ if(quizFormEl) {
         renderAnalysisScreen(examDetails, score);
     });
 }
-
-window.closeQuizModal = async function() {
-    const onay = await customConfirm("Sınavdan çıkarsan verilerin kaydedilmez. Emin misin?", "Evet, Sınavı Kapat");
-    if(onay) { document.getElementById('quizTakingModal').classList.add('hidden'); }
-}
-
 
 function renderAnalysisScreen(details, score) {
     document.getElementById('analysisScoreDisplay').innerText = score;
@@ -437,16 +411,3 @@ window.closeAnalysisModal = function() {
 
 // Sistemi Başlat
 initStudentPortal();
-
-// SPLASH EKRANINI KAPATMA
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        const splash = document.getElementById('splashScreen');
-        if(splash) {
-            splash.classList.add('opacity-0');
-            setTimeout(() => splash.classList.add('hidden'), 700);
-        }
-    }, 800); // 0.8 saniye şık bir bekleme süresi
-});
-
-
