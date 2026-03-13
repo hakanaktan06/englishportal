@@ -6,17 +6,18 @@
     <title>English Portal - Öğretmen Paneli</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-50 flex h-screen overflow-hidden text-gray-800 relative">
+<body class="bg-gray-50 flex h-[100dvh] overflow-hidden text-gray-800 relative">
 
     <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
 
-    <aside id="mainSidebar" class="w-64 bg-indigo-900 text-white flex flex-col transition-transform duration-300 shadow-2xl z-40 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0">
+    <aside id="mainSidebar" class="w-64 bg-indigo-900 text-white flex flex-col transition-transform duration-300 shadow-2xl z-40 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 h-[100dvh]">
         <div class="p-4 md:p-6 flex justify-between items-center border-b border-indigo-800">
             <span class="text-xl md:text-2xl font-bold tracking-wider">English Portal</span>
             <button id="closeSidebarBtn" class="md:hidden text-indigo-300 hover:text-white text-3xl leading-none">&times;</button>
         </div>
-        <nav class="flex-1 p-2 md:p-4 space-y-2 mt-4" id="sidebarMenu">
+        <nav class="flex-1 overflow-y-auto p-2 md:p-4 space-y-2 mt-4" id="sidebarMenu" style="-webkit-overflow-scrolling: touch;">
             <a href="#" id="btn-dashboard" class="menu-btn active-menu flex items-center p-3 bg-indigo-800 rounded-xl transition shadow-inner">
                 <span class="text-xl">📈</span><span class="ml-3 font-medium">Kokpit</span>
             </a>
@@ -36,26 +37,23 @@
                 <span class="text-xl">📊</span><span class="ml-3 font-medium">Sonuçlar</span>
             </a>
         </nav>
-        
     </aside>
 
-    <main class="flex-1 h-full overflow-y-auto overflow-x-hidden relative">
-
+    <main class="flex-1 flex flex-col h-[100dvh] overflow-y-auto overflow-x-hidden relative w-full" style="-webkit-overflow-scrolling: touch;">
         <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 p-4 flex justify-between items-center sticky top-0 z-20">
-    <div class="flex items-center">
-        <button id="openSidebarBtn" class="md:hidden text-indigo-900 mr-4 focus:outline-none">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-        </button>
-        <h1 class="text-sm font-black text-indigo-900 uppercase tracking-widest hidden md:block italic">English Portal Admin</h1>
-    </div>
-    <button id="logoutBtn" class="flex items-center gap-2 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white px-5 py-2.5 rounded-2xl text-xs font-black transition-all border border-red-100 shadow-sm active:scale-95">
-        <span>🚪</span> <span>GÜVENLİ ÇIKIŞ</span>
-    </button>
-</header>
+            <div class="flex items-center">
+                <button id="openSidebarBtn" class="md:hidden text-indigo-900 mr-4 focus:outline-none">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h1 class="text-sm font-black text-indigo-900 uppercase tracking-widest hidden md:block">Öğretmen Yönetim Paneli</h1>
+            </div>
 
+            <button id="logoutBtn" class="flex items-center gap-2 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white px-5 py-2.5 rounded-2xl text-xs font-black transition-all shadow-sm border border-red-100 transform active:scale-95">
+                <span>🚪</span> <span class="hidden sm:inline">GÜVENLİ ÇIKIŞ</span>
+            </button>
+        </header>
 
-
-        <div id="section-dashboard" class="page-section w-full">
+        <div id="section-dashboard" class="page-section w-full pb-10">
             <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10">
                 <div>
                     <h2 class="text-xl md:text-2xl font-extrabold text-gray-800">Sistem Kokpiti</h2>
@@ -86,7 +84,7 @@
             </div>
         </div>
 
-        <div id="section-students" class="page-section w-full hidden">
+        <div id="section-students" class="page-section w-full hidden pb-10">
             <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10">
                 <div>
                     <h2 class="text-xl md:text-2xl font-extrabold text-gray-800">Öğrenci Yönetimi</h2>
@@ -118,14 +116,16 @@
             </div>
         </div>
 
-        <div id="section-homeworks" class="page-section w-full hidden">
+        <div id="section-homeworks" class="page-section w-full hidden pb-10">
             <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10">
                 <div>
                     <h2 class="text-xl md:text-2xl font-extrabold text-gray-800">Ödev Yönetimi</h2>
                     <p class="text-sm text-gray-500 hidden md:block">Öğrencilere buradan yeni ödevler atayabilirsin.</p>
                 </div>
             </header>
+
             <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+                
                 <div class="md:col-span-1 bg-white rounded-3xl p-6 shadow-sm border border-gray-100 h-fit">
                     <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Yeni Ödev Oluştur</h3>
                     <form id="newHomeworkForm" class="space-y-4">
@@ -152,6 +152,7 @@
                         </button>
                     </form>
                 </div>
+
                 <div class="md:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
                     <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Aktif Ödevler</h3>
                     <div class="overflow-x-auto">
@@ -172,7 +173,7 @@
             </div>
         </div>
 
-        <div id="section-activities" class="page-section w-full hidden">
+        <div id="section-activities" class="page-section w-full hidden pb-10">
             <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10">
                 <h2 class="text-xl md:text-2xl font-extrabold text-purple-600">Etkinlik Kütüphanesi</h2>
             </header>
@@ -194,7 +195,7 @@
             </div>
         </div>
 
-        <div id="section-quizzes" class="page-section w-full hidden">
+        <div id="section-quizzes" class="page-section w-full hidden pb-10">
             <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 flex justify-between items-center">
                 <div>
                     <h2 class="text-xl md:text-2xl font-extrabold text-red-600">Sınav & Test Merkezi</h2>
@@ -204,10 +205,10 @@
                     + Yeni Sınav Oluştur
                 </button>
             </header>
-            <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="quizList"></div>
+            <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 gap-6" id="quizList"></div>
         </div>
 
-        <div id="section-results" class="page-section w-full hidden">
+        <div id="section-results" class="page-section w-full hidden pb-10">
             <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 flex justify-between items-center">
                 <div>
                     <h2 class="text-xl md:text-2xl font-extrabold text-blue-600">Öğrenci Sınav Sonuçları</h2>
@@ -262,7 +263,7 @@
         </div>
     </div>
 
-    <div id="questionModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto p-4">
+    <div id="questionModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto p-4" style="-webkit-overflow-scrolling: touch;">
         <div class="bg-white rounded-[40px] w-full max-w-6xl h-[90vh] flex flex-col shadow-2xl overflow-hidden relative">
             <div class="p-6 border-b flex justify-between items-center bg-gray-50">
                 <div>
@@ -272,7 +273,7 @@
                 <button onclick="document.getElementById('questionModal').classList.add('hidden')" class="text-4xl text-gray-300 hover:text-red-500 transition">&times;</button>
             </div>
             <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
-                <div class="w-full md:w-1/2 p-8 border-r overflow-y-auto bg-white">
+                <div class="w-full md:w-1/2 p-8 border-r overflow-y-auto bg-white" style="-webkit-overflow-scrolling: touch;">
                     <h4 class="font-black text-indigo-600 mb-6 uppercase text-sm tracking-tighter italic underline">YENİ SORU EKLE</h4>
                     <form id="newQuestionForm" class="space-y-6">
                         <div class="bg-gray-50 p-6 rounded-3xl">
@@ -294,7 +295,7 @@
                         <button type="submit" class="w-full bg-indigo-600 text-white font-black py-5 rounded-3xl text-xl shadow-xl hover:bg-indigo-700 transition transform hover:-translate-y-1">SORUYU KAYDET</button>
                     </form>
                 </div>
-                <div class="w-full md:w-1/2 p-8 bg-gray-100 overflow-y-auto">
+                <div class="w-full md:w-1/2 p-8 bg-gray-100 overflow-y-auto" style="-webkit-overflow-scrolling: touch;">
                     <h4 class="font-black text-gray-400 mb-6 uppercase text-sm tracking-tighter flex justify-between items-center border-b pb-4 border-gray-200">
                         SINAVDAKİ SORULAR <span id="questionCount" class="bg-indigo-600 text-white px-3 py-1 rounded-full text-lg">0</span>
                     </h4>
@@ -319,20 +320,20 @@
                     <button onclick="closeTeacherAnalysisModal()" class="text-4xl text-gray-300 hover:text-red-500 transition">&times;</button>
                 </div>
             </header>
-            <div class="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50" id="taDetailsContainer"></div>
+            <div class="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50" id="taDetailsContainer" style="-webkit-overflow-scrolling: touch;"></div>
         </div>
     </div>
 
     <div id="studentNoteModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl relative border border-gray-100">
-            <header class="p-5 border-b border-gray-100 flex justify-between items-center bg-yellow-50 rounded-t-2xl">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl relative border border-gray-100 flex flex-col max-h-[90vh]">
+            <header class="p-5 border-b border-gray-100 flex justify-between items-center bg-yellow-50 rounded-t-2xl shrink-0">
                 <h3 class="text-lg font-bold text-yellow-800 flex items-center gap-2"><span>🗣️</span> Öğrenci Notu</h3>
                 <button onclick="closeStudentNoteModal()" class="text-3xl text-yellow-600 hover:text-red-500 transition leading-none">&times;</button>
             </header>
-            <div class="p-6 bg-white rounded-b-2xl max-h-[60vh] overflow-y-auto">
+            <div class="p-6 bg-white overflow-y-auto flex-1" style="-webkit-overflow-scrolling: touch;">
                 <p id="fullStudentNoteText" class="text-gray-700 text-sm font-medium leading-relaxed whitespace-pre-wrap italic"></p>
             </div>
-            <div class="p-4 bg-gray-50 text-right rounded-b-2xl border-t border-gray-100">
+            <div class="p-4 bg-gray-50 text-right rounded-b-2xl border-t border-gray-100 shrink-0">
                 <button onclick="closeStudentNoteModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg text-sm font-bold transition">Kapat</button>
             </div>
         </div>
