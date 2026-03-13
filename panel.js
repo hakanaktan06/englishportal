@@ -981,3 +981,18 @@ window.generatePDF = function() {
 
 // BAŞLANGIÇ ÇALIŞTIRMALARI
 switchTab('dashboard');
+
+// SİHİRLİ VELİ LİNKİ KOPYALAMA MOTORU
+window.copyParentLink = function() {
+    const studentId = document.getElementById('profStudentId').value;
+    // Sitenin mevcut adresinin sonuna veli.html ve öğrenci ID'sini ekler
+    const currentUrl = window.location.href.split('/').slice(0, -1).join('/'); 
+    const link = `${currentUrl}/veli.html?id=${studentId}`;
+    
+    navigator.clipboard.writeText(link).then(() => {
+        showToast("🪄 Sihirli Link kopyalandı! WhatsApp'tan veliye yapıştır.", "success");
+    }).catch(err => {
+        showToast("Kopyalanamadı, yetki yok.", "error");
+    });
+}
+
