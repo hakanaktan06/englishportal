@@ -389,13 +389,19 @@ if(quizFormEl) {
             quiz_id: activeTakingQuizId, student_id: currentStudentId, score: score, details: examDetails
         }]);
 
-        if (error) { showToast("Hata oluştu: " + error.message, "error"); return; }
+                if (error) { showToast("Hata oluştu: " + error.message, "error"); return; }
 
-        showToast(`Tebrikler! ${score} Puan aldın.`, "success");
+        // YENİ: Sınav puanı kadar XP ekle
+        const { data: prof } = await supabaseClient.from('profiles').select('xp').eq('id', currentStudentId).single();
+        const newXp = (prof.xp || 0) + score;
+        await supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentStudentId);
+
+        showToast(`🎉 Tebrikler! ${score} Puan ve +${score} XP kazandın!`, "success");
+        
         document.getElementById('quizTakingModal').classList.add('hidden');
         renderAnalysisScreen(examDetails, score);
-    });
-}
+        initStudentPortal(); // XP rozetini güncelle
+
 
 function renderAnalysisScreen(details, score) {
     document.getElementById('analysisScoreDisplay').innerText = score;
