@@ -350,9 +350,10 @@ if(quizFormEl) {
 }
 
 window.closeQuizModal = async function() {
-    const onay = await customConfirm("Sınavdan çıkarsan verilerin kaydedilmez. Emin misin?");
+    const onay = await customConfirm("Sınavdan çıkarsan verilerin kaydedilmez. Emin misin?", "Evet, Sınavı Kapat");
     if(onay) { document.getElementById('quizTakingModal').classList.add('hidden'); }
 }
+
 
 function renderAnalysisScreen(details, score) {
     document.getElementById('analysisScoreDisplay').innerText = score;
