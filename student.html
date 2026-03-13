@@ -9,6 +9,13 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="flex h-[100dvh] overflow-hidden bg-slate-50 text-gray-800 font-sans">
+       <div id="splashScreen" class="fixed inset-0 bg-slate-50 z-[99999] flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="relative flex items-center justify-center mb-4">
+            <div class="w-20 h-20 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+            <span class="absolute text-xl font-black text-indigo-900 tracking-tighter">EP</span>
+        </div>
+        <p class="text-xs font-black text-indigo-400 uppercase tracking-widest animate-pulse">Sistem Yükleniyor</p>
+    </div>
 
     <aside class="w-20 md:w-64 flex-shrink-0 bg-gradient-to-b from-blue-700 to-indigo-800 text-white flex flex-col shadow-2xl z-20 h-[100dvh]">
         <div class="h-[73px] flex items-center justify-center md:justify-start md:p-6 border-b border-white/10">
