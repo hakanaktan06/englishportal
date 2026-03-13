@@ -6,6 +6,23 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 // ==========================================
+// GÜVENLİK (FEDAİ) MOTORU - PANEL
+// ==========================================
+async function checkTeacherSecurity() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) { window.location.href = 'index.html'; return; } // Giriş yapmamışsa şutla
+    
+    // Giren kişi harbi öğretmen mi kontrol et
+    const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
+    if (!profile || profile.role !== 'teacher') {
+        alert("Hop kanka! Burası öğretmen paneli, yetkin yok.");
+        window.location.href = 'student.html'; // Öğrenciyse kendi paneline geri fırlat
+    }
+}
+checkTeacherSecurity();
+
+
+// ==========================================
 // UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
 // ==========================================
 function showToast(message, type = 'success') {
