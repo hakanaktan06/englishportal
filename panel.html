@@ -446,27 +446,23 @@
                         <form id="newLessonForm" class="space-y-3">
                             <input type="hidden" id="profStudentId">
                             
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-400 mb-1">Tarih</label>
-                                    <input type="date" id="lessonDate" class="w-full p-2.5 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm font-bold" required>
+                                                        <div class="grid grid-cols-2 gap-4">
+                                <div class="relative">
+                                    <label class="block text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1.5 ml-1">Tarih</label>
+                                    <div class="relative flex items-center">
+                                        <span class="absolute left-3 text-lg pointer-events-none">📅</span>
+                                        <input type="date" id="lessonDate" class="w-full pl-10 pr-3 py-3 rounded-2xl border-2 border-indigo-50 bg-white focus:bg-indigo-50/30 focus:border-indigo-400 outline-none text-sm font-bold text-gray-700 transition-all appearance-none shadow-sm" required>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-400 mb-1">Saat</label>
-                                    <input type="time" id="lessonTime" class="w-full p-2.5 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm font-bold" required>
+                                <div class="relative">
+                                    <label class="block text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1.5 ml-1">Saat</label>
+                                    <div class="relative flex items-center">
+                                        <span class="absolute left-3 text-lg pointer-events-none">⏰</span>
+                                        <input type="time" id="lessonTime" class="w-full pl-10 pr-3 py-3 rounded-2xl border-2 border-indigo-50 bg-white focus:bg-indigo-50/30 focus:border-indigo-400 outline-none text-sm font-bold text-gray-700 transition-all appearance-none shadow-sm" required>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-400 mb-1">Süre (Saat)</label>
-                                    <input type="number" step="0.5" id="lessonDuration" class="w-full p-2.5 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm font-bold" placeholder="Örn: 1.5" required>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-400 mb-1">Ücret (TL)</label>
-                                    <input type="number" id="lessonPrice" class="w-full p-2.5 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm font-bold" placeholder="Örn: 500" required>
-                                </div>
-                            </div>
 
                             <div>
                                 <label class="block text-xs font-bold text-gray-400 mb-1">Durum</label>
