@@ -943,6 +943,21 @@ window.deleteLesson = async function(id) {
     fetchStudentLessons(document.getElementById('profStudentId').value);
 }
 
+// TEK TIKLA TAHSİLAT YAPMA MOTORU
+window.markAsPaid = async function(lessonId, studentId) {
+    showToast("Tahsilat işleniyor...", "info");
+    const { error } = await supabaseClient.from('private_lessons').update({ is_paid: true }).eq('id', lessonId);
+    
+    if(error) {
+        showToast("Hata oluştu: " + error.message, "error");
+    } else {
+        showToast("💵 Para kasaya girdi, ders ödendi olarak işaretlendi!", "success");
+        fetchStudentLessons(studentId); // Listeyi tazeleyip borcu düşürür
+    }
+}
+
+
+
 // SİHİRLİ PDF OLUŞTURMA BUTONU
 window.generatePDF = function() {
     showToast("PDF hazırlanıyor, lütfen bekleyin...", "info");
