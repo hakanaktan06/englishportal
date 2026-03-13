@@ -16,9 +16,20 @@ async function checkTeacherSecurity() {
     if (!profile || profile.role !== 'teacher') {
         showToast("Erişim Engellendi! Yönetici yetkiniz yok.", "error");
         setTimeout(() => { window.location.href = 'student.html'; }, 1500); 
+        return;
     }
+
+    // GÜVENLİK GEÇİLDİĞİNDE SPLASH EKRANINI KALDIR! (GARANTİLİ)
+    setTimeout(() => {
+        const splash = document.getElementById('splashScreen');
+        if(splash) {
+            splash.classList.add('opacity-0');
+            setTimeout(() => splash.classList.add('hidden'), 700);
+        }
+    }, 400);
 }
-checkTeacherSecurity(); // Sayfa açılır açılmaz fedaiyi çalıştır
+checkTeacherSecurity(); 
+
 
 
 
