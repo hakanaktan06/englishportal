@@ -498,23 +498,28 @@ const quizSaveBtnEl = document.getElementById('saveQuizTitleBtn');
 if (quizSaveBtnEl) {
     quizSaveBtnEl.addEventListener('click', async () => {
         const qTitleInput = document.getElementById('quizTitleInput');
+        const qTimeInput = document.getElementById('quizTimeInput');
+        
         const title = qTitleInput ? qTitleInput.value : '';
+        const timeLimit = qTimeInput && qTimeInput.value ? parseInt(qTimeInput.value) : 0; // 0 = Süresiz
+
         if (!title) { showToast("Lütfen sınav ismini yaz!", "error"); return; }
 
-        const { data, error } = await supabaseClient.from('quizzes').insert([{ title: title }]).select();
+        const { data, error } = await supabaseClient.from('quizzes').insert([{ title: title, time_limit: timeLimit }]).select();
         
         if (error) {
             showToast("Sınav oluşturma hatası: " + error.message, "error");
         } else {
             showToast("Sınav başarıyla oluşturuldu! Hadi soru ekleyelim.", "success");
-            const modalQuiz = document.getElementById('quizNameModal');
-            if (modalQuiz) modalQuiz.classList.add('hidden');
+            document.getElementById('quizNameModal').classList.add('hidden');
             if (qTitleInput) qTitleInput.value = '';
+            if (qTimeInput) qTimeInput.value = '';
             fetchQuizzes();
             openQuestionEditor(data[0].id, data[0].title);
         }
     });
 }
+
 
 window.openQuestionEditor = function(id, title) {
     currentActiveQuizId = id;
