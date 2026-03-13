@@ -1135,31 +1135,53 @@ window.copyParentLink = function() {
 switchTab('dashboard');
 
 // ==========================================
-// 10. GÜNÜN MOTİVATÖRÜ VE SÖZÜ MOTORU
+// 10. GÜNÜN MOTİVATÖRÜ VE SÖZÜ MOTORU (GENİŞLETİLMİŞ)
 // ==========================================
 function setDynamicMotivations() {
-    // Gülbahar Hoca'ya özel değişen alt mesajlar
+    // Gülbahar Hoca'ya özel 15 farklı değişen alt mesaj
     const welcomeMsgs = [
         "Bugün yeni başarı hikayeleri yazmak ve geleceği şekillendirmek için harika bir gün. İyi çalışmalar dileriz!",
         "Öğrencilerinizin hayatında bıraktığınız iz, geleceği aydınlatıyor. Harika bir ders günü olsun!",
         "Bilgi paylaştıkça çoğalır. Bugünün size ve öğrencilerinize yeni ilhamlar getirmesini dileriz.",
         "Her yeni gün, bir öğrencinin hayatına dokunmak için yepyeni bir fırsattır. Kolay gelsin!",
         "Sizin rehberliğinizde büyüyen zihinler, yarının umudu. Keyifli ve verimli bir gün geçirmeniz dileğiyle!",
-        "İngilizce bir dil değil, dünyaya açılan bir kapıdır. O kapının en iyi anahtarı sizsiniz!"
+        "İngilizce bir dil değil, dünyaya açılan bir kapıdır. O kapının en iyi anahtarı sizsiniz!",
+        "Masanızdaki her not, bir öğrencinin hayallerine giden bir basamak. Emeklerinize sağlık!",
+        "Yorgun hissettiğinizde, dokunduğunuz o parlak gelecekleri hatırlayın. Harika bir gün olsun!",
+        "Sadece bir dil değil, bir vizyon öğretiyorsunuz. Enerjinizin hiç bitmeyeceği bir gün dileriz.",
+        "Gülümsemeniz sınıfın en iyi motivasyonudur. Bugün de harikalar yaratacağınıza eminiz!",
+        "Geleceğin dünya vatandaşlarını yetiştiriyorsunuz. Bu muazzam yolculukta kolaylıklar dileriz.",
+        "Bir öğretmenin sabrı, bir öğrencinin en büyük şansıdır. İyi ki varsınız, harika dersler!",
+        "Bugün ektiğiniz bilgi tohumları, yarın devasa çınarlara dönüşecek. İyi çalışmalar!",
+        "Öğrencilerinizin 'Anladım!' dediği o anki gözlerindeki ışıltı için değer. Harika bir seans olsun!",
+        "VIP eğitim kalitesini her gün zirveye taşıyorsunuz. Sisteminiz sizin için hazır, kolay gelsin!"
     ];
 
-    // Eğitim ve motivasyon konulu rastgele sözler
+    // Eğitim ve vizyon konulu 20 farklı efsanevi söz
     const quotes = [
         { q: '"Bir öğretmenin etkisi sonsuzdur; nerede duracağını kimse bilemez."', a: "- Henry Adams" },
         { q: '"Eğitim, dünyayı değiştirmek için kullanabileceğiniz en güçlü silahtır."', a: "- Nelson Mandela" },
         { q: '"Bana söylersen unuturum, öğretirsen hatırlarım, beni dahil edersen öğrenirim."', a: "- Benjamin Franklin" },
         { q: '"İyi bir öğretmen, umudu ateşleyebilir, hayal gücünü tutuşturabilir ve öğrenme sevgisini aşılayabilir."', a: "- Brad Henry" },
         { q: '"Öğretmenlik, tüm diğer meslekleri yaratan tek meslektir."', a: "- Eğitim Özdeyişi" },
-        { q: '"Yaratıcılık, bulaşıcıdır. Onu öğrencilerinize bulaştırın."', a: "- Albert Einstein" },
-        { q: '"Eğitimin kökleri acı, fakat meyveleri tatlıdır."', a: "- Aristoteles" }
+        { q: '"Yaratıcılık bulaşıcıdır. Onu öğrencilerinize bulaştırın."', a: "- Albert Einstein" },
+        { q: '"Eğitimin kökleri acı, fakat meyveleri tatlıdır."', a: "- Aristoteles" },
+        { q: '"Bir çocuğu eğitmek, sadece zihnini değil, kalbini de eğitmektir."', a: "- Aristoteles" },
+        { q: '"Öğretmek, iki kere öğrenmektir."', a: "- Joseph Joubert" },
+        { q: '"Bir yıl sonrasını düşünüyorsan tohum ek, yüz yıl sonrasını düşünüyorsan insan yetiştir."', a: "- Konfüçyüs" },
+        { q: '"Okul için değil, hayat için öğreniriz."', a: "- Seneca" },
+        { q: '"Bilgiye yapılan yatırım en yüksek getiriyi sağlar."', a: "- Benjamin Franklin" },
+        { q: '"Eğitim öğrencilere saygıyla başlar."', a: "- Ralph Waldo Emerson" },
+        { q: '"Çocuklar boş bir levha değil, keşfedilmeyi bekleyen birer evrendir."', a: "- Friedrich Froebel" },
+        { q: '"Bir insanı ahlaken eğitmeden sadece zihnen eğitmek, topluma bir bela kazandırmaktır."', a: "- Theodore Roosevelt" },
+        { q: '"Öğrenme, zihnin hiç bitmeyen bir yolculuğudur."', a: "- Leonardo da Vinci" },
+        { q: '"Eğitim, insanın okulda öğrendiği her şeyi unuttuğunda geriye kalan şeydir."', a: "- Albert Einstein" },
+        { q: '"En büyük öğretmen, hayatın ta kendisidir ama iyi bir rehber yolu kısaltır."', a: "- Anonim" },
+        { q: '"Sıradan öğretmen anlatır, iyi öğretmen açıklar, yetenekli öğretmen gösterir, büyük öğretmen ilham verir."', a: "- William Arthur Ward" },
+        { q: '"Eğitim, geleceğin pasaportudur; çünkü yarın, ona bugünden hazırlananlara aittir."', a: "- Malcolm X" }
     ];
 
-    // Rastgele seçici
+    // Havuzdan rastgele çekim motoru
     const randomMsg = welcomeMsgs[Math.floor(Math.random() * welcomeMsgs.length)];
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
 
@@ -1167,7 +1189,6 @@ function setDynamicMotivations() {
     const quoteTextEl = document.getElementById('dynamicQuoteText');
     const quoteAuthEl = document.getElementById('dynamicQuoteAuthor');
 
-    // Ekrana şık bir şekilde yazdır
     if(msgEl) msgEl.innerText = randomMsg;
     if(quoteTextEl) quoteTextEl.innerText = randomQuote.q;
     if(quoteAuthEl) quoteAuthEl.innerText = randomQuote.a;
@@ -1175,4 +1196,3 @@ function setDynamicMotivations() {
 
 // Sayfa her açıldığında/yenilendiğinde motoru çalıştır
 setDynamicMotivations();
-
