@@ -386,7 +386,11 @@
                         Bekleyen: 0 TL
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="generatePDF()" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-4 py-2.5 rounded-xl text-xs md:text-sm font-black shadow-lg transition flex items-center gap-2">
+                                          <button onclick="copyParentLink()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-4 py-2.5 rounded-xl text-xs md:text-sm font-black shadow-sm transition flex items-center gap-2">
+                        🔗 <span class="hidden sm:inline">CANLI LİNK</span><span class="sm:hidden">LİNK</span>
+                    </button>
+
+                          <button onclick="generatePDF()" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-4 py-2.5 rounded-xl text-xs md:text-sm font-black shadow-lg transition flex items-center gap-2">
                             📄 <span class="hidden sm:inline">VELİ İÇİN PDF KARNE AL</span><span class="sm:hidden">PDF İNDİR</span>
                         </button>
                         <button onclick="document.getElementById('studentProfileModal').classList.add('hidden')" class="text-4xl text-gray-300 hover:text-red-500 transition leading-none ml-2">&times;</button>
