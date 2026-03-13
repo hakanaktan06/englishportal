@@ -26,16 +26,18 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-function customConfirm(message) {
+function customConfirm(message, btnText = "Evet, Sil") {
     return new Promise((resolve) => {
         const modal = document.getElementById('customConfirmModal');
         const box = document.getElementById('customConfirmBox');
         const btnOk = document.getElementById('customConfirmOk');
         const btnCancel = document.getElementById('customConfirmCancel');
 
-        if(!modal) { resolve(confirm(message)); return; } // HTML yoksa yedeğe düş
+        if(!modal) { resolve(confirm(message)); return; }
 
+        // Metni VE buton yazısını dinamik yapıyoruz!
         document.getElementById('customConfirmMessage').innerText = message;
+        btnOk.innerText = btnText; 
         
         modal.classList.remove('hidden');
         setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); }, 10);
@@ -51,6 +53,7 @@ function customConfirm(message) {
         document.getElementById('customConfirmCancel').addEventListener('click', () => { cleanup(); resolve(false); });
     });
 }
+
 
 // ÇIKIŞ MOTORU
 document.addEventListener('click', async (e) => {
