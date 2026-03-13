@@ -55,14 +55,18 @@ function customConfirm(message, btnText = "Evet, Sil") {
 }
 
 
-// ÇIKIŞ MOTORU
+// ÇIKIŞ MOTORU (SAĞ ÜSTTEKİ BUTON)
 document.addEventListener('click', async (e) => {
-    if (e.target.closest('#logoutBtn')) {
+    if (e.target.closest('#studentLogoutBtn')) {
+        // İkinci parametre olarak butonun üstünde ne yazacağını gönderiyoruz!
+        const onay = await customConfirm("Oturumunu kapatmak istediğine emin misin?", "Evet, Çıkış Yap");
+        if(!onay) return;
         const { error } = await supabaseClient.auth.signOut();
         if (!error) window.location.href = 'index.html';
-        else showToast("Çıkış yapılırken hata oluştu!", "error");
+        else showToast("Çıkış yapılamadı!", "error");
     }
 });
+
 
 
 // ==========================================
