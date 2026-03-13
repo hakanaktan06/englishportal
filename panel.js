@@ -187,7 +187,7 @@ if(btnResults) btnResults.addEventListener('click', (e) => { e.preventDefault();
 
 
 // ==========================================
-// KOKPİT (DASHBOARD) İSTATİSTİK MOTORU
+// KOKPİT (DASHBOARD) İSTATİSTİK VE AJANDA MOTORU
 // ==========================================
 async function fetchDashboardStats() {
     const { count: studentCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student');
@@ -210,6 +210,105 @@ async function fetchDashboardStats() {
     }
     const dAvg = document.getElementById('dashAvgScore');
     if (dAvg) dAvg.innerText = avgScore ? `%${avgScore}` : '%0';
+
+    // AJANDAYI ÇALIŞTIR
+    fetchAgenda();
+}
+
+async function fetchAgenda() {
+    const agendaContainer = document.getElementById('agendaList');
+    if (!agendaContainer) return;
+
+    // Bugünü bul
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // Bugünden sonraki Özel Dersleri Çek
+    const { data: lessons } = await supabaseClient.from('private_lessons')
+        .select('lesson_date, lesson_time, topic, profiles(full_name)')
+        .gte('lesson_date', todayStr);
+
+    // Bugünden sonraki veya bekleyen Ödevleri Çek
+    const { data: homeworks } = await supabaseClient.from('homeworks')
+        .select('due_date, title, status, profiles(full_name)')
+        .gte('due_date', todayStr);
+
+    let agendaItems = [];
+
+    if (lessons) {
+        lessons.forEach(l => {
+            agendaItems.push({
+                type: 'lesson',
+                dateStr: l.lesson_date,
+                timeStr: l.lesson_time || 'Belirtilmedi',
+                dateObj: new Date(`${l.lesson_date}T${l.lesson_time || '00:00'}:00`),
+                title: `${l.profiles?.full_name || 'Öğrenci'} ile Özel Ders`,
+                desc: l.topic
+            });
+        });
+    }
+
+    if (homeworks) {
+        homeworks.forEach(h => {
+            if(h.status !== 'Tamamlandı') {
+                agendaItems.push({
+                    type: 'homework',
+                    dateStr: h.due_date,
+                    timeStr: '23:59',
+                    dateObj: new Date(`${h.due_date}T23:59:00`),
+                    title: `${h.profiles?.full_name || 'Öğrenci'} - Ödev Teslimi`,
+                    desc: h.title
+                });
+            }
+        });
+    }
+
+    // Tarihe göre sırala (En yakından en uzağa)
+    agendaItems.sort((a, b) => a.dateObj - b.dateObj);
+
+    agendaContainer.innerHTML = '';
+
+    if (agendaItems.length === 0) {
+        agendaContainer.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                <span class="text-5xl mb-3 opacity-50">☕</span>
+                <p class="text-sm font-bold text-gray-500">Yaklaşan bir programınız yok.</p>
+                <p class="text-xs mt-1">Gülbahar Öğretmenim, şimdi kafa dinleme vakti!</p>
+            </div>`;
+        return;
+    }
+
+    // Ajanda Maddelerini Ekrana Bas
+    agendaItems.slice(0, 10).forEach(item => {
+        const d = item.dateObj;
+        const dayName = d.toLocaleDateString('tr-TR', { weekday: 'long' });
+        const shortDate = d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+        
+        const isToday = d.toDateString() === new Date().toDateString();
+        const dateBadge = isToday 
+            ? `<span class="bg-red-50 border border-red-100 text-red-600 px-2.5 py-1 rounded-md text-[10px] font-black uppercase shadow-sm">BUGÜN</span>`
+            : `<span class="bg-slate-100 border border-slate-200 text-slate-600 px-2.5 py-1 rounded-md text-[10px] font-black uppercase">${shortDate} ${dayName}</span>`;
+
+        const icon = item.type === 'lesson' 
+            ? `<div class="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm"><span class="text-xl">👩‍🏫</span></div>`
+            : `<div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 shadow-sm"><span class="text-xl">📚</span></div>`;
+
+        const timeHtml = item.type === 'lesson' && item.timeStr !== 'Belirtilmedi' 
+            ? `<span class="ml-2 text-xs font-black text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-md">⏰ ${item.timeStr}</span>` 
+            : '';
+
+        agendaContainer.innerHTML += `
+            <div class="flex items-center gap-4 p-3.5 hover:bg-slate-50/80 rounded-2xl border border-transparent hover:border-slate-200 transition group cursor-default">
+                ${icon}
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        ${dateBadge}
+                        ${timeHtml}
+                    </div>
+                    <h4 class="text-sm font-black text-gray-800 leading-tight group-hover:text-indigo-700 transition">${item.title}</h4>
+                    <p class="text-xs font-medium text-gray-500 mt-1 truncate max-w-[250px] sm:max-w-md">${item.desc}</p>
+                </div>
+            </div>`;
+    });
 }
 
 
@@ -979,9 +1078,6 @@ window.generatePDF = function() {
     });
 }
 
-// BAŞLANGIÇ ÇALIŞTIRMALARI
-switchTab('dashboard');
-
 // SİHİRLİ VELİ LİNKİ KOPYALAMA MOTORU
 window.copyParentLink = function() {
     const studentId = document.getElementById('profStudentId').value;
@@ -996,3 +1092,5 @@ window.copyParentLink = function() {
     });
 }
 
+// BAŞLANGIÇ ÇALIŞTIRMALARI
+switchTab('dashboard');
