@@ -773,9 +773,14 @@ if(newLessonForm) {
         const lTime = document.getElementById('lessonTime').value;
         const lDuration = document.getElementById('lessonDuration').value;
         const lTopic = document.getElementById('lessonTopic').value;
+        
+        // YENİ MUHASEBE VERİLERİ
+        const lPrice = document.getElementById('lessonPrice').value;
+        const lIsPaid = document.getElementById('lessonIsPaid').value === 'true';
 
         const { error } = await supabaseClient.from('private_lessons').insert([{
-            student_id: studentId, lesson_date: lDate, lesson_time: lTime, duration_hours: lDuration, topic: lTopic
+            student_id: studentId, lesson_date: lDate, lesson_time: lTime, duration_hours: lDuration, topic: lTopic,
+            price: lPrice, is_paid: lIsPaid
         }]);
 
         if (error) showToast("Ders kaydedilemedi!", "error");
@@ -783,10 +788,12 @@ if(newLessonForm) {
             showToast("Ders başarıyla profile işlendi.", "success");
             document.getElementById('lessonTopic').value = '';
             document.getElementById('lessonDuration').value = '';
+            document.getElementById('lessonPrice').value = ''; // Kutuyu temizle
             fetchStudentLessons(studentId);
         }
     });
 }
+
 
 let profileChartInstance = null;
 let pdfChartInstance = null;
