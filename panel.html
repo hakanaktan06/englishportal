@@ -427,6 +427,21 @@
                                 <input type="number" step="0.5" id="lessonDuration" class="w-full p-3 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm font-bold" placeholder="Örn: 1.5 veya 2" required>
                             </div>
 
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 mb-1">Ücret (TL)</label>
+                                    <input type="number" id="lessonPrice" class="w-full p-3 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm font-bold" placeholder="Örn: 500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 mb-1">Durum</label>
+                                    <select id="lessonIsPaid" class="w-full p-3 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm font-bold text-gray-700">
+                                        <option value="false">🔴 Ödenmedi</option>
+                                        <option value="true">🟢 Ödendi</option>
+                                    </select>
+                                </div>
+                            </div>
+
+
                             <div>
                                 <label class="block text-xs font-bold text-gray-400 mb-1">İşlenen Konu / Notlar</label>
                                 <textarea id="lessonTopic" rows="3" class="w-full p-3 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm resize-none" placeholder="Örn: Present Simple Tense işlendi..." required></textarea>
