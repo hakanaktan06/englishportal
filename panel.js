@@ -780,31 +780,8 @@ if(newLessonForm) {
         e.preventDefault();
         const studentId = document.getElementById('profStudentId').value;
         const lDate = document.getElementById('lessonDate').value;
-        const lTopic = document.getElementById('lessonTopic').value;
-
-        const { error } = await supabaseClient.from('private_lessons').insert([{
-            student_id: studentId, lesson_date: lDate, topic: lTopic
-        }]);
-
-        if (error) showToast("Ders kaydedilemedi!", "error");
-        else {
-            showToast("Ders başarıyla profile işlendi.", "success");
-            document.getElementById('lessonTopic').value = '';
-            fetchStudentLessons(studentId);
-        }
-    });
-}
-
-async function fetchStudentLessons(studentId) {
-    // Dersleri çek
-    const newLessonForm = document.getElementById('newLessonForm');
-if(newLessonForm) {
-    newLessonForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const studentId = document.getElementById('profStudentId').value;
-        const lDate = document.getElementById('lessonDate').value;
-        const lTime = document.getElementById('lessonTime').value; // Saat eklendi
-        const lDuration = document.getElementById('lessonDuration').value; // Süre eklendi
+        const lTime = document.getElementById('lessonTime').value; // Saat 
+        const lDuration = document.getElementById('lessonDuration').value; // Süre
         const lTopic = document.getElementById('lessonTopic').value;
 
         const { error } = await supabaseClient.from('private_lessons').insert([{
@@ -882,7 +859,6 @@ async function fetchStudentLessons(studentId) {
     }
 }
 
-
 window.deleteLesson = async function(id) {
     const onay = await customConfirm("Ders kaydını silmek istediğine emin misin?");
     if (!onay) return;
@@ -910,5 +886,4 @@ window.generatePDF = function() {
         showToast("PDF Başarıyla İndirildi!", "success");
     });
 }
-
 
