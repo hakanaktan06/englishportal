@@ -279,13 +279,26 @@ async function fetchQuizzes() {
     });
 }
 
+let quizTimerInterval = null; // Sayacı hafızada tutar
+
 window.startQuiz = async function(quizId, quizTitle) {
     activeTakingQuizId = quizId;
     document.getElementById('takingQuizTitle').innerText = quizTitle;
     const container = document.getElementById('questionsContainer');
+    const timerContainer = document.getElementById('quizTimerContainer');
+    const timerDisplay = document.getElementById('quizTimerDisplay');
+    
+    // Eski sayacı sıfırla
+    if(quizTimerInterval) clearInterval(quizTimerInterval);
+    timerContainer.classList.add('hidden');
+
     container.innerHTML = '<p class="text-center text-gray-400 font-medium text-sm py-10 animate-pulse">Sınav Yükleniyor...</p>';
     document.getElementById('quizTakingModal').classList.remove('hidden');
 
+    // Sınav süresini çekmek için (Ana tablodan)
+    const { data: quizInfo } = await supabaseClient.from('quizzes').select('time_limit').eq('id', quizId).single();
+
+    // Soruları Çek
     const { data: questions, error } = await supabaseClient.from('questions').select('*').eq('quiz_id', quizId).order('created_at', { ascending: true });
     
     if (error || !questions || questions.length === 0) {
@@ -320,7 +333,35 @@ window.startQuiz = async function(quizId, quizTitle) {
                 </div>
             </div>`;
     });
+
+    // SAYAÇ MOTORUNU BAŞLAT
+    if (quizInfo && quizInfo.time_limit > 0) {
+        let timeLeft = quizInfo.time_limit * 60; // Saniyeye çevir
+        timerContainer.classList.remove('hidden');
+        
+        quizTimerInterval = setInterval(() => {
+            let m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            let s = (timeLeft % 60).toString().padStart(2, '0');
+            timerDisplay.innerText = `${m}:${s}`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(quizTimerInterval);
+                showToast("SÜRE DOLDU! Sınav otomatik olarak gönderiliyor...", "error");
+                document.getElementById('quizForm').dispatchEvent(new Event('submit')); // Formu zorla tetikle
+            }
+            timeLeft--;
+        }, 1000);
+    }
 };
+
+window.closeQuizModal = async function() {
+    const onay = await customConfirm("Sınavdan çıkarsan verilerin kaydedilmez. Emin misin?", "Evet, Çık");
+    if(onay) { 
+        if(quizTimerInterval) clearInterval(quizTimerInterval); // Çıkarsa sayacı durdur
+        document.getElementById('quizTakingModal').classList.add('hidden'); 
+    }
+}
+
 
 const quizFormEl = document.getElementById('quizForm');
 if(quizFormEl) {
