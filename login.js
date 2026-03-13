@@ -80,3 +80,11 @@ function resetButton(originalText) {
     loginBtn.innerHTML = originalText;
     loginBtn.disabled = false;
 }
+
+// ŞİFRE GÖSTER/GİZLE MOTORU
+document.getElementById('togglePasswordBtn')?.addEventListener('click', () => {
+    const pwd = document.getElementById('passwordInput');
+    const type = pwd.getAttribute('type') === 'password' ? 'text' : 'password';
+    pwd.setAttribute('type', type);
+});
+
