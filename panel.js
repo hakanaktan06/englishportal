@@ -5,6 +5,52 @@ const supabaseUrl = 'https://vucpxabicxqfmmmqvkpv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1Y3B4YWJpY3hxZm1tbXF2a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDIwMDYsImV4cCI6MjA4ODkxODAwNn0.wYXmIDO4H7ml8nC9pQzRmW8tPK_ihtqFy3r4SqN3cTk';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+// ==========================================
+// UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
+// ==========================================
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if(!container) return;
+    const toast = document.createElement('div');
+    const bgColor = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-blue-600');
+    const icon = type === 'success' ? '✅' : (type === 'error' ? '⚠️' : 'ℹ️');
+
+    toast.className = `${bgColor} text-white px-5 py-3.5 rounded-2xl shadow-xl shadow-${bgColor}/30 font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
+    toast.innerHTML = `<span class="text-lg">${icon}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    
+    setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 10);
+    setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => toast.remove(), 300); 
+    }, 3000);
+}
+
+function customConfirm(message) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('customConfirmModal');
+        const box = document.getElementById('customConfirmBox');
+        const btnOk = document.getElementById('customConfirmOk');
+        const btnCancel = document.getElementById('customConfirmCancel');
+
+        document.getElementById('customConfirmMessage').innerText = message;
+        
+        modal.classList.remove('hidden');
+        setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); }, 10);
+
+        const cleanup = () => {
+            modal.classList.add('opacity-0'); box.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+            btnOk.replaceWith(btnOk.cloneNode(true));
+            btnCancel.replaceWith(btnCancel.cloneNode(true));
+        };
+
+        document.getElementById('customConfirmOk').addEventListener('click', () => { cleanup(); resolve(true); });
+        document.getElementById('customConfirmCancel').addEventListener('click', () => { cleanup(); resolve(false); });
+    });
+}
+
+
 // ÇIKIŞ MOTORU
 document.addEventListener('click', async (e) => {
     if (e.target.closest('#logoutBtn')) {
