@@ -74,7 +74,9 @@ document.addEventListener('click', async (e) => {
     }
 });
 
+// ==========================================
 // 2. OTURUM KONTROLÜ VE SPLASH EKRANI KAPATMA
+// ==========================================
 async function initStudentPortal() {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) { window.location.href = 'index.html'; return; }
@@ -210,8 +212,9 @@ if(hwSubmitForm) {
 
         const { error } = await supabaseClient.from('homeworks').update({ status: 'Tamamlandı', student_note: note }).eq('id', hwId);
 
-                if (error) showToast("Hata: " + error.message, "error");
-        else {
+        if (error) {
+            showToast("Hata: " + error.message, "error");
+        } else {
             // YENİ: Ödev teslim edilince veritabanındaki XP'yi 50 artır
             const { data: prof } = await supabaseClient.from('profiles').select('xp').eq('id', currentStudentId).single();
             const newXp = (prof.xp || 0) + 50;
@@ -224,7 +227,6 @@ if(hwSubmitForm) {
             initStudentPortal(); // XP rozetinin güncellenmesi için sayfayı tazele
         }
         btn.innerText = "BİTİRDİM, GÖNDER";
-
     });
 }
 
@@ -389,7 +391,10 @@ if(quizFormEl) {
             quiz_id: activeTakingQuizId, student_id: currentStudentId, score: score, details: examDetails
         }]);
 
-                if (error) { showToast("Hata oluştu: " + error.message, "error"); return; }
+        if (error) { 
+            showToast("Hata oluştu: " + error.message, "error"); 
+            return; 
+        }
 
         // YENİ: Sınav puanı kadar XP ekle
         const { data: prof } = await supabaseClient.from('profiles').select('xp').eq('id', currentStudentId).single();
@@ -401,7 +406,8 @@ if(quizFormEl) {
         document.getElementById('quizTakingModal').classList.add('hidden');
         renderAnalysisScreen(examDetails, score);
         initStudentPortal(); // XP rozetini güncelle
-
+    });
+} // <--- İŞTE KAYIP OLAN PARANTEZ BURADA!
 
 function renderAnalysisScreen(details, score) {
     document.getElementById('analysisScoreDisplay').innerText = score;
