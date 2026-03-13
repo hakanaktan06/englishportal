@@ -58,10 +58,23 @@
             </div>
         </header>
 
- <div class="w-full px-5 lg:px-8 pt-8 pb-2">
-            <h2 class="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">Merhaba, <span id="welcomeStudentName" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Öğrenci</span>! 👋</h2>
-            <p class="text-sm text-gray-500 mt-1.5 font-medium">Bugün yeni şeyler öğrenmek için harika bir gün. Başarılar dilerim!</p>
+         <div class="w-full px-5 lg:px-8 pt-8 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">Merhaba, <span id="welcomeStudentName" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Öğrenci</span>! 👋</h2>
+                <p class="text-sm text-gray-500 mt-1.5 font-medium">Bugün yeni şeyler öğrenmek için harika bir gün.</p>
+            </div>
+            
+            <div class="bg-white px-5 py-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 w-fit">
+                <div class="bg-gradient-to-br from-yellow-400 to-orange-500 text-white w-12 h-12 rounded-full flex items-center justify-center font-black text-xl shadow-inner border-2 border-yellow-200">
+                    <span id="studentLevelText">1</span>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mevcut Seviye</p>
+                    <p class="text-lg font-black text-indigo-900 leading-tight"><span id="studentXpText">0</span> <span class="text-sm text-indigo-400">XP</span></p>
+                </div>
+            </div>
         </div>
+
 
         <div id="section-homeworks" class="page-section w-full p-5 lg:p-8 pb-20">
             <h3 class="text-lg font-bold text-gray-800 mb-6 border-b-2 border-blue-500 inline-block pb-1">Bana Verilen Ödevler</h3>
