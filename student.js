@@ -9,6 +9,35 @@ let currentStudentId = null;
 let currentQuizQuestions = []; 
 let activeTakingQuizId = null;
 
+
+// ==========================================
+// MOBİL HAMBURGER MENÜ MOTORU
+// ==========================================
+const sidebarMain = document.getElementById('mainSidebar');
+const sideOverlay = document.getElementById('sidebarOverlay');
+const sideOpenBtn = document.getElementById('openSidebarBtn');
+const sideCloseBtn = document.getElementById('closeSidebarBtn');
+
+function toggleMobileSidebar() {
+    if(sidebarMain) sidebarMain.classList.toggle('-translate-x-full');
+    if(sideOverlay) sideOverlay.classList.toggle('hidden');
+}
+
+if(sideOpenBtn) sideOpenBtn.addEventListener('click', toggleMobileSidebar);
+if(sideCloseBtn) sideCloseBtn.addEventListener('click', toggleMobileSidebar);
+if(sideOverlay) sideOverlay.addEventListener('click', toggleMobileSidebar);
+
+// Menüdeki butonlara tıklayınca mobilde menüyü otomatik kapatma eklentisi
+document.querySelectorAll('.menu-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        if(window.innerWidth < 768 && sidebarMain && !sidebarMain.classList.contains('-translate-x-full')) {
+            toggleMobileSidebar();
+        }
+    });
+});
+
+
+
 // ==========================================
 // UI ULTRA: TOAST BİLDİRİM MOTORU
 // ==========================================
