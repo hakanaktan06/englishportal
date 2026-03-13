@@ -595,40 +595,71 @@ async function fetchActivities() {
 
 
 // ==========================================
-// 6. ÇOKLU SORU VE SINAV MOTORU
+// 6. SINAV MOTORU VE AKILLI SÜRE SEÇİCİ
 // ==========================================
-const quizAddBtnEl = document.getElementById('addQuizBtn');
-if (quizAddBtnEl) {
-    quizAddBtnEl.addEventListener('click', () => {
-        const modalQuiz = document.getElementById('quizNameModal');
-        if (modalQuiz) modalQuiz.classList.remove('hidden');
-    });
-}
+document.getElementById('addQuizBtn')?.addEventListener('click', () => document.getElementById('quizNameModal').classList.remove('hidden'));
 
-const quizSaveBtnEl = document.getElementById('saveQuizTitleBtn');
-if (quizSaveBtnEl) {
-    quizSaveBtnEl.addEventListener('click', async () => {
-        const qTitleInput = document.getElementById('quizTitleInput');
-        const qTimeInput = document.getElementById('quizTimeInput');
-        
-        const title = qTitleInput ? qTitleInput.value : '';
-        const timeLimit = qTimeInput && qTimeInput.value ? parseInt(qTimeInput.value) : 0;
+// Süre butonları için animasyonlu seçim motoru
+const timeBtns = document.querySelectorAll('.time-btn');
+const customTimeContainer = document.getElementById('customTimeContainer');
+const finalQuizTime = document.getElementById('finalQuizTime');
+const customTimeInput = document.getElementById('quizTimeInput');
 
-        if (!title) { showToast("Lütfen sınav ismini yaz!", "error"); return; }
+timeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Tüm butonları gri yap
+        timeBtns.forEach(b => {
+            b.classList.remove('bg-red-500', 'text-white', 'border-red-500', 'shadow-md');
+            b.classList.add('bg-gray-50', 'text-gray-500', 'border-gray-100');
+        });
+        // Tıklanan butonu Kırmızı (Aktif) yap
+        btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-gray-100');
+        btn.classList.add('bg-red-500', 'text-white', 'border-red-500', 'shadow-md');
 
-        const { data, error } = await supabaseClient.from('quizzes').insert([{ title: title, time_limit: timeLimit }]).select();
-        
-        if (error) {
-            showToast("Sınav oluşturma hatası: " + error.message, "error");
+        const val = btn.getAttribute('data-time');
+        if (val === 'custom') {
+            customTimeContainer.classList.remove('hidden');
+            customTimeInput.focus(); // Klavyeyi otomatik aç
+            finalQuizTime.value = 'custom';
         } else {
-            showToast("Sınav başarıyla oluşturuldu! Hadi soru ekleyelim.", "success");
-            document.getElementById('quizNameModal').classList.add('hidden');
-            if (qTitleInput) qTitleInput.value = '';
-            if (qTimeInput) qTimeInput.value = '';
-            fetchQuizzes();
-            openQuestionEditor(data[0].id, data[0].title);
+            customTimeContainer.classList.add('hidden');
+            finalQuizTime.value = val;
         }
     });
+});
+
+// Sınavı Kaydetme Butonu
+document.getElementById('saveQuizTitleBtn')?.addEventListener('click', async () => {
+    const title = document.getElementById('quizTitleInput').value;
+    let timeLimitVal = document.getElementById('finalQuizTime').value;
+    let timeLimit = 0;
+
+    // Süreyi belirle (Özel seçildiyse kutudan al, yoksa buton değerini al)
+    if (timeLimitVal === 'custom') {
+        timeLimit = parseInt(document.getElementById('quizTimeInput').value) || 0;
+    } else {
+        timeLimit = parseInt(timeLimitVal) || 0;
+    }
+
+    if (!title) { showToast("Sınav ismini yazmayı unuttun!", "error"); return; }
+    
+    const btn = document.getElementById('saveQuizTitleBtn');
+    btn.innerText = "⏳ Bekle...";
+
+    const { data, error } = await supabaseClient.from('quizzes').insert([{ title, time_limit: timeLimit }]).select();
+    
+    if (error) showToast("Hata!", "error");
+    else {
+        showToast("Sınav oluşturuldu! Hadi soru ekleyelim.", "success");
+        document.getElementById('quizNameModal').classList.add('hidden');
+        document.getElementById('quizTitleInput').value = '';
+        if(customTimeInput) customTimeInput.value = '';
+        fetchQuizzes(); 
+        openQuestionEditor(data[0].id, data[0].title);
+    }
+    btn.innerText = "Oluştur 🚀";
+});
+
 }
 
 window.openQuestionEditor = function(id, title) {
