@@ -552,7 +552,7 @@ async function fetchQuestionsForQuiz(quizId) {
 
     if (!data || data.length === 0) {
         if(countDisplay) countDisplay.innerText = "0";
-        listContainer.innerHTML = '<div class="text-center py-20 text-gray-300 font-bold italic">Henüz hiç soru eklenmemiş kanka. Sol taraftan başla!</div>';
+        listContainer.innerHTML = '<div class="text-center py-20 text-gray-300 font-bold italic">Henüz hiç soru eklenmemiş.</div>';
         return;
     }
 
@@ -758,7 +758,7 @@ window.openStudentProfile = async function(id, name) {
     
     const today = new Date().toLocaleDateString('tr-TR');
     document.getElementById('pdfDate').innerText = today;
-    document.getElementById('lessonDate').value = new Date().toISOString().split('T')[0]; // Bugünü otomatik seçer
+    document.getElementById('lessonDate').value = new Date().toISOString().split('T')[0]; 
 
     document.getElementById('studentProfileModal').classList.remove('hidden');
     fetchStudentLessons(id);
@@ -788,12 +788,13 @@ if(newLessonForm) {
     });
 }
 
-let profileChartInstance = null; // Grafikleri hafızada tutmak için
+let profileChartInstance = null;
 let pdfChartInstance = null;
 
 async function fetchStudentLessons(studentId) {
-    // 1. DERSLERİ ÇEK VE YAZDIR
+    // 1. DERSLERİ ÇEK
     const { data: lessons } = await supabaseClient.from('private_lessons').select('*').eq('student_id', studentId).order('lesson_date', { ascending: false });
+    
     const list = document.getElementById('lessonList');
     const pdfList = document.getElementById('pdfLessonList');
     if(!list || !pdfList) return;
@@ -831,13 +832,11 @@ async function fetchStudentLessons(studentId) {
     }
 
     // 2. SINAVLARI ÇEK VE GRAFİĞİ ÇİZ
-    // Grafiğin soldan sağa kronolojik akması için ascending: true yaptık
     const { data: results } = await supabaseClient.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: true });
     
     const pdfQuizList = document.getElementById('pdfQuizList');
     if(pdfQuizList) pdfQuizList.innerHTML = '';
 
-    // Grafik verilerini hazırla
     let labels = [];
     let scores = [];
 
@@ -856,12 +855,11 @@ async function fetchStudentLessons(studentId) {
                     <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-2">
                         <span class="text-sm font-bold text-gray-700">${r.quizzes.title}</span>
                         <span class="text-sm font-black ${color}">${r.score} Puan</span>
-                    </div>` + pdfQuizList.innerHTML; // En yeniyi en üste at
+                    </div>` + pdfQuizList.innerHTML; 
             }
         });
     }
 
-    // GRAFİK AYARLARI (JİLET GİBİ LÜKS TASARIM)
     const chartConfig = (isPdf) => ({
         type: 'line',
         data: {
@@ -869,10 +867,10 @@ async function fetchStudentLessons(studentId) {
             datasets: [{
                 label: 'Sınav Puanı',
                 data: scores,
-                borderColor: '#4f46e5', // indigo-600
-                backgroundColor: 'rgba(79, 70, 229, 0.1)', // İçi hafif saydam dolu
+                borderColor: '#4f46e5',
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
                 borderWidth: 3,
-                tension: 0.4, // Çizgiyi yumuşatır (Apple tarzı)
+                tension: 0.4,
                 fill: true,
                 pointBackgroundColor: '#fff',
                 pointBorderColor: '#4f46e5',
@@ -884,46 +882,23 @@ async function fetchStudentLessons(studentId) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: isPdf ? false : { duration: 1000 }, // PDF'te animasyon kapalı olmalı!
+            animation: isPdf ? false : { duration: 1000 },
             scales: {
                 y: { beginAtZero: true, max: 100, ticks: { stepSize: 20, font: { weight: 'bold' } }, grid: { borderDash: [5, 5] } },
                 x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
             },
-            plugins: { legend: { display: false } } // Üstteki gereksiz yazıyı gizle
+            plugins: { legend: { display: false } }
         }
     });
 
-    // Eski grafikleri temizle (Üst üste binmemesi için)
     if(profileChartInstance) profileChartInstance.destroy();
     if(pdfChartInstance) pdfChartInstance.destroy();
 
-    // Yeni grafikleri çizdir
-    const ctxProf = document.getElementById('profileChart').getContext('2d');
-    profileChartInstance = new Chart(ctxProf, chartConfig(false));
-
-    const ctxPdf = document.getElementById('pdfChart').getContext('2d');
-    pdfChartInstance = new Chart(ctxPdf, chartConfig(true));
-}
-
-
-    // PDF İçin Sınav Sonuçları
-    const { data: results } = await supabaseClient.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: false }).limit(5);
-    const pdfQuizList = document.getElementById('pdfQuizList');
-    if(pdfQuizList) {
-        pdfQuizList.innerHTML = '';
-        if (!results || results.length === 0) {
-            pdfQuizList.innerHTML = '<p class="text-gray-500 italic">Öğrenci henüz sınava girmemiştir.</p>';
-        } else {
-            results.forEach(r => {
-                let color = r.score >= 80 ? 'text-green-600' : (r.score >= 50 ? 'text-yellow-600' : 'text-red-600');
-                pdfQuizList.innerHTML += `
-                    <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-2">
-                        <span class="text-sm font-bold text-gray-700">${r.quizzes.title}</span>
-                        <span class="text-sm font-black ${color}">${r.score} Puan</span>
-                    </div>`;
-            });
-        }
-    }
+    const ctxProf = document.getElementById('profileChart');
+    const ctxPdf = document.getElementById('pdfChart');
+    
+    if(ctxProf) profileChartInstance = new Chart(ctxProf.getContext('2d'), chartConfig(false));
+    if(ctxPdf) pdfChartInstance = new Chart(ctxPdf.getContext('2d'), chartConfig(true));
 }
 
 window.deleteLesson = async function(id) {
@@ -947,12 +922,12 @@ window.generatePDF = function() {
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
 
-    element.parentElement.classList.remove('hidden'); // PDF motoru görsün diye anlık açıyoruz
+    element.parentElement.classList.remove('hidden'); 
     html2pdf().set(opt).from(element).save().then(() => {
-        element.parentElement.classList.add('hidden'); // İşi bitince geri gizliyoruz
+        element.parentElement.classList.add('hidden'); 
         showToast("PDF Başarıyla İndirildi!", "success");
     });
 }
 
-// BAŞLANGIÇ (EN SONDA ÇALIŞMALI)
+// BAŞLANGIÇ ÇALIŞTIRMALARI
 switchTab('dashboard');
