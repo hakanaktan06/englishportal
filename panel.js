@@ -5,6 +5,15 @@ const supabaseUrl = 'https://vucpxabicxqfmmmqvkpv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1Y3B4YWJpY3hxZm1tbXF2a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDIwMDYsImV4cCI6MjA4ODkxODAwNn0.wYXmIDO4H7ml8nC9pQzRmW8tPK_ihtqFy3r4SqN3cTk';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+// ÇIKIŞ MOTORU
+document.addEventListener('click', async (e) => {
+    if (e.target.closest('#logoutBtn')) {
+        const { error } = await supabaseClient.auth.signOut();
+        if (!error) window.location.href = 'index.html';
+        else alert("Çıkış yapılırken hata oluştu!");
+    }
+});
+
 
 // ==========================================
 // YENİ: MOBİL HAMBURGER MENÜ MOTORU
