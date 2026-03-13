@@ -40,6 +40,8 @@ function customConfirm(message) {
         const btnOk = document.getElementById('customConfirmOk');
         const btnCancel = document.getElementById('customConfirmCancel');
 
+        if(!modal) { resolve(confirm(message)); return; }
+
         document.getElementById('customConfirmMessage').innerText = message;
         
         modal.classList.remove('hidden');
@@ -57,41 +59,18 @@ function customConfirm(message) {
     });
 }
 
-
 // ==========================================
 // ÇIKIŞ MOTORU (SAĞ ÜSTTEKİ BUTON)
 // ==========================================
 document.addEventListener('click', async (e) => {
     if (e.target.closest('#studentLogoutBtn')) {
+        const onay = await customConfirm("Oturumunu kapatmak istediğine emin misin?");
+        if(!onay) return;
         const { error } = await supabaseClient.auth.signOut();
         if (!error) window.location.href = 'index.html';
-        else alert("Çıkış yapılamadı!");
+        else showToast("Çıkış yapılamadı!", "error");
     }
 });
-
-// ==========================================
-// UI ULTRA: TOAST BİLDİRİM MOTORU
-// ==========================================
-function showToast(message, type = 'success') {
-    const container = document.getElementById('toast-container');
-    if(!container) return;
-    const toast = document.createElement('div');
-    
-    const bgColor = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-blue-600');
-    const icon = type === 'success' ? '✅' : (type === 'error' ? '⚠️' : 'ℹ️');
-
-    toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg shadow-${bgColor}/30 font-medium text-xs flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
-    toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
-    
-    container.appendChild(toast);
-    
-    setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 10);
-    
-    setTimeout(() => {
-        toast.classList.add('translate-y-10', 'opacity-0');
-        setTimeout(() => toast.remove(), 300); 
-    }, 3000);
-}
 
 
 // ==========================================
@@ -367,8 +346,9 @@ if(quizFormEl) {
     });
 }
 
-window.closeQuizModal = function() {
-    if(confirm("Sınavdan çıkarsan verilerin kaydedilmez. Emin misin?")) { document.getElementById('quizTakingModal').classList.add('hidden'); }
+window.closeQuizModal = async function() {
+    const onay = await customConfirm("Sınavdan çıkarsan verilerin kaydedilmez. Emin misin?");
+    if(onay) { document.getElementById('quizTakingModal').classList.add('hidden'); }
 }
 
 function renderAnalysisScreen(details, score) {
