@@ -2,6 +2,10 @@
 body {
     background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* MOBIL SCROLL FIX BAŞLANGIÇ */
+    overscroll-behavior-y: none; /* iOS'taki aşağı çekip yenileme / zıplama efektini kapatır */
+    touch-action: pan-y; /* Sadece dikey kaydırmaya izin verir */
+    /* MOBIL SCROLL FIX BİTİŞ */
 }
 
 /* Profesyonel Cam Efekti (Apple tarzı) */
