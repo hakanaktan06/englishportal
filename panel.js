@@ -6,34 +6,6 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 // ==========================================
-// GÜVENLİK (FEDAİ) MOTORU - PANEL KORUMASI
-// ==========================================
-async function checkTeacherSecurity() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) { window.location.href = 'index.html'; return; } 
-    
-    const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
-    if (!profile || profile.role !== 'teacher') {
-        showToast("Erişim Engellendi! Yönetici yetkiniz yok.", "error");
-        setTimeout(() => { window.location.href = 'student.html'; }, 1500); 
-        return;
-    }
-
-    // GÜVENLİK GEÇİLDİĞİNDE SPLASH EKRANINI KALDIR! (GARANTİLİ)
-    setTimeout(() => {
-        const splash = document.getElementById('splashScreen');
-        if(splash) {
-            splash.classList.add('opacity-0');
-            setTimeout(() => splash.classList.add('hidden'), 700);
-        }
-    }, 400);
-}
-checkTeacherSecurity(); 
-
-
-
-
-// ==========================================
 // UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
 // ==========================================
 function showToast(message, type = 'success') {
@@ -63,7 +35,6 @@ function customConfirm(message, btnText = "Evet, Sil") {
 
         if(!modal) { resolve(confirm(message)); return; }
 
-        // Metni VE buton yazısını dinamik yapıyoruz!
         document.getElementById('customConfirmMessage').innerText = message;
         btnOk.innerText = btnText; 
         
@@ -82,24 +53,51 @@ function customConfirm(message, btnText = "Evet, Sil") {
     });
 }
 
+// ==========================================
+// GÜVENLİK (FEDAİ) MOTORU VE SPLASH KAPATMA
+// ==========================================
+async function checkTeacherSecurity() {
+    try {
+        const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+        if (authError || !user) { window.location.href = 'index.html'; return; } 
+        
+        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
+        if (profileError || !profile || profile.role !== 'teacher') {
+            showToast("Erişim Engellendi! Yönetici yetkiniz yok.", "error");
+            setTimeout(() => { window.location.href = 'student.html'; }, 1500); 
+            return;
+        }
 
-// ÇIKIŞ MOTORU (SAĞ ÜSTTEKİ BUTON)
+        // GÜVENLİK GEÇİLDİĞİNDE SPLASH EKRANINI KALDIR! (GARANTİLİ)
+        setTimeout(() => {
+            const splash = document.getElementById('splashScreen');
+            if(splash) {
+                splash.classList.add('opacity-0');
+                setTimeout(() => splash.classList.add('hidden'), 700);
+            }
+        }, 400);
+    } catch (err) {
+        console.error(err);
+        window.location.href = 'index.html';
+    }
+}
+checkTeacherSecurity(); 
+
+// ==========================================
+// ÇIKIŞ MOTORU
+// ==========================================
 document.addEventListener('click', async (e) => {
     if (e.target.closest('#logoutBtn')) {
         const onay = await customConfirm("Yönetim panelinden çıkmak istediğinize emin misiniz?", "Evet, Çıkış Yap");
         if(!onay) return;
-        
         const { error } = await supabaseClient.auth.signOut();
         if (!error) window.location.href = 'index.html';
         else showToast("Çıkış yapılamadı!", "error");
     }
 });
 
-
-
-
 // ==========================================
-// YENİ: MOBİL HAMBURGER MENÜ MOTORU
+// MOBİL HAMBURGER MENÜ MOTORU
 // ==========================================
 const sidebarMain = document.getElementById('mainSidebar');
 const sideOverlay = document.getElementById('sidebarOverlay');
@@ -241,7 +239,7 @@ if(studentFormEl) {
         
         const submitBtn = studentFormEl.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerText;
-        submitBtn.innerText = "⏳ Sisteme Kaydediliyor...";
+        submitBtn.innerText = "⏳ Kaydediliyor...";
 
         const name = document.getElementById('studentName').value;
         const email = document.getElementById('studentEmail').value;
@@ -263,7 +261,7 @@ if(studentFormEl) {
             if (profileError) {
                 showToast("Profile eklenirken hata: " + profileError.message, "error");
             } else {
-                showToast("Şov! Öğrenci başarıyla eklendi.", "success");
+                showToast("Öğrenci başarıyla eklendi.", "success");
                 if(studentModalEl) studentModalEl.classList.add('hidden'); 
                 studentFormEl.reset(); 
                 fetchStudents();
@@ -303,7 +301,7 @@ async function fetchStudents() {
     if(totalStudents) totalStudents.innerText = data.length;
     if(tbody) tbody.innerHTML = ''; 
 
-        data.forEach(student => {
+    data.forEach(student => {
         const tr = document.createElement('tr');
         tr.className = "border-b border-gray-100 hover:bg-indigo-50/20 transition";
         const dateObj = new Date(student.created_at);
@@ -329,7 +327,7 @@ async function fetchStudents() {
         `;
         if(tbody) tbody.appendChild(tr);
     });
-
+}
 
 
 // ==========================================
@@ -515,7 +513,7 @@ if (quizSaveBtnEl) {
         const qTimeInput = document.getElementById('quizTimeInput');
         
         const title = qTitleInput ? qTitleInput.value : '';
-        const timeLimit = qTimeInput && qTimeInput.value ? parseInt(qTimeInput.value) : 0; // 0 = Süresiz
+        const timeLimit = qTimeInput && qTimeInput.value ? parseInt(qTimeInput.value) : 0;
 
         if (!title) { showToast("Lütfen sınav ismini yaz!", "error"); return; }
 
@@ -533,7 +531,6 @@ if (quizSaveBtnEl) {
         }
     });
 }
-
 
 window.openQuestionEditor = function(id, title) {
     currentActiveQuizId = id;
@@ -752,16 +749,8 @@ window.closeTeacherAnalysisModal = function() {
 }
 
 // ==========================================
-// 8. BAŞLANGIÇ ÇALIŞTIRMALARI
-// ==========================================
-switchTab('dashboard');
-
-
-
-// ==========================================
 // 9. VIP ÖĞRENCİ PROFİLİ VE PDF KARNE MOTORU
 // ==========================================
-
 window.openStudentProfile = async function(id, name) {
     document.getElementById('profStudentId').value = id;
     document.getElementById('profileStudentName').innerText = name;
@@ -781,8 +770,8 @@ if(newLessonForm) {
         e.preventDefault();
         const studentId = document.getElementById('profStudentId').value;
         const lDate = document.getElementById('lessonDate').value;
-        const lTime = document.getElementById('lessonTime').value; // Saat 
-        const lDuration = document.getElementById('lessonDuration').value; // Süre
+        const lTime = document.getElementById('lessonTime').value;
+        const lDuration = document.getElementById('lessonDuration').value;
         const lTopic = document.getElementById('lessonTopic').value;
 
         const { error } = await supabaseClient.from('private_lessons').insert([{
@@ -888,3 +877,5 @@ window.generatePDF = function() {
     });
 }
 
+// BAŞLANGIÇ (EN SONDA ÇALIŞMALI)
+switchTab('dashboard');
