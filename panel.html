@@ -25,26 +25,33 @@
             <span class="text-xl md:text-2xl font-bold tracking-wider">English Portal</span>
             <button id="closeSidebarBtn" class="md:hidden text-indigo-300 hover:text-white text-3xl leading-none">&times;</button>
         </div>
-        <nav class="flex-1 overflow-y-auto p-2 md:p-4 space-y-2 mt-4" id="sidebarMenu" style="-webkit-overflow-scrolling: touch;">
+                <nav class="flex-1 overflow-y-auto p-2 md:p-4 space-y-2 mt-4" id="sidebarMenu" style="-webkit-overflow-scrolling: touch;">
             <a href="#" id="btn-dashboard" class="menu-btn active-menu flex items-center p-3 bg-indigo-800 rounded-xl transition shadow-inner">
-                <span class="text-xl">📈</span><span class="ml-3 font-medium">Kokpit</span>
+                <svg class="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                <span class="ml-3 font-medium">Kokpit</span>
             </a>
-            <a href="#" id="btn-students" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition">
-                <span class="text-xl">👥</span><span class="ml-3 font-medium">Öğrenciler</span>
+            <a href="#" id="btn-students" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
+                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Öğrenciler</span>
             </a>
-            <a href="#" id="btn-homeworks" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition">
-                <span class="text-xl">📚</span><span class="ml-3 font-medium">Ödevler</span>
+            <a href="#" id="btn-homeworks" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
+                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Ödevler</span>
             </a>
-            <a href="#" id="btn-activities" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition">
-                <span class="text-xl">🎡</span><span class="ml-3 font-medium">Etkinlikler</span>
+            <a href="#" id="btn-activities" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
+                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Etkinlikler</span>
             </a>
-            <a href="#" id="btn-quizzes" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition">
-                <span class="text-xl">📝</span><span class="ml-3 font-medium">Sınavlar</span>
+            <a href="#" id="btn-quizzes" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
+                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Sınavlar</span>
             </a>
-            <a href="#" id="btn-results" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition">
-                <span class="text-xl">📊</span><span class="ml-3 font-medium">Sonuçlar</span>
+            <a href="#" id="btn-results" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
+                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Sonuçlar</span>
             </a>
         </nav>
+
     </aside>
 
     <main class="flex-1 flex flex-col h-[100dvh] overflow-y-auto overflow-x-hidden relative w-full" style="-webkit-overflow-scrolling: touch;">
