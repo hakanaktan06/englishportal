@@ -745,16 +745,6 @@ window.closeTeacherAnalysisModal = function() {
 // ==========================================
 switchTab('dashboard');
 
-// SPLASH EKRANINI KAPATMA
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        const splash = document.getElementById('splashScreen');
-        if(splash) {
-            splash.classList.add('opacity-0');
-            setTimeout(() => splash.classList.add('hidden'), 700);
-        }
-    }, 800); // 0.8 saniye şık bir bekleme süresi
-});
 
 
 // ==========================================
