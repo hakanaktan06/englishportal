@@ -87,12 +87,21 @@ async function initStudentPortal() {
 
     const { data: profile } = await supabaseClient.from('profiles').select('full_name').eq('id', currentStudentId).single();
     if (profile) { 
+        // Sağ üstteki küçük isim
         const nameEl = document.getElementById('studentNameDisplay');
         if(nameEl) nameEl.innerText = profile.full_name; 
+        
+        // YENİ: Ana ekrandaki büyük karşılama ismi (Sadece ilk adını alır)
+        const welcomeEl = document.getElementById('welcomeStudentName');
+        if(welcomeEl) {
+            const firstName = profile.full_name.split(' ')[0]; 
+            welcomeEl.innerText = firstName;
+        }
     }
 
     switchTab('homeworks');
 }
+
 
 // ==========================================
 // 3. SEKMELER ARASI GEÇİŞ
