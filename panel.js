@@ -1133,3 +1133,46 @@ window.copyParentLink = function() {
 
 // BAŞLANGIÇ ÇALIŞTIRMALARI
 switchTab('dashboard');
+
+// ==========================================
+// 10. GÜNÜN MOTİVATÖRÜ VE SÖZÜ MOTORU
+// ==========================================
+function setDynamicMotivations() {
+    // Gülbahar Hoca'ya özel değişen alt mesajlar
+    const welcomeMsgs = [
+        "Bugün yeni başarı hikayeleri yazmak ve geleceği şekillendirmek için harika bir gün. İyi çalışmalar dileriz!",
+        "Öğrencilerinizin hayatında bıraktığınız iz, geleceği aydınlatıyor. Harika bir ders günü olsun!",
+        "Bilgi paylaştıkça çoğalır. Bugünün size ve öğrencilerinize yeni ilhamlar getirmesini dileriz.",
+        "Her yeni gün, bir öğrencinin hayatına dokunmak için yepyeni bir fırsattır. Kolay gelsin!",
+        "Sizin rehberliğinizde büyüyen zihinler, yarının umudu. Keyifli ve verimli bir gün geçirmeniz dileğiyle!",
+        "İngilizce bir dil değil, dünyaya açılan bir kapıdır. O kapının en iyi anahtarı sizsiniz!"
+    ];
+
+    // Eğitim ve motivasyon konulu rastgele sözler
+    const quotes = [
+        { q: '"Bir öğretmenin etkisi sonsuzdur; nerede duracağını kimse bilemez."', a: "- Henry Adams" },
+        { q: '"Eğitim, dünyayı değiştirmek için kullanabileceğiniz en güçlü silahtır."', a: "- Nelson Mandela" },
+        { q: '"Bana söylersen unuturum, öğretirsen hatırlarım, beni dahil edersen öğrenirim."', a: "- Benjamin Franklin" },
+        { q: '"İyi bir öğretmen, umudu ateşleyebilir, hayal gücünü tutuşturabilir ve öğrenme sevgisini aşılayabilir."', a: "- Brad Henry" },
+        { q: '"Öğretmenlik, tüm diğer meslekleri yaratan tek meslektir."', a: "- Eğitim Özdeyişi" },
+        { q: '"Yaratıcılık, bulaşıcıdır. Onu öğrencilerinize bulaştırın."', a: "- Albert Einstein" },
+        { q: '"Eğitimin kökleri acı, fakat meyveleri tatlıdır."', a: "- Aristoteles" }
+    ];
+
+    // Rastgele seçici
+    const randomMsg = welcomeMsgs[Math.floor(Math.random() * welcomeMsgs.length)];
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+
+    const msgEl = document.getElementById('dynamicWelcomeMsg');
+    const quoteTextEl = document.getElementById('dynamicQuoteText');
+    const quoteAuthEl = document.getElementById('dynamicQuoteAuthor');
+
+    // Ekrana şık bir şekilde yazdır
+    if(msgEl) msgEl.innerText = randomMsg;
+    if(quoteTextEl) quoteTextEl.innerText = randomQuote.q;
+    if(quoteAuthEl) quoteAuthEl.innerText = randomQuote.a;
+}
+
+// Sayfa her açıldığında/yenilendiğinde motoru çalıştır
+setDynamicMotivations();
+
