@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Portal - Öğretmen Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden text-gray-800 relative">
+
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <aside id="mainSidebar" class="w-64 bg-indigo-900 text-white flex flex-col transition-transform duration-300 shadow-2xl z-40 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0">
+        <div class="p-4 md:p-6 flex justify-between items-center border-b border-indigo-800">
+            <span class="text-xl md:text-2xl font-bold tracking-wider">English Portal</span>
+            <button id="closeSidebarBtn" class="md:hidden text-indigo-300 hover:text-white text-3xl leading-none">&times;</button>
+        </div>
+        <nav class="flex-1 p-2 md:p-4 space-y-2 mt-4" id="sidebarMenu">
+            <a href="#" id="btn-dashboard" class="menu-btn active-menu flex items-center p-3 bg-indigo-800 rounded-xl transition shadow-inner">
+                <span class="text-xl">📈</span><span class="ml-3 font-medium">Kokpit</span>
+            </a>
+            <a href="#" id="btn-students" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition">
+                <span class="text-xl">👥</span><span class="ml-3 font-medium">Öğrenciler</span>
+            </a>
+            <a href="#" id="btn-homeworks" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition">
+                <span class="text-xl">📚</span><span class="ml-3 font-medium">Ödevler</span>
+            </a>
+            <a href="#" id="btn-activities" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition">
+                <span class="text-xl">🎡</span><span class="ml-3 font-medium">Etkinlikler</span>
+            </a>
+            <a href="#" id="btn-quizzes" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition">
+                <span class="text-xl">📝</span><span class="ml-3 font-medium">Sınavlar</span>
+            </a>
+            <a href="#" id="btn-results" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition">
+                <span class="text-xl">📊</span><span class="ml-3 font-medium">Sonuçlar</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-indigo-800">
+            <button class="w-full flex items-center justify-start p-2 hover:bg-indigo-800 rounded-xl text-red-300 transition">
+                <span class="text-xl">🚪</span><span class="ml-3">Çıkış Yap</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto relative w-full">
+        
+        <div class="md:hidden bg-indigo-900 text-white p-4 flex justify-between items-center shadow-md sticky top-0 z-20">
+            <span class="text-lg font-black tracking-wider">English Portal</span>
+            <button id="openSidebarBtn" class="text-white focus:outline-none">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+
+        <div id="section-dashboard" class="page-section w-full">
+            <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-gray-800">Sistem Kokpiti</h2>
+                    <p class="text-sm text-gray-500 mt-1 uppercase font-bold tracking-widest">Genel Durum Özeti</p>
+                </div>
+            </header>
+            <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-700 p-6 rounded-[30px] shadow-xl text-white relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 opacity-20 text-8xl">📈</div>
+                    <p class="text-blue-100 text-xs font-bold uppercase tracking-widest mb-2">Sınıf Ortalaması</p>
+                    <h3 class="text-5xl font-black" id="dashAvgScore">%0</h3>
+                </div>
+                <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 p-6 rounded-[30px] shadow-xl text-white relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 opacity-20 text-8xl">👥</div>
+                    <p class="text-indigo-100 text-xs font-bold uppercase tracking-widest mb-2">Kayıtlı Öğrenci</p>
+                    <h3 class="text-5xl font-black" id="dashStudentCount">0</h3>
+                </div>
+                <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 p-6 rounded-[30px] shadow-xl text-white relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 opacity-20 text-8xl">📚</div>
+                    <p class="text-emerald-100 text-xs font-bold uppercase tracking-widest mb-2">Verilen Ödevler</p>
+                    <h3 class="text-5xl font-black" id="dashHwCount">0</h3>
+                </div>
+                <div class="bg-gradient-to-br from-red-500 to-orange-500 p-6 rounded-[30px] shadow-xl text-white relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 opacity-20 text-8xl">📝</div>
+                    <p class="text-red-100 text-xs font-bold uppercase tracking-widest mb-2">Toplam Sınav</p>
+                    <h3 class="text-5xl font-black" id="dashQuizCount">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-students" class="page-section w-full hidden">
+            <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-gray-800">Öğrenci Yönetimi</h2>
+                </div>
+                <button id="addStudentBtn" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-bold shadow-lg transition">
+                    + Yeni Öğrenci
+                </button>
+            </header>
+            <div class="p-4 md:p-6 max-w-7xl mx-auto w-full">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-indigo-500 w-48 mb-6">
+                    <p class="text-gray-500 text-xs font-semibold uppercase">Kayıtlı Öğrenci</p>
+                    <p class="text-3xl font-black text-gray-800 mt-2" id="totalStudents">0</p>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-sm uppercase border-b border-gray-100">
+                                    <th class="p-4 font-semibold">Öğrenci Adı</th>
+                                    <th class="p-4 font-semibold">Hesap</th>
+                                    <th class="p-4 font-semibold">Eklenme Tarihi</th>
+                                    <th class="p-4 font-semibold text-right">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-homeworks" class="page-section w-full hidden">
+            <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-gray-800">Ödev Yönetimi</h2>
+                    <p class="text-sm text-gray-500 hidden md:block">Öğrencilere buradan yeni ödevler atayabilirsin.</p>
+                </div>
+            </header>
+            <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-1 bg-white rounded-3xl p-6 shadow-sm border border-gray-100 h-fit">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Yeni Ödev Oluştur</h3>
+                    <form id="newHomeworkForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Kime Verilecek?</label>
+                            <select id="hwStudentSelect" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+                                <option value="">Öğrenci Seçin...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Ödev Başlığı</label>
+                            <input type="text" id="hwTitle" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Örn: Unit 1 Vocabulary" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Açıklama / Görevler</label>
+                            <textarea id="hwDesc" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none resize-none" placeholder="Sayfa 12'deki etkinlikler yapılacak..." required></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Son Teslim Tarihi</label>
+                            <input type="date" id="hwDueDate" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-3 px-4 rounded-xl mt-4 shadow-lg transition">
+                            Ödevi Gönder
+                        </button>
+                    </form>
+                </div>
+                <div class="md:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Aktif Ödevler</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead>
+                                <tr class="bg-emerald-50 text-emerald-700 text-xs uppercase border-b border-emerald-100">
+                                    <th class="p-3 font-semibold rounded-tl-lg">Öğrenci</th>
+                                    <th class="p-3 font-semibold">Ödev Başlığı</th>
+                                    <th class="p-3 font-semibold">Son Teslim</th>
+                                    <th class="p-3 font-semibold text-center">Durum & Not</th>
+                                    <th class="p-3 font-semibold text-right rounded-tr-lg">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="homeworkList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-activities" class="page-section w-full hidden">
+            <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10">
+                <h2 class="text-xl md:text-2xl font-extrabold text-purple-600">Etkinlik Kütüphanesi</h2>
+            </header>
+            <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-1 bg-white rounded-3xl p-6 shadow-sm border border-gray-100 h-fit">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2 text-purple-700">Etkinlik Paylaş</h3>
+                    <form id="newActivityForm" class="space-y-4">
+                        <input type="text" id="actTitle" class="w-full p-3 rounded-xl border" placeholder="Etkinlik Adı" required>
+                        <select id="actCategory" class="w-full p-3 rounded-xl border bg-white">
+                            <option value="video">📺 Video</option>
+                            <option value="game">🎮 Oyun</option>
+                            <option value="pdf">📄 PDF/Dosya</option>
+                        </select>
+                        <input type="url" id="actLink" class="w-full p-3 rounded-xl border" placeholder="Link (https://...)" required>
+                        <button type="submit" class="w-full bg-purple-500 text-white font-bold py-3 rounded-xl shadow-lg">Kütüphaneye Ekle</button>
+                    </form>
+                </div>
+                <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4" id="activityCards"></div>
+            </div>
+        </div>
+
+        <div id="section-quizzes" class="page-section w-full hidden">
+            <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-red-600">Sınav & Test Merkezi</h2>
+                    <p class="text-sm text-gray-500">Sınavlarını oluştur ve sorularını yönet.</p>
+                </div>
+                <button id="addQuizBtn" class="bg-red-500 text-white px-5 py-3 rounded-xl font-bold shadow-lg hover:bg-red-600 transition">
+                    + Yeni Sınav Oluştur
+                </button>
+            </header>
+            <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="quizList"></div>
+        </div>
+
+        <div id="section-results" class="page-section w-full hidden">
+            <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-blue-600">Öğrenci Sınav Sonuçları</h2>
+                    <p class="text-sm text-gray-500">Öğrencilerin çözdüğü sınavları ve aldıkları puanları takip et.</p>
+                </div>
+            </header>
+            <div class="p-4 md:p-6 max-w-7xl mx-auto w-full">
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead>
+                                <tr class="bg-blue-50 text-blue-700 text-xs uppercase border-b border-blue-100">
+                                    <th class="p-4 font-semibold">Öğrenci Adı</th>
+                                    <th class="p-4 font-semibold">Çözdüğü Sınav</th>
+                                    <th class="p-4 font-semibold">Aldığı Puan</th>
+                                    <th class="p-4 font-semibold">Çözülme Tarihi</th>
+                                    <th class="p-4 font-semibold text-right">İşlem / Detay</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="addStudentModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Yeni Öğrenci Ekle</h3>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-red-500 text-3xl font-bold">&times;</button>
+            </div>
+            <form id="newStudentForm" class="space-y-4">
+                <div><label class="block text-sm font-bold text-gray-700 mb-1">Ad Soyad</label><input type="text" id="studentName" class="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none" required></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-1">E-posta</label><input type="email" id="studentEmail" class="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none" required></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-1">Şifre</label><input type="text" id="studentPassword" class="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none" required></div>
+                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-xl mt-4">Kaydet</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="quizNameModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl text-center">
+            <h3 class="text-2xl font-black text-gray-800 mb-4">Sınav Adı Belirle</h3>
+            <input type="text" id="quizTitleInput" class="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-red-400 outline-none mb-6 text-center text-lg" placeholder="Örn: 1. Dönem 1. Yazılı">
+            <div class="flex space-x-3">
+                <button id="saveQuizTitleBtn" class="flex-1 bg-red-500 text-white font-bold py-4 rounded-2xl shadow-lg">Sınavı Oluştur</button>
+                <button onclick="document.getElementById('quizNameModal').classList.add('hidden')" class="bg-gray-100 text-gray-500 px-6 rounded-2xl">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="questionModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto p-4">
+        <div class="bg-white rounded-[40px] w-full max-w-6xl h-[90vh] flex flex-col shadow-2xl overflow-hidden relative">
+            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
+                <div>
+                    <h3 id="currentQuizTitle" class="text-2xl font-black text-red-600 italic">Sınav Soruları</h3>
+                    <p class="text-xs text-indigo-500 font-bold uppercase tracking-widest mt-1">Soru Hazırlama & Takip Paneli</p>
+                </div>
+                <button onclick="document.getElementById('questionModal').classList.add('hidden')" class="text-4xl text-gray-300 hover:text-red-500 transition">&times;</button>
+            </div>
+            <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+                <div class="w-full md:w-1/2 p-8 border-r overflow-y-auto bg-white">
+                    <h4 class="font-black text-indigo-600 mb-6 uppercase text-sm tracking-tighter italic underline">YENİ SORU EKLE</h4>
+                    <form id="newQuestionForm" class="space-y-6">
+                        <div class="bg-gray-50 p-6 rounded-3xl">
+                            <label class="block text-xs font-black text-gray-400 uppercase mb-2 tracking-widest">Soru Cümlesi</label>
+                            <textarea id="qText" class="w-full p-4 rounded-2xl border-0 focus:ring-2 focus:ring-red-400 outline-none text-lg font-bold" rows="3" placeholder="Soru buraya yazılır..." required></textarea>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="bg-white p-4 border-2 border-gray-100 rounded-3xl"><label class="text-xs font-bold text-gray-400">ŞIK A</label><input type="text" id="optA" class="w-full p-2 outline-none font-bold" required></div>
+                            <div class="bg-white p-4 border-2 border-gray-100 rounded-3xl"><label class="text-xs font-bold text-gray-400">ŞIK B</label><input type="text" id="optB" class="w-full p-2 outline-none font-bold" required></div>
+                            <div class="bg-white p-4 border-2 border-gray-100 rounded-3xl"><label class="text-xs font-bold text-gray-400">ŞIK C</label><input type="text" id="optC" class="w-full p-2 outline-none font-bold" required></div>
+                            <div class="bg-white p-4 border-2 border-gray-100 rounded-3xl"><label class="text-xs font-bold text-gray-400">ŞIK D</label><input type="text" id="optD" class="w-full p-2 outline-none font-bold" required></div>
+                        </div>
+                        <div class="flex items-center justify-between bg-indigo-50 p-6 rounded-3xl border border-indigo-100">
+                            <span class="font-bold text-indigo-900">Doğru Cevap Hangisi?</span>
+                            <select id="correctOpt" class="bg-white p-3 rounded-xl font-black text-indigo-600 outline-none border-0 shadow-sm">
+                                <option value="A">A ŞIKKI</option><option value="B">B ŞIKKI</option><option value="C">C ŞIKKI</option><option value="D">D ŞIKKI</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 text-white font-black py-5 rounded-3xl text-xl shadow-xl hover:bg-indigo-700 transition transform hover:-translate-y-1">SORUYU KAYDET</button>
+                    </form>
+                </div>
+                <div class="w-full md:w-1/2 p-8 bg-gray-100 overflow-y-auto">
+                    <h4 class="font-black text-gray-400 mb-6 uppercase text-sm tracking-tighter flex justify-between items-center border-b pb-4 border-gray-200">
+                        SINAVDAKİ SORULAR <span id="questionCount" class="bg-indigo-600 text-white px-3 py-1 rounded-full text-lg">0</span>
+                    </h4>
+                    <div id="addedQuestionsList" class="space-y-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="teacherAnalysisModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-[40px] w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl overflow-hidden relative">
+            <header class="p-6 md:p-8 border-b border-gray-100 flex justify-between items-center bg-white relative z-10">
+                <div>
+                    <h3 class="text-2xl font-black text-gray-800" id="taStudentName">Öğrenci Adı</h3>
+                    <p class="text-sm text-blue-500 font-bold mt-1 uppercase tracking-widest" id="taQuizTitle">Sınav Adı</p>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="text-right">
+                        <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">ALINAN PUAN</div>
+                        <div class="text-4xl font-black text-blue-600" id="taScoreDisplay">100</div>
+                    </div>
+                    <button onclick="closeTeacherAnalysisModal()" class="text-4xl text-gray-300 hover:text-red-500 transition">&times;</button>
+                </div>
+            </header>
+            <div class="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50" id="taDetailsContainer"></div>
+        </div>
+    </div>
+
+    <div id="studentNoteModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl relative border border-gray-100">
+            <header class="p-5 border-b border-gray-100 flex justify-between items-center bg-yellow-50 rounded-t-2xl">
+                <h3 class="text-lg font-bold text-yellow-800 flex items-center gap-2"><span>🗣️</span> Öğrenci Notu</h3>
+                <button onclick="closeStudentNoteModal()" class="text-3xl text-yellow-600 hover:text-red-500 transition leading-none">&times;</button>
+            </header>
+            <div class="p-6 bg-white rounded-b-2xl max-h-[60vh] overflow-y-auto">
+                <p id="fullStudentNoteText" class="text-gray-700 text-sm font-medium leading-relaxed whitespace-pre-wrap italic"></p>
+            </div>
+            <div class="p-4 bg-gray-50 text-right rounded-b-2xl border-t border-gray-100">
+                <button onclick="closeStudentNoteModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg text-sm font-bold transition">Kapat</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="panel.js"></script>
+</body>
+</html>

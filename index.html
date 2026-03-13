@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Portal - Giriş</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 flex min-h-screen">
+
+    <div class="hidden lg:flex w-1/2 bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 text-white items-center justify-center p-12 relative overflow-hidden">
+        <div class="absolute w-[500px] h-[500px] bg-white opacity-5 rounded-full -top-20 -left-20 blur-3xl"></div>
+        <div class="absolute w-[300px] h-[300px] bg-purple-500 opacity-20 rounded-full bottom-10 right-10 blur-3xl"></div>
+        
+        <div class="relative z-10 max-w-xl">
+            <h1 class="text-5xl font-black mb-6 tracking-tight">English Portal'a<br><span class="text-indigo-300">Hoş Geldiniz.</span></h1>
+            <p class="text-lg text-indigo-100 font-medium leading-relaxed">
+                Öğretmenler için güçlü bir yönetim paneli, öğrenciler için eğlenceli ve interaktif bir öğrenme ve sınav merkezi. Lütfen hesabınıza giriş yapın.
+            </p>
+            <div class="mt-10 flex items-center space-x-4">
+                <span class="bg-indigo-800/50 px-4 py-2 rounded-xl text-sm font-bold backdrop-blur-sm border border-indigo-700/50">📚 Ödev Takibi</span>
+                <span class="bg-purple-800/50 px-4 py-2 rounded-xl text-sm font-bold backdrop-blur-sm border border-purple-700/50">📝 Sınav Merkezi</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 md:p-24">
+        <div class="w-full max-w-md bg-white p-8 md:p-10 rounded-[40px] shadow-2xl border border-gray-100">
+            
+            <div class="lg:hidden text-center mb-8">
+                <h2 class="text-3xl font-black text-indigo-900 tracking-tighter">English Portal</h2>
+            </div>
+
+            <div class="mb-10 text-center lg:text-left">
+                <h3 class="text-3xl font-black text-gray-800">Giriş Yap</h3>
+                <p class="text-gray-400 font-semibold mt-2 text-sm uppercase tracking-widest">E-Posta ve Şİfrenİzİ Gİrİn</p>
+            </div>
+
+            <form id="loginForm" class="space-y-6">
+                <div class="space-y-2">
+                    <label class="block text-sm font-bold text-gray-700">E-Posta Adresi</label>
+                    <input type="email" id="emailInput" class="w-full px-5 py-4 rounded-2xl border-2 border-gray-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition text-gray-800 font-medium" placeholder="ornek@email.com" required>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-bold text-gray-700">Şifre</label>
+                    <input type="password" id="passwordInput" class="w-full px-5 py-4 rounded-2xl border-2 border-gray-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition text-gray-800 font-medium" placeholder="••••••••" required>
+                </div>
+
+                <div id="errorBox" class="hidden bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold text-center border border-red-100">
+                    Kullanıcı adı veya şifre hatalı!
+                </div>
+
+                <button type="submit" id="loginBtn" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl text-lg shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition transform flex justify-center items-center mt-4">
+                    <span>SİSTEME GİRİŞ YAP</span>
+                </button>
+            </form>
+
+            <div class="mt-8 text-center border-t pt-6">
+                <p class="text-xs text-gray-400 font-medium">Sisteme kayıtlı değilseniz, lütfen öğretmeninizle iletişime geçin.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>
