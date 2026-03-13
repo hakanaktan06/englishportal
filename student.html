@@ -7,7 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-50 flex h-screen overflow-hidden text-gray-800 font-sans">
+<body class="bg-gray-50 flex h-screen overflow-hidden text-gray-800 relative">
+
 
     <aside class="w-20 md:w-64 bg-gradient-to-b from-blue-700 to-indigo-800 text-white flex flex-col shadow-xl z-20 transition-all">
         <div class="p-5 text-center md:text-left border-b border-white/10">
@@ -31,7 +32,8 @@
         
     </aside>
 
-    <main class="flex-1 flex flex-col h-screen overflow-y-auto relative">
+    <main class="flex-1 h-full overflow-y-auto overflow-x-hidden relative">
+
         <header class="bg-white/90 backdrop-blur-md border-b border-slate-100 p-4 flex justify-between items-center sticky top-0 z-30">
     <div class="flex items-center">
         <button id="openSidebarBtn" class="md:hidden text-indigo-600 mr-3 focus:outline-none">
