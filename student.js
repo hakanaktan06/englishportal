@@ -210,13 +210,21 @@ if(hwSubmitForm) {
 
         const { error } = await supabaseClient.from('homeworks').update({ status: 'Tamamlandı', student_note: note }).eq('id', hwId);
 
-        if (error) showToast("Hata: " + error.message, "error");
+                if (error) showToast("Hata: " + error.message, "error");
         else {
-            showToast("Harikasın! Ödevin başarıyla teslim edildi.", "success");
+            // YENİ: Ödev teslim edilince veritabanındaki XP'yi 50 artır
+            const { data: prof } = await supabaseClient.from('profiles').select('xp').eq('id', currentStudentId).single();
+            const newXp = (prof.xp || 0) + 50;
+            await supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentStudentId);
+
+            showToast("🌟 Harikasın! Ödevin teslim edildi ve +50 XP kazandın!", "success");
+            
             closeHomeworkModal();
             fetchMyHomeworks(); 
+            initStudentPortal(); // XP rozetinin güncellenmesi için sayfayı tazele
         }
         btn.innerText = "BİTİRDİM, GÖNDER";
+
     });
 }
 
