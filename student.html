@@ -80,13 +80,20 @@
     </main>
 
     <div id="quizTakingModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex flex-col overflow-hidden backdrop-blur-sm">
-        <header class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md shrink-0">
+                <header class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md shrink-0">
             <div>
                 <h3 id="takingQuizTitle" class="text-lg font-bold text-cyan-400">Sınav</h3>
                 <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Dikkatlice okuyun.</p>
             </div>
-            <button onclick="closeQuizModal()" class="text-gray-300 hover:text-white hover:bg-red-500 px-4 py-2 rounded-lg text-sm font-bold transition">Sınavdan Çık</button>
+            <div class="flex items-center gap-4">
+                <div id="quizTimerContainer" class="hidden bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                    <span class="text-red-400 animate-pulse text-lg leading-none">⏱</span>
+                    <span id="quizTimerDisplay" class="font-mono font-black text-red-400 text-lg tracking-widest">00:00</span>
+                </div>
+                <button onclick="closeQuizModal()" class="text-gray-300 hover:text-white hover:bg-red-500 px-4 py-2 rounded-lg text-sm font-bold transition">Sınavdan Çık</button>
+            </div>
         </header>
+
         <div class="flex-1 overflow-y-auto p-4 bg-slate-100/50 flex justify-center" style="-webkit-overflow-scrolling: touch;">
             <div class="w-full max-w-3xl bg-white p-6 md:p-8 rounded-2xl shadow-xl h-fit my-4">
                 <form id="quizForm" class="space-y-8">
