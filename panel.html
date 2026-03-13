@@ -384,18 +384,32 @@
                 <div class="w-full md:w-1/3 space-y-6">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                         <h4 class="font-black text-indigo-900 mb-4 text-sm uppercase">🎓 Yeni Ders Kaydı Gir</h4>
-                        <form id="newLessonForm" class="space-y-3">
+                                                <form id="newLessonForm" class="space-y-3">
                             <input type="hidden" id="profStudentId">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-400 mb-1">Ders Tarihi</label>
-                                <input type="date" id="lessonDate" class="w-full p-3 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm font-bold" required>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 mb-1">Tarih</label>
+                                    <input type="date" id="lessonDate" class="w-full p-3 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm font-bold" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 mb-1">Saat</label>
+                                    <input type="time" id="lessonTime" class="w-full p-3 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm font-bold" required>
+                                </div>
                             </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 mb-1">Ders Süresi (Kaç Saat?)</label>
+                                <input type="number" step="0.5" id="lessonDuration" class="w-full p-3 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm font-bold" placeholder="Örn: 1.5 veya 2" required>
+                            </div>
+
                             <div>
                                 <label class="block text-xs font-bold text-gray-400 mb-1">İşlenen Konu / Notlar</label>
                                 <textarea id="lessonTopic" rows="3" class="w-full p-3 rounded-xl border bg-gray-50 focus:bg-white outline-none text-sm resize-none" placeholder="Örn: Present Simple Tense işlendi..." required></textarea>
                             </div>
-                            <button type="submit" class="w-full bg-indigo-100 hover:bg-indigo-600 text-indigo-700 hover:text-white font-bold py-3 rounded-xl transition text-sm">DERSİ KAYDET</button>
+                            <button type="submit" class="w-full bg-indigo-100 hover:bg-indigo-600 text-indigo-700 hover:text-white font-bold py-3 rounded-xl transition text-sm tracking-wider mt-2">DERSİ KAYDET</button>
                         </form>
+
                     </div>
                 </div>
 
