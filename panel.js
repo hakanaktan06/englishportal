@@ -811,32 +811,60 @@ async function fetchStudentLessons(studentId) {
     if (!lessons || lessons.length === 0) {
         list.innerHTML = '<p class="text-gray-400 text-sm italic p-4 text-center">Henüz seans kaydı girilmemiş.</p>';
         pdfList.innerHTML = '<p class="text-gray-500 italic">Bu dönem kayıtlı seans bulunmamaktadır.</p>';
-    } else {
+        } else {
+        let totalUnpaid = 0; // Toplam Borç Sayacı
+
         lessons.forEach(l => {
             const date = new Date(l.lesson_date).toLocaleDateString('tr-TR');
             const time = l.lesson_time ? l.lesson_time : '';
             const duration = l.duration_hours ? `${l.duration_hours} Saat` : '';
             
+            // BORÇ HESABI
+            if (!l.is_paid) totalUnpaid += Number(l.price || 0);
+
+            // Ödeme rozeti ve butonu
+            const payBadge = l.is_paid 
+                ? `<span class="text-[10px] font-black bg-green-50 border border-green-200 text-green-700 px-2 py-1 rounded-md">🟢 ÖDENDİ</span>`
+                : `<button onclick="markAsPaid('${l.id}', '${studentId}')" class="text-[10px] font-black bg-red-50 hover:bg-red-500 hover:text-white border border-red-200 text-red-600 px-2 py-1 rounded-md transition shadow-sm">🔴 ÖDENMEDİ (Tahsil Et)</button>`;
+
+            const priceText = l.price ? `<span class="text-[10px] font-black bg-slate-100 border border-slate-200 text-slate-700 px-2 py-1 rounded-md">₺${l.price}</span>` : '';
+
+            // Ekranda Görünen Havalı Kart Tasarımı
             list.innerHTML += `
-                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-start hover:border-indigo-200 transition">
-                    <div class="flex-1">
+                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col hover:border-indigo-200 transition">
+                    <div class="flex justify-between items-start">
                         <div class="flex flex-wrap gap-2 mb-2">
                             <span class="text-[10px] font-black bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-1 rounded-md">📅 ${date}</span>
                             ${time ? `<span class="text-[10px] font-black bg-purple-50 border border-purple-100 text-purple-700 px-2 py-1 rounded-md">⏰ ${time}</span>` : ''}
                             ${duration ? `<span class="text-[10px] font-black bg-orange-50 border border-orange-100 text-orange-700 px-2 py-1 rounded-md">⏳ ${duration}</span>` : ''}
+                            ${priceText}
                         </div>
-                        <p class="text-sm font-bold text-gray-700 mt-1 leading-snug">${l.topic}</p>
+                        <button onclick="deleteLesson('${l.id}')" class="text-gray-300 hover:text-red-500 transition text-xl leading-none ml-3" title="Kaydı Sil">&times;</button>
                     </div>
-                    <button onclick="deleteLesson('${l.id}')" class="text-gray-300 hover:text-red-500 transition text-2xl leading-none ml-3" title="Kaydı Sil">&times;</button>
+                    <p class="text-sm font-bold text-gray-700 mt-1 leading-snug">${l.topic}</p>
+                    <div class="mt-3 border-t border-gray-50 pt-2 flex justify-between items-center">
+                        ${payBadge}
+                    </div>
                 </div>`;
             
+            // PDF İçindeki Profesyonel Rapor Tasarımı (Ödeme durumu PDF'e gitmez, şık dursun)
             pdfList.innerHTML += `
                 <div class="mb-4 border-b border-gray-100 pb-3">
                     <p class="text-xs font-black text-indigo-600 tracking-wider">${date} ${time ? `| Saat: ${time}` : ''} ${duration ? `| Süre: ${duration}` : ''}</p>
                     <p class="text-sm font-bold text-gray-800 mt-1">${l.topic}</p>
                 </div>`;
         });
+
+        // Toplam Borcu Ekrana Bas
+        const badgeEl = document.getElementById('unpaidTotalBadge');
+        if (totalUnpaid > 0) {
+            badgeEl.innerText = `Bekleyen: ₺${totalUnpaid}`;
+            badgeEl.classList.remove('hidden');
+        } else {
+            badgeEl.classList.add('hidden');
+        }
     }
+
 
     // 2. SINAVLARI ÇEK VE GRAFİĞİ ÇİZ
     const { data: results } = await supabaseClient.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: true });
