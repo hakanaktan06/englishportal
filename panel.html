@@ -430,19 +430,23 @@
 
     <div id="teacherAnalysisModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white dark:bg-slate-800 rounded-[40px] w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl overflow-hidden relative border border-transparent dark:border-slate-700">
-            <header class="p-6 md:p-8 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-800 relative z-10">
-                <div>
-                    <h3 class="text-2xl font-black text-gray-800 dark:text-white" id="taStudentName">Öğrenci Adı</h3>
-                    <p class="text-sm text-blue-500 font-bold mt-1 uppercase tracking-widest" id="taQuizTitle">Sınav Adı</p>
-                </div>
-                <div class="flex items-center gap-6">
-                    <div class="text-right">
-                        <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">ALINAN PUAN</div>
-                        <div class="text-4xl font-black text-blue-600 dark:text-blue-400" id="taScoreDisplay">100</div>
+                        <header class="p-5 md:p-8 border-b border-gray-100 dark:border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-slate-800 relative z-10 gap-4">
+                <div class="w-full flex justify-between items-start md:w-auto">
+                    <div>
+                        <h3 class="text-xl md:text-2xl font-black text-gray-800 dark:text-white" id="taStudentName">Öğrenci Adı</h3>
+                        <p class="text-xs md:text-sm text-blue-500 font-bold mt-1 uppercase tracking-widest" id="taQuizTitle">Sınav Adı</p>
                     </div>
-                    <button onclick="closeTeacherAnalysisModal()" class="text-4xl text-gray-300 hover:text-red-500 transition">&times;</button>
+                    <button onclick="closeTeacherAnalysisModal()" class="md:hidden text-3xl text-gray-300 hover:text-red-500 transition leading-none">&times;</button>
+                </div>
+                <div class="flex items-center justify-between w-full md:w-auto gap-6 bg-slate-50 dark:bg-slate-900 md:bg-transparent p-3 md:p-0 rounded-xl">
+                    <div class="text-left md:text-right">
+                        <div class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">ALINAN PUAN</div>
+                        <div class="text-3xl md:text-4xl font-black text-blue-600 dark:text-blue-400" id="taScoreDisplay">100</div>
+                    </div>
+                    <button onclick="closeTeacherAnalysisModal()" class="hidden md:block text-4xl text-gray-300 hover:text-red-500 transition">&times;</button>
                 </div>
             </header>
+
             <div class="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50 dark:bg-slate-900" id="taDetailsContainer" style="-webkit-overflow-scrolling: touch;"></div>
         </div>
     </div>
