@@ -439,7 +439,6 @@ async function fetchStudents() {
         const dateStr = new Date(student.created_at).toLocaleDateString('tr-TR', { month: 'short', year: 'numeric' });
 
         const card = document.createElement('div');
-        // KART SINIFI DÜZELTİLDİ: Artık Slider Değil, GRID ile uyumlu sağlam kart
         card.className = "w-full h-full bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 relative group flex flex-col";
         
         card.innerHTML = `
@@ -1068,7 +1067,6 @@ window.generatePDF = function() {
     const sName = document.getElementById('profileStudentName').innerText;
     const opt = { margin: 0, filename: `${sName}_Gelisim_Raporu.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
     
-    // Görünür yapma (classList) satırları silindi, arkada inip biter.
     html2pdf().set(opt).from(element).save().then(() => { 
         showToast("PDF Başarıyla İndirildi!", "success"); 
     });
@@ -1082,7 +1080,6 @@ window.generateCertificate = function() {
     if (certNameEl) certNameEl.innerText = sName;
     const opt = { margin: 0, filename: `${sName}_VIP_Sertifika.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 3, useCORS: true, letterRendering: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } };
     
-    // Görünür yapma (classList) satırları silindi, arkada inip biter.
     html2pdf().set(opt).from(element).save().then(() => { 
         showToast("🌟 Sertifika Başarıyla İndirildi!", "success"); 
     });
@@ -1189,33 +1186,28 @@ if (searchStudentInput) {
     });
 }
 
-==========================================
-// 13. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU (DİNAMİK SORU SAYISI)
 // ==========================================
-
+// 13. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU (DİNAMİK)
+// ==========================================
 const btnGenerateAI = document.getElementById('btnGenerateAI');
 if (btnGenerateAI) {
     btnGenerateAI.addEventListener('click', async () => {
         if (!currentActiveQuizId) { showToast('Önce bir sınav seçmelisin!', 'error'); return; }
-        
+
         const topicInput = document.getElementById('aiTopicInput');
-        const countInput = document.getElementById('aiQuestionCount'); // YENİ: Soru sayısı kutusunu aldık
+        const countInput = document.getElementById('aiQuestionCount');
         
-        const topic = topicInput.value.trim();
-        let qCount = parseInt(countInput.value); // Yazılan sayıyı okuduk
+        const topic = topicInput ? topicInput.value.trim() : '';
+        let qCount = countInput ? parseInt(countInput.value) : 5;
         
         if (!topic) { showToast('Lütfen yapay zeka için bir konu yazın!', 'error'); return; }
-        
-        // Mantık Kontrolü: Hoca saçma bir sayı girerse (Örn: -5 veya 100) sistemi koru
         if (isNaN(qCount) || qCount < 1) qCount = 5;
-        if (qCount > 20) { showToast('API sağlığı için tek seferde en fazla 20 soru üretebilirsiniz.', 'error'); return; }
+        if (qCount > 20) { showToast('En fazla 20 soru üretebilirsiniz.', 'error'); return; }
 
-        // Şifreyi tarayıcı hafızasından çek (Senin önceden girdiğin şifre)
         let apiKey = localStorage.getItem('openai_api_key');
-        
         if (!apiKey) {
-            apiKey = prompt("Lütfen OpenAI API Şifrenizi (sk-...) girin:\n\n(Bu şifre sadece sizin cihazınızda kalır, sisteme kaydedilmez.)");
-            if (!apiKey) { showToast('API şifresi girilmediği için işlem iptal edildi.', 'error'); return; }
+            apiKey = prompt("Lütfen OpenAI API Şifrenizi (sk-...) girin:\n\n(Sadece sizin cihazınızda kalır, güvendedir.)");
+            if (!apiKey) { showToast('İşlem iptal edildi.', 'error'); return; }
             localStorage.setItem('openai_api_key', apiKey.trim());
         }
 
@@ -1226,22 +1218,12 @@ if (btnGenerateAI) {
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
                 body: JSON.stringify({
                     model: 'gpt-4o-mini',
                     messages: [
-                        {
-                            role: 'system',
-                            // DİKKAT: Yapay zekaya artık hocanın girdiği sayıyı (qCount) emrediyoruz!
-                            content: `Sen uzman bir İngilizce öğretmenisin. Verilen konuya göre tam ${qCount} adet çoktan seçmeli (A, B, C, D) İngilizce sorusu hazırla. Çıktıyı SADECE ve KESİNLİKLE geçerli bir JSON dizisi formatında ver. Hiçbir açıklama metni veya markdown kullanma. Format: [{"q": "Soru", "a": "A", "b": "B", "c": "C", "d": "D", "correct": "A"}]`
-                        },
-                        {
-                            role: 'user',
-                            content: `Konu: ${topic}`
-                        }
+                        { role: 'system', content: `Sen uzman bir İngilizce öğretmenisin. Verilen konuya göre tam ${qCount} adet çoktan seçmeli (A, B, C, D) İngilizce sorusu hazırla. Çıktıyı SADECE ve KESİNLİKLE geçerli bir JSON dizisi formatında ver. Markdown kullanma. Format: [{"q": "Soru", "a": "A", "b": "B", "c": "C", "d": "D", "correct": "A"}]` },
+                        { role: 'user', content: `Konu: ${topic}` }
                     ],
                     temperature: 0.7
                 })
@@ -1251,13 +1233,8 @@ if (btnGenerateAI) {
             
             if (data.error) {
                 console.error("OpenAI Hatası:", data.error);
-                showToast('API Hatası! Şifreniz yanlış veya krediniz bitmiş olabilir.', 'error');
-                
-                if(data.error.code === 'invalid_api_key') {
-                     localStorage.removeItem('openai_api_key');
-                     showToast('Hatalı şifre sıfırlandı. Lütfen tekrar deneyin.', 'info');
-                }
-                
+                showToast('API Hatası! Şifreniz yanlış veya krediniz bitmiş.', 'error');
+                if(data.error.code === 'invalid_api_key') localStorage.removeItem('openai_api_key');
                 btnGenerateAI.innerText = originalText;
                 btnGenerateAI.disabled = false;
                 return;
@@ -1282,12 +1259,10 @@ if (btnGenerateAI) {
             }));
 
             const { error } = await supabaseClient.from('questions').insert(inserts);
-
             if (error) throw error;
 
             showToast(`🪄 Sihir gerçekleşti! ${questions.length} soru eklendi.`, 'success');
-            topicInput.value = '';
-            
+            if(topicInput) topicInput.value = '';
             fetchQuestionsForQuiz(currentActiveQuizId);
 
         } catch (err) {
@@ -1299,8 +1274,6 @@ if (btnGenerateAI) {
         btnGenerateAI.disabled = false;
     });
 }
-
-
 
 setDynamicMotivations();
 switchTab('dashboard');
