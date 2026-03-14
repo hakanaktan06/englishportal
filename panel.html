@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -19,17 +19,22 @@
     <meta name="theme-color" content="#4f46e5">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-50 flex h-[100dvh] overflow-hidden text-gray-800 relative">
+<body class="bg-gray-50 dark:bg-slate-900 transition-colors duration-300 flex h-[100dvh] overflow-hidden text-gray-800 dark:text-gray-100 relative">
     
-    <div id="splashScreen" class="fixed inset-0 bg-slate-50 z-[99999] flex flex-col items-center justify-center transition-opacity duration-700">
+    <div id="splashScreen" class="fixed inset-0 bg-slate-50 dark:bg-slate-900 z-[99999] flex flex-col items-center justify-center transition-opacity duration-700">
         <div class="relative flex items-center justify-center mb-4">
-            <div class="w-20 h-20 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
-            <span class="absolute text-xl font-black text-indigo-900 tracking-tighter">EP</span>
+            <div class="w-20 h-20 border-4 border-indigo-100 dark:border-indigo-900 border-t-indigo-600 rounded-full animate-spin"></div>
+            <span class="absolute text-xl font-black text-indigo-900 dark:text-indigo-400 tracking-tighter">EP</span>
         </div>
         <p class="text-xs font-black text-indigo-400 uppercase tracking-widest animate-pulse">Sistem Yükleniyor</p>
     </div>
@@ -70,27 +75,34 @@
     </aside>
 
     <main class="flex-1 flex flex-col h-[100dvh] overflow-y-auto overflow-x-hidden relative w-full" style="-webkit-overflow-scrolling: touch;">
-        <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 p-4 flex justify-between items-center sticky top-0 z-20">
+        <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 p-4 flex justify-between items-center sticky top-0 z-20 transition-colors duration-300">
             <div class="flex items-center">
-                <button id="openSidebarBtn" class="md:hidden text-indigo-900 mr-4 focus:outline-none">
+                <button id="openSidebarBtn" class="md:hidden text-indigo-900 dark:text-indigo-400 mr-4 focus:outline-none">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
-                <h1 class="text-sm font-black text-indigo-900 uppercase tracking-widest hidden md:block">Öğretmen Yönetim Paneli</h1>
+                <h1 class="text-sm font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-widest hidden md:block">Öğretmen Yönetim Paneli</h1>
             </div>
 
-            <button id="logoutBtn" class="flex items-center gap-2 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white px-5 py-2.5 rounded-2xl text-xs font-black transition-all shadow-sm border border-red-100 transform active:scale-95 group">
-                <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                <span class="hidden sm:inline">GÜVENLİ ÇIKIŞ</span>
-            </button>
+            <div class="flex items-center gap-3">
+                <button id="darkModeToggle" class="p-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-full transition shadow-sm border border-gray-200 dark:border-slate-700" title="Gece Modu / Gündüz Modu">
+                    <span id="icon-moon" class="block text-lg leading-none">🌙</span>
+                    <span id="icon-sun" class="hidden text-lg leading-none">☀️</span>
+                </button>
+
+                <button id="logoutBtn" class="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white px-5 py-2.5 rounded-2xl text-xs font-black transition-all shadow-sm border border-red-100 dark:border-red-500/20 transform active:scale-95 group">
+                    <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <span class="hidden sm:inline">GÜVENLİ ÇIKIŞ</span>
+                </button>
+            </div>
         </header>
 
         <div id="section-dashboard" class="page-section w-full pb-10">
-            <header class="bg-white/80 backdrop-blur-md shadow-sm p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center sticky top-0 z-10 gap-4 border-b border-gray-100">
+            <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center sticky top-0 z-10 gap-4 border-b border-gray-100 dark:border-slate-700">
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">Merhaba <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Gülbahar Öğretmenim</span>, Hoş Geldiniz! 👋</h2>
-                    <p id="dynamicWelcomeMsg" class="text-sm text-gray-500 mt-1.5 font-medium leading-relaxed transition-opacity duration-500">Öğretmen paneline hoş geldiniz, veriler yükleniyor...</p>
+                    <h2 class="text-2xl md:text-3xl font-black text-gray-800 dark:text-white tracking-tight">Merhaba <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">Gülbahar Öğretmenim</span>, Hoş Geldiniz! 👋</h2>
+                    <p id="dynamicWelcomeMsg" class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 font-medium leading-relaxed transition-opacity duration-500">Öğretmen paneline hoş geldiniz, veriler yükleniyor...</p>
                 </div>
-                <div class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-indigo-100 shadow-sm hidden lg:block">
+                <div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800 shadow-sm hidden lg:block">
                     SİSTEM KOKPİTİ
                 </div>
             </header>
@@ -119,12 +131,12 @@
             </div>
 
             <div class="px-4 md:px-6 max-w-7xl mx-auto w-full pt-4">
-                <div class="bg-white rounded-[30px] p-6 md:p-8 shadow-sm border border-gray-100 flex flex-col min-h-[350px]">
-                    <div class="flex justify-between items-center border-b border-gray-50 pb-4 mb-4 shrink-0">
-                        <h3 class="text-lg md:text-xl font-black text-gray-800 flex items-center gap-2">
+                <div class="bg-white dark:bg-slate-800 rounded-[30px] p-6 md:p-8 shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col min-h-[350px]">
+                    <div class="flex justify-between items-center border-b border-gray-50 dark:border-slate-700 pb-4 mb-4 shrink-0">
+                        <h3 class="text-lg md:text-xl font-black text-gray-800 dark:text-white flex items-center gap-2">
                             <span class="text-indigo-500">📅</span> Yaklaşan Program
                         </h3>
-                        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-gray-100 px-3 py-1.5 rounded-lg">ÖNÜMÜZDEKİ GÜNLER</span>
+                        <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest bg-gray-100 dark:bg-slate-700 px-3 py-1.5 rounded-lg">ÖNÜMÜZDEKİ GÜNLER</span>
                     </div>
                     <div id="agendaList" class="space-y-3 overflow-y-auto flex-1 pr-2 pb-2" style="-webkit-overflow-scrolling: touch;">
                         <div class="flex flex-col items-center justify-center py-10 text-gray-400 animate-pulse">
@@ -133,25 +145,27 @@
                     </div>
                 </div>
             </div>
-        </div> <div id="section-students" class="page-section w-full hidden pb-10">
-            <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10">
+        </div>
+
+        <div id="section-students" class="page-section w-full hidden pb-10">
+            <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
                 <div>
-                    <h2 class="text-xl md:text-2xl font-extrabold text-gray-800">Öğrenci Yönetimi</h2>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-gray-800 dark:text-white">Öğrenci Yönetimi</h2>
                 </div>
                 <button id="addStudentBtn" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl font-bold shadow-lg transition">
                     + Yeni Öğrenci
                 </button>
             </header>
             <div class="p-4 md:p-6 max-w-7xl mx-auto w-full">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-indigo-500 w-48 mb-6">
-                    <p class="text-gray-500 text-xs font-semibold uppercase">Kayıtlı Öğrenci</p>
-                    <p class="text-3xl font-black text-gray-800 mt-2" id="totalStudents">0</p>
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 border-l-4 border-l-indigo-500 w-48 mb-6">
+                    <p class="text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase">Kayıtlı Öğrenci</p>
+                    <p class="text-3xl font-black text-gray-800 dark:text-white mt-2" id="totalStudents">0</p>
                 </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse whitespace-nowrap">
                             <thead>
-                                <tr class="bg-gray-50 text-gray-500 text-sm uppercase border-b border-gray-100">
+                                <tr class="bg-gray-50 dark:bg-slate-700/50 text-gray-500 dark:text-gray-300 text-sm uppercase border-b border-gray-100 dark:border-slate-700">
                                     <th class="p-4 font-semibold">Öğrenci Adı</th>
                                     <th class="p-4 font-semibold">Hesap</th>
                                     <th class="p-4 font-semibold">Eklenme Tarihi</th>
@@ -166,35 +180,34 @@
         </div>
 
         <div id="section-homeworks" class="page-section w-full hidden pb-10">
-            <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10">
+            <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
                 <div>
-                    <h2 class="text-xl md:text-2xl font-extrabold text-gray-800">Ödev Yönetimi</h2>
-                    <p class="text-sm text-gray-500 hidden md:block">Öğrencilere buradan yeni ödevler atayabilirsin.</p>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-gray-800 dark:text-white">Ödev Yönetimi</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 hidden md:block">Öğrencilere buradan yeni ödevler atayabilirsin.</p>
                 </div>
             </header>
 
             <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6">
-                
-                <div class="md:col-span-1 bg-white rounded-3xl p-6 shadow-sm border border-gray-100 h-fit">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Yeni Ödev Oluştur</h3>
+                <div class="md:col-span-1 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-slate-700 h-fit">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 border-b dark:border-slate-700 pb-2">Yeni Ödev Oluştur</h3>
                     <form id="newHomeworkForm" class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Kime Verilecek?</label>
-                            <select id="hwStudentSelect" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Kime Verilecek?</label>
+                            <select id="hwStudentSelect" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-700 dark:text-white" required>
                                 <option value="">Öğrenci Seçin...</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Ödev Başlığı</label>
-                            <input type="text" id="hwTitle" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Örn: Unit 1 Vocabulary" required>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Ödev Başlığı</label>
+                            <input type="text" id="hwTitle" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Örn: Unit 1 Vocabulary" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Açıklama / Görevler</label>
-                            <textarea id="hwDesc" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none resize-none" placeholder="Sayfa 12'deki etkinlikler yapılacak..." required></textarea>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Açıklama / Görevler</label>
+                            <textarea id="hwDesc" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none resize-none" placeholder="Sayfa 12'deki etkinlikler yapılacak..." required></textarea>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Son Teslim Tarihi</label>
-                            <input type="date" id="hwDueDate" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Son Teslim Tarihi</label>
+                            <input type="date" id="hwDueDate" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none" required>
                         </div>
                         <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-3 px-4 rounded-xl mt-4 shadow-lg transition">
                             Ödevi Gönder
@@ -202,12 +215,12 @@
                     </form>
                 </div>
 
-                <div class="md:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Aktif Ödevler</h3>
+                <div class="md:col-span-2 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-slate-700">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 border-b dark:border-slate-700 pb-2">Aktif Ödevler</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse whitespace-nowrap">
                             <thead>
-                                <tr class="bg-emerald-50 text-emerald-700 text-xs uppercase border-b border-emerald-100">
+                                <tr class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs uppercase border-b border-emerald-100 dark:border-emerald-800">
                                     <th class="p-3 font-semibold rounded-tl-lg">Öğrenci</th>
                                     <th class="p-3 font-semibold">Ödev Başlığı</th>
                                     <th class="p-3 font-semibold">Son Teslim</th>
@@ -223,21 +236,21 @@
         </div>
 
         <div id="section-activities" class="page-section w-full hidden pb-10">
-            <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10">
-                <h2 class="text-xl md:text-2xl font-extrabold text-purple-600">Etkinlik Kütüphanesi</h2>
+            <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
+                <h2 class="text-xl md:text-2xl font-extrabold text-purple-600 dark:text-purple-400">Etkinlik Kütüphanesi</h2>
             </header>
             <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-1 bg-white rounded-3xl p-6 shadow-sm border border-gray-100 h-fit">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2 text-purple-700">Etkinlik Paylaş</h3>
+                <div class="md:col-span-1 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-slate-700 h-fit">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 border-b dark:border-slate-700 pb-2 text-purple-700 dark:text-purple-400">Etkinlik Paylaş</h3>
                     <form id="newActivityForm" class="space-y-4">
-                        <input type="text" id="actTitle" class="w-full p-3 rounded-xl border" placeholder="Etkinlik Adı" required>
-                        <select id="actCategory" class="w-full p-3 rounded-xl border bg-white">
+                        <input type="text" id="actTitle" class="w-full p-3 rounded-xl border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none" placeholder="Etkinlik Adı" required>
+                        <select id="actCategory" class="w-full p-3 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white outline-none">
                             <option value="video">📺 Video</option>
                             <option value="game">🎮 Oyun</option>
                             <option value="pdf">📄 PDF/Dosya</option>
                         </select>
-                        <input type="url" id="actLink" class="w-full p-3 rounded-xl border" placeholder="Link (https://...)" required>
-                        <button type="submit" class="w-full bg-purple-500 text-white font-bold py-3 rounded-xl shadow-lg">Kütüphaneye Ekle</button>
+                        <input type="url" id="actLink" class="w-full p-3 rounded-xl border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none" placeholder="Link (https://...)" required>
+                        <button type="submit" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-xl shadow-lg transition">Kütüphaneye Ekle</button>
                     </form>
                 </div>
                 <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4" id="activityCards"></div>
@@ -245,10 +258,10 @@
         </div>
 
         <div id="section-quizzes" class="page-section w-full hidden pb-10">
-            <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 flex justify-between items-center">
+            <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 flex justify-between items-center border-b border-gray-100 dark:border-slate-700">
                 <div>
-                    <h2 class="text-xl md:text-2xl font-extrabold text-red-600">Sınav & Test Merkezi</h2>
-                    <p class="text-sm text-gray-500">Sınavlarını oluştur ve sorularını yönet.</p>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-red-600 dark:text-red-400">Sınav & Test Merkezi</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Sınavlarını oluştur ve sorularını yönet.</p>
                 </div>
                 <button id="addQuizBtn" class="bg-red-500 text-white px-5 py-3 rounded-xl font-bold shadow-lg hover:bg-red-600 transition">
                     + Yeni Sınav Oluştur
@@ -258,18 +271,18 @@
         </div>
 
         <div id="section-results" class="page-section w-full hidden pb-10">
-            <header class="bg-white/80 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 flex justify-between items-center">
+            <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 flex justify-between items-center border-b border-gray-100 dark:border-slate-700">
                 <div>
-                    <h2 class="text-xl md:text-2xl font-extrabold text-blue-600">Öğrenci Sınav Sonuçları</h2>
-                    <p class="text-sm text-gray-500">Öğrencilerin çözdüğü sınavları ve aldıkları puanları takip et.</p>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-blue-600 dark:text-blue-400">Öğrenci Sınav Sonuçları</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Öğrencilerin çözdüğü sınavları ve aldıkları puanları takip et.</p>
                 </div>
             </header>
             <div class="p-4 md:p-6 max-w-7xl mx-auto w-full">
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse whitespace-nowrap">
                             <thead>
-                                <tr class="bg-blue-50 text-blue-700 text-xs uppercase border-b border-blue-100">
+                                <tr class="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs uppercase border-b border-blue-100 dark:border-blue-800">
                                     <th class="p-4 font-semibold">Öğrenci Adı</th>
                                     <th class="p-4 font-semibold">Çözdüğü Sınav</th>
                                     <th class="p-4 font-semibold">Aldığı Puan</th>
@@ -286,90 +299,90 @@
 
     </main>
 
-    <div id="addStudentModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl">
+    <div id="addStudentModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl border dark:border-slate-700">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-800">Yeni Öğrenci Ekle</h3>
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white">Yeni Öğrenci Ekle</h3>
                 <button id="closeModalBtn" class="text-gray-400 hover:text-red-500 text-3xl font-bold">&times;</button>
             </div>
             <form id="newStudentForm" class="space-y-4">
-                <div><label class="block text-sm font-bold text-gray-700 mb-1">Ad Soyad</label><input type="text" id="studentName" class="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none" required></div>
-                <div><label class="block text-sm font-bold text-gray-700 mb-1">E-posta</label><input type="email" id="studentEmail" class="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none" required></div>
-                <div><label class="block text-sm font-bold text-gray-700 mb-1">Şifre</label><input type="text" id="studentPassword" class="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none" required></div>
+                <div><label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Ad Soyad</label><input type="text" id="studentName" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none" required></div>
+                <div><label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">E-posta</label><input type="email" id="studentEmail" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none" required></div>
+                <div><label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Şifre</label><input type="text" id="studentPassword" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none" required></div>
                 <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-xl mt-4">Kaydet</button>
             </form>
         </div>
     </div>
 
     <div id="quizNameModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-[30px] p-6 md:p-8 w-full max-w-sm shadow-2xl text-center relative overflow-hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-[30px] p-6 md:p-8 w-full max-w-sm shadow-2xl text-center relative overflow-hidden border dark:border-slate-700">
             <div class="absolute -right-10 -top-10 opacity-5 pointer-events-none"><span class="text-9xl">⏱️</span></div>
             
-            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner border border-red-100 relative z-10">📝</div>
-            <h3 class="text-2xl font-black text-gray-800 mb-1 relative z-10">Sınav Ayarları</h3>
+            <div class="w-16 h-16 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner border border-red-100 dark:border-red-800 relative z-10">📝</div>
+            <h3 class="text-2xl font-black text-gray-800 dark:text-white mb-1 relative z-10">Sınav Ayarları</h3>
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6 relative z-10">Başlık ve Süre Belirle</p>
 
-            <input type="text" id="quizTitleInput" class="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-red-400 outline-none mb-5 text-center text-lg font-bold transition shadow-sm relative z-10" placeholder="Sınav Adı (Örn: 1. Dönem)">
+            <input type="text" id="quizTitleInput" class="w-full p-4 rounded-2xl border-2 border-gray-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:border-red-400 outline-none mb-5 text-center text-lg font-bold transition shadow-sm relative z-10" placeholder="Sınav Adı (Örn: 1. Dönem)">
             
             <div class="mb-6 text-left relative z-10">
                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Sınav Süresi</label>
                 <div class="grid grid-cols-3 gap-2" id="timeSelectorGrid">
                     <button type="button" class="time-btn bg-red-500 text-white border-2 border-red-500 font-black py-2.5 rounded-xl text-xs transition shadow-md" data-time="0">Süresiz</button>
-                    <button type="button" class="time-btn bg-gray-50 text-gray-500 border-2 border-gray-100 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="10">10 Dk</button>
-                    <button type="button" class="time-btn bg-gray-50 text-gray-500 border-2 border-gray-100 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="15">15 Dk</button>
-                    <button type="button" class="time-btn bg-gray-50 text-gray-500 border-2 border-gray-100 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="20">20 Dk</button>
-                    <button type="button" class="time-btn bg-gray-50 text-gray-500 border-2 border-gray-100 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="30">30 Dk</button>
-                    <button type="button" class="time-btn bg-gray-50 text-gray-500 border-2 border-gray-100 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="custom">Özel ⚙️</button>
+                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="10">10 Dk</button>
+                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="15">15 Dk</button>
+                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="20">20 Dk</button>
+                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="30">30 Dk</button>
+                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="custom">Özel ⚙️</button>
                 </div>
                 
                 <div id="customTimeContainer" class="hidden mt-3 relative transform transition-all">
-                    <input type="number" id="quizTimeInput" inputmode="numeric" pattern="[0-9]*" class="w-full p-3.5 pl-4 pr-12 rounded-xl border-2 border-red-100 focus:border-red-400 outline-none text-center font-bold text-gray-700 transition" placeholder="Kaç dakika?">
+                    <input type="number" id="quizTimeInput" inputmode="numeric" pattern="[0-9]*" class="w-full p-3.5 pl-4 pr-12 rounded-xl border-2 border-red-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:border-red-400 outline-none text-center font-bold text-gray-700 dark:text-white transition" placeholder="Kaç dakika?">
                     <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-[10px] font-black text-red-400 uppercase tracking-widest">DK</span>
                 </div>
                 <input type="hidden" id="finalQuizTime" value="0">
             </div>
 
             <div class="flex space-x-3 relative z-10">
-                <button onclick="document.getElementById('quizNameModal').classList.add('hidden')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold py-4 rounded-2xl transition">İptal</button>
+                <button onclick="document.getElementById('quizNameModal').classList.add('hidden')" class="flex-1 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-300 font-bold py-4 rounded-2xl transition">İptal</button>
                 <button id="saveQuizTitleBtn" class="flex-[2] bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 transition text-white font-black py-4 rounded-2xl shadow-lg transform active:scale-95">Oluştur 🚀</button>
             </div>
         </div>
     </div>
 
-    <div id="questionModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto p-4" style="-webkit-overflow-scrolling: touch;">
-        <div class="bg-white rounded-[40px] w-full max-w-6xl h-[90vh] flex flex-col shadow-2xl overflow-hidden relative">
-            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
+    <div id="questionModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto p-4" style="-webkit-overflow-scrolling: touch;">
+        <div class="bg-white dark:bg-slate-800 rounded-[40px] w-full max-w-6xl h-[90vh] flex flex-col shadow-2xl overflow-hidden relative border dark:border-slate-700">
+            <div class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900">
                 <div>
-                    <h3 id="currentQuizTitle" class="text-2xl font-black text-red-600 italic">Sınav Soruları</h3>
+                    <h3 id="currentQuizTitle" class="text-2xl font-black text-red-600 dark:text-red-400 italic">Sınav Soruları</h3>
                     <p class="text-xs text-indigo-500 font-bold uppercase tracking-widest mt-1">Soru Hazırlama & Takip Paneli</p>
                 </div>
                 <button onclick="document.getElementById('questionModal').classList.add('hidden')" class="text-4xl text-gray-300 hover:text-red-500 transition">&times;</button>
             </div>
             <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
-                <div class="w-full md:w-1/2 p-8 border-r overflow-y-auto bg-white" style="-webkit-overflow-scrolling: touch;">
-                    <h4 class="font-black text-indigo-600 mb-6 uppercase text-sm tracking-tighter italic underline">YENİ SORU EKLE</h4>
+                <div class="w-full md:w-1/2 p-8 border-r border-gray-100 dark:border-slate-700 overflow-y-auto bg-white dark:bg-slate-800" style="-webkit-overflow-scrolling: touch;">
+                    <h4 class="font-black text-indigo-600 dark:text-indigo-400 mb-6 uppercase text-sm tracking-tighter italic underline">YENİ SORU EKLE</h4>
                     <form id="newQuestionForm" class="space-y-6">
-                        <div class="bg-gray-50 p-6 rounded-3xl">
+                        <div class="bg-gray-50 dark:bg-slate-700/50 p-6 rounded-3xl border dark:border-slate-600">
                             <label class="block text-xs font-black text-gray-400 uppercase mb-2 tracking-widest">Soru Cümlesi</label>
-                            <textarea id="qText" class="w-full p-4 rounded-2xl border-0 focus:ring-2 focus:ring-red-400 outline-none text-lg font-bold" rows="3" placeholder="Soru buraya yazılır..." required></textarea>
+                            <textarea id="qText" class="w-full p-4 rounded-2xl border-0 bg-white dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-red-400 outline-none text-lg font-bold" rows="3" placeholder="Soru buraya yazılır..." required></textarea>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div class="bg-white p-4 border-2 border-gray-100 rounded-3xl"><label class="text-xs font-bold text-gray-400">ŞIK A</label><input type="text" id="optA" class="w-full p-2 outline-none font-bold" required></div>
-                            <div class="bg-white p-4 border-2 border-gray-100 rounded-3xl"><label class="text-xs font-bold text-gray-400">ŞIK B</label><input type="text" id="optB" class="w-full p-2 outline-none font-bold" required></div>
-                            <div class="bg-white p-4 border-2 border-gray-100 rounded-3xl"><label class="text-xs font-bold text-gray-400">ŞIK C</label><input type="text" id="optC" class="w-full p-2 outline-none font-bold" required></div>
-                            <div class="bg-white p-4 border-2 border-gray-100 rounded-3xl"><label class="text-xs font-bold text-gray-400">ŞIK D</label><input type="text" id="optD" class="w-full p-2 outline-none font-bold" required></div>
+                            <div class="bg-white dark:bg-slate-700 p-4 border-2 border-gray-100 dark:border-slate-600 rounded-3xl"><label class="text-xs font-bold text-gray-400">ŞIK A</label><input type="text" id="optA" class="w-full p-2 outline-none font-bold bg-transparent dark:text-white" required></div>
+                            <div class="bg-white dark:bg-slate-700 p-4 border-2 border-gray-100 dark:border-slate-600 rounded-3xl"><label class="text-xs font-bold text-gray-400">ŞIK B</label><input type="text" id="optB" class="w-full p-2 outline-none font-bold bg-transparent dark:text-white" required></div>
+                            <div class="bg-white dark:bg-slate-700 p-4 border-2 border-gray-100 dark:border-slate-600 rounded-3xl"><label class="text-xs font-bold text-gray-400">ŞIK C</label><input type="text" id="optC" class="w-full p-2 outline-none font-bold bg-transparent dark:text-white" required></div>
+                            <div class="bg-white dark:bg-slate-700 p-4 border-2 border-gray-100 dark:border-slate-600 rounded-3xl"><label class="text-xs font-bold text-gray-400">ŞIK D</label><input type="text" id="optD" class="w-full p-2 outline-none font-bold bg-transparent dark:text-white" required></div>
                         </div>
-                        <div class="flex items-center justify-between bg-indigo-50 p-6 rounded-3xl border border-indigo-100">
-                            <span class="font-bold text-indigo-900">Doğru Cevap Hangisi?</span>
-                            <select id="correctOpt" class="bg-white p-3 rounded-xl font-black text-indigo-600 outline-none border-0 shadow-sm">
+                        <div class="flex items-center justify-between bg-indigo-50 dark:bg-indigo-900/30 p-6 rounded-3xl border border-indigo-100 dark:border-indigo-800">
+                            <span class="font-bold text-indigo-900 dark:text-indigo-300">Doğru Cevap Hangisi?</span>
+                            <select id="correctOpt" class="bg-white dark:bg-slate-700 p-3 rounded-xl font-black text-indigo-600 dark:text-indigo-300 outline-none border-0 shadow-sm">
                                 <option value="A">A ŞIKKI</option><option value="B">B ŞIKKI</option><option value="C">C ŞIKKI</option><option value="D">D ŞIKKI</option>
                             </select>
                         </div>
-                        <button type="submit" class="w-full bg-indigo-600 text-white font-black py-5 rounded-3xl text-xl shadow-xl hover:bg-indigo-700 transition transform hover:-translate-y-1">SORUYU KAYDET</button>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 rounded-3xl text-xl shadow-xl transition transform hover:-translate-y-1">SORUYU KAYDET</button>
                     </form>
                 </div>
-                <div class="w-full md:w-1/2 p-8 bg-gray-100 overflow-y-auto" style="-webkit-overflow-scrolling: touch;">
-                    <h4 class="font-black text-gray-400 mb-6 uppercase text-sm tracking-tighter flex justify-between items-center border-b pb-4 border-gray-200">
+                <div class="w-full md:w-1/2 p-8 bg-gray-100 dark:bg-slate-900 overflow-y-auto" style="-webkit-overflow-scrolling: touch;">
+                    <h4 class="font-black text-gray-400 mb-6 uppercase text-sm tracking-tighter flex justify-between items-center border-b pb-4 border-gray-200 dark:border-slate-700">
                         SINAVDAKİ SORULAR <span id="questionCount" class="bg-indigo-600 text-white px-3 py-1 rounded-full text-lg">0</span>
                     </h4>
                     <div id="addedQuestionsList" class="space-y-4"></div>
@@ -379,49 +392,49 @@
     </div>
 
     <div id="teacherAnalysisModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-[40px] w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl overflow-hidden relative">
-            <header class="p-6 md:p-8 border-b border-gray-100 flex justify-between items-center bg-white relative z-10">
+        <div class="bg-white dark:bg-slate-800 rounded-[40px] w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl overflow-hidden relative border dark:border-slate-700">
+            <header class="p-6 md:p-8 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-800 relative z-10">
                 <div>
-                    <h3 class="text-2xl font-black text-gray-800" id="taStudentName">Öğrenci Adı</h3>
+                    <h3 class="text-2xl font-black text-gray-800 dark:text-white" id="taStudentName">Öğrenci Adı</h3>
                     <p class="text-sm text-blue-500 font-bold mt-1 uppercase tracking-widest" id="taQuizTitle">Sınav Adı</p>
                 </div>
                 <div class="flex items-center gap-6">
                     <div class="text-right">
                         <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">ALINAN PUAN</div>
-                        <div class="text-4xl font-black text-blue-600" id="taScoreDisplay">100</div>
+                        <div class="text-4xl font-black text-blue-600 dark:text-blue-400" id="taScoreDisplay">100</div>
                     </div>
                     <button onclick="closeTeacherAnalysisModal()" class="text-4xl text-gray-300 hover:text-red-500 transition">&times;</button>
                 </div>
             </header>
-            <div class="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50" id="taDetailsContainer" style="-webkit-overflow-scrolling: touch;"></div>
+            <div class="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50 dark:bg-slate-900" id="taDetailsContainer" style="-webkit-overflow-scrolling: touch;"></div>
         </div>
     </div>
 
     <div id="studentNoteModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl relative border border-gray-100 flex flex-col max-h-[90vh]">
-            <header class="p-5 border-b border-gray-100 flex justify-between items-center bg-yellow-50 rounded-t-2xl shrink-0">
-                <h3 class="text-lg font-bold text-yellow-800 flex items-center gap-2"><span>🗣️</span> Öğrenci Notu</h3>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl relative border border-gray-100 dark:border-slate-700 flex flex-col max-h-[90vh]">
+            <header class="p-5 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-yellow-50 dark:bg-yellow-900/30 rounded-t-2xl shrink-0">
+                <h3 class="text-lg font-bold text-yellow-800 dark:text-yellow-500 flex items-center gap-2"><span>🗣️</span> Öğrenci Notu</h3>
                 <button onclick="closeStudentNoteModal()" class="text-3xl text-yellow-600 hover:text-red-500 transition leading-none">&times;</button>
             </header>
-            <div class="p-6 bg-white overflow-y-auto flex-1" style="-webkit-overflow-scrolling: touch;">
-                <p id="fullStudentNoteText" class="text-gray-700 text-sm font-medium leading-relaxed whitespace-pre-wrap italic"></p>
+            <div class="p-6 bg-white dark:bg-slate-800 overflow-y-auto flex-1" style="-webkit-overflow-scrolling: touch;">
+                <p id="fullStudentNoteText" class="text-gray-700 dark:text-gray-300 text-sm font-medium leading-relaxed whitespace-pre-wrap italic"></p>
             </div>
-            <div class="p-4 bg-gray-50 text-right rounded-b-2xl border-t border-gray-100 shrink-0">
-                <button onclick="closeStudentNoteModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg text-sm font-bold transition">Kapat</button>
+            <div class="p-4 bg-gray-50 dark:bg-slate-900 text-right rounded-b-2xl border-t border-gray-100 dark:border-slate-700 shrink-0">
+                <button onclick="closeStudentNoteModal()" class="bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-300 px-5 py-2 rounded-lg text-sm font-bold transition">Kapat</button>
             </div>
         </div>
     </div>
     
     <div id="customConfirmModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[9999] p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="customConfirmBox">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 border dark:border-slate-700" id="customConfirmBox">
             <div class="p-6 text-center">
-                <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">⚠️</div>
-                <h3 class="text-xl font-black text-gray-800 mb-2">Emin misin?</h3>
-                <p class="text-sm text-gray-500 font-medium" id="customConfirmMessage">Bu işlemi yapmak istediğine emin misin?</p>
+                <div class="w-16 h-16 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">⚠️</div>
+                <h3 class="text-xl font-black text-gray-800 dark:text-white mb-2">Emin misin?</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium" id="customConfirmMessage">Bu işlemi yapmak istediğine emin misin?</p>
             </div>
-            <div class="flex border-t border-gray-100">
-                <button id="customConfirmCancel" class="flex-1 py-4 text-gray-500 font-bold hover:bg-gray-50 transition border-r border-gray-100">İptal</button>
-                <button id="customConfirmOk" class="flex-1 py-4 text-red-600 font-black hover:bg-red-50 transition">Evet, Sil</button>
+            <div class="flex border-t border-gray-100 dark:border-slate-700">
+                <button id="customConfirmCancel" class="flex-1 py-4 text-gray-500 dark:text-gray-400 font-bold hover:bg-gray-50 dark:hover:bg-slate-700 transition border-r border-gray-100 dark:border-slate-700">İptal</button>
+                <button id="customConfirmOk" class="flex-1 py-4 text-red-600 font-black hover:bg-red-50 dark:hover:bg-red-900/20 transition">Evet, Sil</button>
             </div>
         </div>
     </div>
@@ -429,33 +442,38 @@
     <div id="toast-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
     <div id="studentProfileModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4" style="-webkit-overflow-scrolling: touch;">
-        <div class="bg-white rounded-[30px] w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl overflow-hidden relative">
+        <div class="bg-white dark:bg-slate-800 rounded-[30px] w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl overflow-hidden relative border dark:border-slate-700">
             
-            <header class="p-5 md:p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-gray-50 shrink-0 gap-4">
+            <header class="p-5 md:p-6 border-b border-gray-100 dark:border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center bg-gray-50 dark:bg-slate-900 shrink-0 gap-4">
                 <div>
-                    <h3 class="text-2xl font-black text-gray-800 leading-tight" id="profileStudentName">Öğrenci Adı</h3>
-                    <p class="text-[10px] md:text-xs text-indigo-500 font-bold uppercase tracking-widest mt-1">VIP Özel Ders & Gelişim Profili</p>
+                    <h3 class="text-2xl font-black text-gray-800 dark:text-white leading-tight" id="profileStudentName">Öğrenci Adı</h3>
+                    <p class="text-[10px] md:text-xs text-indigo-500 dark:text-indigo-400 font-bold uppercase tracking-widest mt-1">VIP Özel Ders & Gelişim Profili</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-                    <div id="unpaidTotalBadge" class="hidden bg-red-50 text-red-600 px-4 py-2.5 rounded-xl text-xs md:text-sm font-black shadow-sm border border-red-200">
+                    <div id="unpaidTotalBadge" class="hidden bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-2.5 rounded-xl text-xs md:text-sm font-black shadow-sm border border-red-200 dark:border-red-800">
                         Bekleyen: 0 TL
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="copyParentLink()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-4 py-2.5 rounded-xl text-xs md:text-sm font-black shadow-sm transition flex items-center gap-2">
-                        🔗 <span class="hidden sm:inline">CANLI LİNK</span><span class="sm:hidden">LİNK</span>
+                        <button onclick="copyParentLink()" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-slate-600 px-4 py-2.5 rounded-xl text-xs md:text-sm font-black shadow-sm transition flex items-center gap-2">
+                            🔗 <span class="hidden sm:inline">CANLI LİNK</span><span class="sm:hidden">LİNK</span>
                         </button>
                         <button onclick="generatePDF()" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-4 py-2.5 rounded-xl text-xs md:text-sm font-black shadow-lg transition flex items-center gap-2">
                             📄 <span class="hidden sm:inline">VELİ İÇİN PDF KARNE AL</span><span class="sm:hidden">PDF İNDİR</span>
                         </button>
+
+                        <button onclick="generateCertificate()" class="bg-gradient-to-r from-amber-400 to-yellow-600 hover:from-amber-500 hover:to-yellow-700 text-white px-4 py-2.5 rounded-xl text-xs md:text-sm font-black shadow-lg transition flex items-center gap-2">
+                            🏆 <span class="hidden sm:inline">VİP SERTİFİKA BAS</span><span class="sm:hidden">SERTİFİKA</span>
+                        </button>
+
                         <button onclick="document.getElementById('studentProfileModal').classList.add('hidden')" class="text-4xl text-gray-300 hover:text-red-500 transition leading-none ml-2">&times;</button>
                     </div>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50 flex flex-col lg:flex-row gap-6">
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50 dark:bg-slate-900 flex flex-col lg:flex-row gap-6">
                 <div class="w-full lg:w-1/3 shrink-0">
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <h4 class="font-black text-indigo-900 mb-4 text-sm uppercase">🎓 Yeni Ders Kaydı Gir</h4>
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                        <h4 class="font-black text-indigo-900 dark:text-indigo-400 mb-4 text-sm uppercase">🎓 Yeni Ders Kaydı Gir</h4>
                         <form id="newLessonForm" class="space-y-4">
                             <input type="hidden" id="profStudentId">
                             
@@ -463,14 +481,13 @@
                                 <div class="relative">
                                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Tarih</label>
                                     <div class="relative flex items-center">
-                                        <input type="date" id="lessonDate" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-gray-50 focus:bg-white focus:border-indigo-400 outline-none text-sm font-bold text-gray-700 transition-all shadow-sm" required>
+                                        <input type="date" id="lessonDate" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white focus:border-indigo-400 outline-none text-sm font-bold transition-all shadow-sm" required>
                                     </div>
                                 </div>
                                 <div class="relative">
                                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Saat</label>
                                     <div class="relative flex items-center">
-                                        <span class="absolute left-3 text-lg pointer-events-none opacity-70">⏰</span>
-                                        <input type="time" id="lessonTime" class="w-full pl-10 pr-3 py-3 rounded-xl border-2 border-gray-100 bg-gray-50 focus:bg-white focus:border-indigo-400 outline-none text-sm font-bold text-gray-700 transition-all shadow-sm" required>
+                                        <input type="time" id="lessonTime" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white focus:border-indigo-400 outline-none text-sm font-bold transition-all shadow-sm" required>
                                     </div>
                                 </div>
                             </div>
@@ -479,22 +496,22 @@
                                 <div class="relative">
                                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Süre (Saat)</label>
                                     <div class="relative flex items-center">
-                                        <span class="absolute left-3 text-lg pointer-events-none opacity-70">⏳</span>
-                                        <input type="number" step="0.5" id="lessonDuration" class="w-full pl-10 pr-3 py-3 rounded-xl border-2 border-gray-100 bg-gray-50 focus:bg-white focus:border-indigo-400 outline-none text-sm font-bold text-gray-700 transition-all shadow-sm" placeholder="Örn: 1.5" required>
+                                        <span class="absolute left-3 text-lg pointer-events-none opacity-70 dark:text-gray-300">⏳</span>
+                                        <input type="number" step="0.5" id="lessonDuration" class="w-full pl-10 pr-3 py-3 rounded-xl border-2 border-gray-100 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white focus:border-indigo-400 outline-none text-sm font-bold transition-all shadow-sm" placeholder="Örn: 1.5" required>
                                     </div>
                                 </div>
                                 <div class="relative">
                                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Ücret (TL)</label>
                                     <div class="relative flex items-center">
-                                        <span class="absolute left-3 text-lg pointer-events-none opacity-70">💵</span>
-                                        <input type="number" id="lessonPrice" class="w-full pl-10 pr-3 py-3 rounded-xl border-2 border-gray-100 bg-gray-50 focus:bg-white focus:border-indigo-400 outline-none text-sm font-bold text-gray-700 transition-all shadow-sm" placeholder="Örn: 500" required>
+                                        <span class="absolute left-3 text-lg pointer-events-none opacity-70 dark:text-gray-300">💵</span>
+                                        <input type="number" id="lessonPrice" class="w-full pl-10 pr-3 py-3 rounded-xl border-2 border-gray-100 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white focus:border-indigo-400 outline-none text-sm font-bold transition-all shadow-sm" placeholder="Örn: 500" required>
                                     </div>
                                 </div>
                             </div>
 
                             <div>
                                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Durum</label>
-                                <select id="lessonIsPaid" class="w-full p-3 rounded-xl border-2 border-gray-100 bg-gray-50 focus:bg-white focus:border-indigo-400 outline-none text-sm font-bold text-gray-700 transition-all shadow-sm appearance-none">
+                                <select id="lessonIsPaid" class="w-full p-3 rounded-xl border-2 border-gray-100 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white focus:border-indigo-400 outline-none text-sm font-bold transition-all shadow-sm appearance-none">
                                     <option value="false">🔴 Ödenmedi (Borç)</option>
                                     <option value="true">🟢 Ödendi (Tahsil Edildi)</option>
                                 </select>
@@ -502,7 +519,7 @@
 
                             <div>
                                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">İşlenen Konu / Notlar</label>
-                                <textarea id="lessonTopic" rows="2" class="w-full p-3 rounded-xl border-2 border-gray-100 bg-gray-50 focus:bg-white focus:border-indigo-400 outline-none text-sm font-bold text-gray-700 transition-all shadow-sm resize-none" placeholder="Örn: Present Simple Tense..." required></textarea>
+                                <textarea id="lessonTopic" rows="2" class="w-full p-3 rounded-xl border-2 border-gray-100 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white focus:border-indigo-400 outline-none text-sm font-bold transition-all shadow-sm resize-none" placeholder="Örn: Present Simple Tense..." required></textarea>
                             </div>
                             
                             <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-black py-4 rounded-xl transition shadow-lg text-sm tracking-widest mt-2 transform active:scale-95">DERSİ KAYDET</button>
@@ -511,15 +528,15 @@
                 </div>
 
                 <div class="w-full lg:w-2/3 flex flex-col gap-6">
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <h4 class="font-black text-indigo-900 mb-4 text-sm uppercase border-b pb-2 flex items-center gap-2"><span>📈</span> Sınav Başarı Grafiği</h4>
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                        <h4 class="font-black text-indigo-900 dark:text-indigo-400 mb-4 text-sm uppercase border-b border-gray-100 dark:border-slate-700 pb-2 flex items-center gap-2"><span>📈</span> Sınav Başarı Grafiği</h4>
                         <div class="w-full h-48 relative">
                             <canvas id="profileChart"></canvas>
                         </div>
                     </div>
                     
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex-1 flex flex-col min-h-[300px]">
-                        <h4 class="font-black text-gray-800 mb-4 text-sm uppercase border-b pb-2 flex items-center gap-2"><span>📚</span> Geçmiş Seans Kayıtları</h4>
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex-1 flex flex-col min-h-[300px]">
+                        <h4 class="font-black text-gray-800 dark:text-gray-200 mb-4 text-sm uppercase border-b border-gray-100 dark:border-slate-700 pb-2 flex items-center gap-2"><span>📚</span> Geçmiş Seans Kayıtları</h4>
                         <div id="lessonList" class="space-y-3 overflow-y-auto flex-1 pr-2"></div>
                     </div>
                 </div>
@@ -568,6 +585,36 @@
                 <div class="text-center">
                     <p class="font-black text-gray-800 text-lg">Eğitmen İmzası</p>
                     <p class="italic mt-2">English Portal Yönetimi</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hidden">
+        <div id="certificateTemplate" class="w-[1123px] h-[794px] bg-slate-900 relative flex flex-col items-center justify-center p-16 text-center font-sans overflow-hidden" style="background: radial-gradient(circle, #1e1b4b 0%, #000000 100%);">
+            <div class="absolute inset-5 border-8 border-[#d4af37] opacity-90 pointer-events-none"></div>
+            <div class="absolute inset-8 border-2 border-[#d4af37] opacity-50 pointer-events-none"></div>
+            <div class="absolute opacity-5 text-[#d4af37] text-[400px] font-black transform -rotate-12 pointer-events-none">EP</div>
+
+            <h1 class="text-7xl font-black text-[#d4af37] mb-6 tracking-widest uppercase relative z-10" style="font-family: 'Times New Roman', serif;">Certificate of Achievement</h1>
+            <p class="text-2xl text-gray-300 font-light mb-16 tracking-widest uppercase relative z-10">This is proudly presented to</p>
+            <h2 class="text-8xl font-bold text-white mb-12 italic border-b-4 border-[#d4af37] pb-6 px-16 relative z-10" id="certStudentName" style="font-family: 'Georgia', serif;">Öğrenci Adı</h2>
+            <p class="text-2xl text-gray-300 max-w-4xl leading-relaxed mb-20 font-light relative z-10">For outstanding dedication, hard work, and exceptional progress in English language learning. Your commitment to educational excellence is truly inspiring.</p>
+
+            <div class="flex justify-between items-end w-full max-w-5xl px-12 relative z-10">
+                <div class="text-center">
+                    <div class="w-64 border-b-2 border-[#d4af37] mb-3 pb-2 text-white font-black text-4xl" style="font-family: 'Brush Script MT', cursive;">G. Öğretmen</div>
+                    <p class="text-lg text-[#d4af37] uppercase tracking-widest font-bold">Gülbahar Öğretmen</p>
+                    <p class="text-sm text-gray-400">English Portal Instructor</p>
+                </div>
+                <div class="w-40 h-40 bg-gradient-to-br from-[#d4af37] to-[#aa7c11] rounded-full flex flex-col items-center justify-center shadow-[0_0_40px_rgba(212,175,55,0.4)] border-4 border-[#ffe55c] transform -translate-y-4">
+                    <span class="text-white font-black text-4xl tracking-tighter leading-none">VIP</span>
+                    <span class="text-white font-bold text-sm tracking-widest mt-1">STAR</span>
+                </div>
+                <div class="text-center">
+                    <div class="w-64 border-b-2 border-[#d4af37] mb-3 pb-2 text-white font-black text-2xl" id="certDate">Tarih</div>
+                    <p class="text-lg text-[#d4af37] uppercase tracking-widest font-bold">Date of Award</p>
+                    <p class="text-sm text-gray-400">English Portal System</p>
                 </div>
             </div>
         </div>
