@@ -625,9 +625,9 @@ async function fetchActivities() {
     container.innerHTML = '';
     const icons = { video: '📺', game: '🎮', pdf: '📄' };
 
-    data.forEach(act => {
+        data.forEach(act => {
         container.innerHTML += `
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col justify-between hover:shadow-md transition">
+            <div class="activity-card bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col justify-between hover:shadow-md transition" data-category="${act.category}">
                 <div>
                     <span class="text-4xl">${icons[act.category] || '🔗'}</span>
                     <h4 class="font-black mt-3 text-gray-800 dark:text-white uppercase text-xs tracking-widest">${act.title}</h4>
@@ -638,6 +638,7 @@ async function fetchActivities() {
                 </div>
             </div>`;
     });
+
 }
 
 // ==========================================
