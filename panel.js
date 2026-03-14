@@ -1220,16 +1220,22 @@ if (btnGenerateAI) {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-                body: JSON.stringify({
+                                body: JSON.stringify({
                     model: 'gpt-4o-mini',
                     messages: [
-                                                { 
+                        { 
                             role: 'system', 
                             content: `Sen uzman bir İngilizce öğretmenisin. Verilen konuya göre tam ${qCount} adet çoktan seçmeli (A, B, C, D) İngilizce sorusu hazırla. Çıktıyı SADECE ve KESİNLİKLE geçerli bir JSON dizisi formatında ver. Soru ve şıklardaki İngilizce kelimelerde kesinlikle Türkçe karakter (İ, ı, ş, ğ vb.) kullanma, sadece standart İngilizce alfabesi kullan. Markdown kullanma. Format: [{"q": "Soru", "a": "A", "b": "B", "c": "C", "d": "D", "correct": "A"}]` 
                         },
-
+                        // DİKKAT: Burası silinmişti, geri ekledik! Yoksa AI konuyu bilemez!
+                        { 
+                            role: 'user', 
+                            content: `Konu: ${topic}` 
+                        }
+                    ], // Bu köşeli parantez de silinmişti, geri koyduk!
                     temperature: 0.7
                 })
+
             });
 
             const data = await response.json();
