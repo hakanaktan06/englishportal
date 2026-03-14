@@ -327,10 +327,14 @@ if(studentFormEl) {
         submitBtn.innerText = "⏳ Kaydediliyor...";
 
         const name = document.getElementById('studentName').value;
-        const email = document.getElementById('studentEmail').value;
+        const rawUsername = document.getElementById('studentUsername').value; // YENİ: Kullanıcı adını çektik
         const password = document.getElementById('studentPassword').value;
 
-        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+        // 🪄 SİHİRLİ DOKUNUŞ: Boşlukları sil, küçük harf yap ve hayalet e-postayı oluştur!
+        const dummyEmail = rawUsername.replace(/\s+/g, '').toLowerCase() + '@englishportal.com';
+
+        // Supabase'i kandırıyoruz: Ona çaktırmadan hayalet e-postayı yolluyoruz
+        const { data, error } = await supabaseClient.auth.signUp({ email: dummyEmail, password: password });
 
         if (error) { showToast("Hata: " + error.message, "error"); submitBtn.innerText = originalText; return; }
 
@@ -347,6 +351,7 @@ if(studentFormEl) {
         submitBtn.innerText = originalText;
     });
 }
+
 
 window.deleteStudent = async function(id) {
     const onay = await customConfirm("Bu öğrenciyi kalıcı olarak silmek istediğine emin misin? Dönüşü yok!");
