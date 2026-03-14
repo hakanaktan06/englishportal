@@ -1096,12 +1096,38 @@ window.generateCertificate = function() {
     });
 }
 
-window.copyParentLink = function() {
+// ==========================================
+// YENİ NESİL WHATSAPP VELİ RAPORU MOTORU
+// ==========================================
+window.sendWhatsAppReport = function() {
+    const studentName = document.getElementById('profileStudentName').innerText;
     const studentId = document.getElementById('profStudentId').value;
+    let rawPhone = document.getElementById('profParentPhone').value; // Numarayı çektik
+    
+    // Eğer numara girilmemişse hocayı uyar
+    if (!rawPhone || rawPhone.trim() === '') {
+        showToast("Bu öğrencinin veli numarası sisteme kayıtlı değil!", "error");
+        return;
+    }
+
+    // Telefon numarasını WhatsApp'ın anlayacağı uluslararası formata çeviriyoruz
+    let phone = rawPhone.replace(/\D/g, ''); // Sadece rakamları bırakır
+    if(phone.startsWith('0')) phone = phone.substring(1); // Baştaki 0'ı siler
+    if(phone.length === 10) phone = '90' + phone; // Başına TR kodu (90) ekler
+
     const currentUrl = window.location.href.split('/').slice(0, -1).join('/'); 
-    const link = `${currentUrl}/veli.html?id=${studentId}`;
-    navigator.clipboard.writeText(link).then(() => { showToast("🪄 Sihirli Link kopyalandı! WhatsApp'tan veliye yapıştır.", "success"); }).catch(() => { showToast("Kopyalanamadı.", "error"); });
+    const magicLink = `${currentUrl}/veli.html?id=${studentId}`;
+
+    const message = `🌟 Merhaba Sayın Velimiz,\n\nÖğrencimiz *${studentName}*'ın İngilizce derslerindeki güncel gelişim raporu, sınav sonuçları ve ödev durumunu aşağıdaki akıllı linkten inceleyebilirsiniz:\n\n🔗 ${magicLink}\n\nİyi günler dilerim! 👩‍🏫`;
+
+    // DİKKAT: Artık linkin içinde velinin direkt telefon numarası var!
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    
+    // WhatsApp'ı yeni sekmede aç ve mesajı hazırla
+    window.open(whatsappUrl, '_blank');
+    showToast("Veli sohbeti açılıyor...", "success");
 }
+
 
 // ==========================================
 // 10. DİNAMİK KARŞILAMA MESAJI MOTORU
