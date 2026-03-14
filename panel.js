@@ -309,12 +309,22 @@ const openStudBtn = document.getElementById('addStudentBtn');
 const closeStudBtn = document.getElementById('closeModalBtn');
 const studentFormEl = document.getElementById('newStudentForm');
 
-if(openStudBtn) openStudBtn.addEventListener('click', () => { if(studentModalEl) studentModalEl.classList.remove('hidden'); });
-if(closeStudBtn) closeStudBtn.addEventListener('click', () => { if(studentModalEl) studentModalEl.classList.add('hidden'); });
+if(openStudBtn) {
+    openStudBtn.addEventListener('click', () => { 
+        if(studentModalEl) studentModalEl.classList.remove('hidden'); 
+    });
+}
+
+if(closeStudBtn) {
+    closeStudBtn.addEventListener('click', () => { 
+        if(studentModalEl) studentModalEl.classList.add('hidden'); 
+    });
+}
 
 if(studentFormEl) {
     studentFormEl.addEventListener('submit', async function(e) {
         e.preventDefault(); 
+        
         const submitBtn = studentFormEl.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerText;
         submitBtn.innerText = "⏳ Kaydediliyor...";
@@ -352,9 +362,15 @@ if(studentFormEl) {
 window.deleteStudent = async function(id) {
     const onay = await customConfirm("Bu öğrenciyi kalıcı olarak silmek istediğine emin misin? Dönüşü yok!");
     if (!onay) return; 
+    
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
-    if (error) showToast("Silerken hata oldu: " + error.message, "error"); 
-    else { showToast("Öğrenci silindi.", "success"); fetchStudents(); }
+        
+    if (error) { 
+        showToast("Silerken hata oldu: " + error.message, "error"); 
+    } else { 
+        showToast("Öğrenci silindi.", "success");
+        fetchStudents(); 
+    }
 };
 
 async function fetchStudents() {
@@ -388,7 +404,7 @@ async function fetchStudents() {
             </td>
             <td class="p-4 text-gray-400 dark:text-gray-500 text-xs italic font-medium">Öğrenci Hesabı</td>
             <td class="p-4 text-gray-500 dark:text-gray-400 text-xs font-bold">${date}</td>
-            <td class="p-4">
+            <td class="p-4 text-right">
                 <div class="flex items-center justify-end space-x-2">
                     <button onclick="openStudentProfile('${student.id}', '${student.full_name.replace(/'/g, "\\'")}')" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition whitespace-nowrap">
                         📂 PROFİL & KARNE
@@ -407,9 +423,14 @@ async function fetchStudents() {
 window.deleteHomework = async function(id) {
     const onay = await customConfirm("Bu ödevi tamamen siliyorum, emin misin?");
     if (!onay) return;
+    
     const { error } = await supabaseClient.from('homeworks').delete().eq('id', id);
+
     if (error) showToast("Ödev silinirken hata oldu!", "error");
-    else { showToast("Ödev silindi.", "success"); fetchHomeworks(); }
+    else {
+        showToast("Ödev silindi.", "success");
+        fetchHomeworks();
+    }
 };
 
 async function fillStudentSelect() {
@@ -425,6 +446,7 @@ const homeworkFormEl = document.getElementById('newHomeworkForm');
 if(homeworkFormEl) {
     homeworkFormEl.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
         const studentId = document.getElementById('hwStudentSelect').value;
         if (!studentId) { showToast("Önce öğrenciyi seçmelisin!", "error"); return; }
 
@@ -438,8 +460,9 @@ if(homeworkFormEl) {
             due_date: document.getElementById('hwDueDate').value
         }]);
 
-        if (error) showToast("Ödev hatası: " + error.message, "error"); 
-        else { 
+        if (error) { 
+            showToast("Ödev hatası: " + error.message, "error"); 
+        } else { 
             showToast("Ödev başarıyla verildi!", "success"); 
             homeworkFormEl.reset(); 
             fetchHomeworks(); 
@@ -510,8 +533,9 @@ if (activityFormEl) {
             link: document.getElementById('actLink').value
         }]);
 
-        if (error) showToast("Hata: " + error.message, "error");
-        else {
+        if (error) {
+            showToast("Hata: " + error.message, "error");
+        } else {
             showToast("Etkinlik kütüphaneye eklendi!", "success");
             activityFormEl.reset();
             fetchActivities();
@@ -523,6 +547,7 @@ if (activityFormEl) {
 window.deleteActivity = async (id) => {
     const onay = await customConfirm("Bu etkinliği sileyim mi kanka?");
     if (!onay) return;
+    
     const { error } = await supabaseClient.from('activities').delete().eq('id', id);
     if (error) showToast("Silinirken hata!", "error"); else fetchActivities();
 };
@@ -547,7 +572,7 @@ async function fetchActivities() {
                     <span class="text-4xl">${icons[act.category] || '🔗'}</span>
                     <h4 class="font-black mt-3 text-gray-800 dark:text-white uppercase text-xs tracking-widest">${act.title}</h4>
                 </div>
-                <div class="mt-5 flex justify-between items-center border-t dark:border-slate-700 pt-3">
+                <div class="mt-5 flex justify-between items-center border-t border-gray-100 dark:border-slate-700 pt-3">
                     <a href="${act.link}" target="_blank" class="text-indigo-600 dark:text-indigo-400 font-black text-[10px] hover:underline uppercase tracking-tighter">AÇ ↗</a>
                     <button onclick="deleteActivity('${act.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition text-xl">🗑️</button>
                 </div>
@@ -573,17 +598,19 @@ const customTimeInput = document.getElementById('quizTimeInput');
 if (timeBtns) {
     timeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
+            // Tüm butonları gri yap
             timeBtns.forEach(b => {
                 b.classList.remove('bg-red-500', 'text-white', 'border-red-500', 'shadow-md');
                 b.classList.add('bg-gray-50', 'text-gray-500', 'border-gray-100', 'dark:bg-slate-700', 'dark:text-gray-300', 'dark:border-slate-600');
             });
+            // Tıklanan butonu Kırmızı (Aktif) yap
             btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-gray-100', 'dark:bg-slate-700', 'dark:text-gray-300', 'dark:border-slate-600');
             btn.classList.add('bg-red-500', 'text-white', 'border-red-500', 'shadow-md');
 
             const val = btn.getAttribute('data-time');
             if (val === 'custom') {
                 if (customTimeContainer) customTimeContainer.classList.remove('hidden');
-                if (customTimeInput) customTimeInput.focus();
+                if (customTimeInput) customTimeInput.focus(); 
                 if (finalQuizTime) finalQuizTime.value = 'custom';
             } else {
                 if (customTimeContainer) customTimeContainer.classList.add('hidden');
@@ -873,6 +900,8 @@ if(newLessonForm) {
         const lTime = document.getElementById('lessonTime').value;
         const lDuration = document.getElementById('lessonDuration').value;
         const lTopic = document.getElementById('lessonTopic').value;
+        
+        // YENİ MUHASEBE VERİLERİ
         const lPrice = document.getElementById('lessonPrice').value;
         const lIsPaid = document.getElementById('lessonIsPaid').value === 'true';
 
@@ -896,7 +925,9 @@ let profileChartInstance = null;
 let pdfChartInstance = null;
 
 async function fetchStudentLessons(studentId) {
+    // 1. DERSLERİ ÇEK
     const { data: lessons } = await supabaseClient.from('private_lessons').select('*').eq('student_id', studentId).order('lesson_date', { ascending: false });
+    
     const list = document.getElementById('lessonList');
     const pdfList = document.getElementById('pdfLessonList');
     if(!list || !pdfList) return;
@@ -904,23 +935,27 @@ async function fetchStudentLessons(studentId) {
     list.innerHTML = ''; pdfList.innerHTML = '';
 
     if (!lessons || lessons.length === 0) {
-        list.innerHTML = '<p class="text-gray-400 text-sm italic p-4 text-center">Henüz seans kaydı girilmemiş.</p>';
+        list.innerHTML = '<p class="text-gray-400 dark:text-gray-500 text-sm italic p-4 text-center">Henüz seans kaydı girilmemiş.</p>';
         pdfList.innerHTML = '<p class="text-gray-500 italic">Bu dönem kayıtlı seans bulunmamaktadır.</p>';
     } else {
         let totalUnpaid = 0; 
+
         lessons.forEach(l => {
             const date = new Date(l.lesson_date).toLocaleDateString('tr-TR');
             const time = l.lesson_time ? l.lesson_time : '';
             const duration = l.duration_hours ? `${l.duration_hours} Saat` : '';
             
+            // BORÇ HESABI
             if (!l.is_paid) totalUnpaid += Number(l.price || 0);
 
+            // Ödeme rozeti ve butonu
             const payBadge = l.is_paid 
                 ? `<span class="text-[10px] font-black bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-2 py-1 rounded-md">🟢 ÖDENDİ</span>`
                 : `<button onclick="markAsPaid('${l.id}', '${studentId}')" class="text-[10px] font-black bg-red-50 dark:bg-red-900/30 hover:bg-red-500 hover:text-white border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-2 py-1 rounded-md transition shadow-sm">🔴 ÖDENMEDİ (Tahsil Et)</button>`;
 
             const priceText = l.price ? `<span class="text-[10px] font-black bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-gray-200 px-2 py-1 rounded-md">₺${l.price}</span>` : '';
 
+            // Ekranda Görünen Havalı Kart Tasarımı
             list.innerHTML += `
                 <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm flex flex-col hover:border-indigo-200 transition">
                     <div class="flex justify-between items-start">
@@ -930,7 +965,7 @@ async function fetchStudentLessons(studentId) {
                             ${duration ? `<span class="text-[10px] font-black bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800 text-orange-700 dark:text-orange-400 px-2 py-1 rounded-md">⏳ ${duration}</span>` : ''}
                             ${priceText}
                         </div>
-                        <button onclick="deleteLesson('${l.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 transition text-xl leading-none ml-3" title="Kaydı Sil">&times;</button>
+                        <button onclick="deleteLesson('${l.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition text-xl leading-none ml-3" title="Kaydı Sil">&times;</button>
                     </div>
                     <p class="text-sm font-bold text-gray-700 dark:text-white mt-1 leading-snug">${l.topic}</p>
                     <div class="mt-3 border-t border-gray-50 dark:border-slate-700 pt-2 flex justify-between items-center">
@@ -938,6 +973,7 @@ async function fetchStudentLessons(studentId) {
                     </div>
                 </div>`;
             
+            // PDF İçindeki Profesyonel Rapor Tasarımı
             pdfList.innerHTML += `
                 <div class="mb-4 border-b border-gray-100 pb-3">
                     <p class="text-xs font-black text-indigo-600 tracking-wider">${date} ${time ? `| Saat: ${time}` : ''} ${duration ? `| Süre: ${duration}` : ''}</p>
@@ -945,6 +981,7 @@ async function fetchStudentLessons(studentId) {
                 </div>`;
         });
 
+        // Toplam Borcu Ekrana Bas
         const badgeEl = document.getElementById('unpaidTotalBadge');
         if (totalUnpaid > 0) {
             badgeEl.innerText = `Bekleyen: ₺${totalUnpaid}`;
@@ -954,6 +991,8 @@ async function fetchStudentLessons(studentId) {
         }
     }
 
+
+    // 2. SINAVLARI ÇEK VE GRAFİĞİ ÇİZ
     const { data: results } = await supabaseClient.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: true });
     
     const pdfQuizList = document.getElementById('pdfQuizList');
@@ -970,6 +1009,7 @@ async function fetchStudentLessons(studentId) {
         results.forEach(r => {
             labels.push(r.quizzes.title);
             scores.push(r.score);
+            
             let color = r.score >= 80 ? 'text-green-600' : (r.score >= 50 ? 'text-yellow-600' : 'text-red-600');
             if(pdfQuizList) {
                 pdfQuizList.innerHTML = `
@@ -1029,13 +1069,20 @@ window.deleteLesson = async function(id) {
     fetchStudentLessons(document.getElementById('profStudentId').value);
 }
 
+// TEK TIKLA TAHSİLAT YAPMA MOTORU
 window.markAsPaid = async function(lessonId, studentId) {
     showToast("Tahsilat işleniyor...", "info");
     const { error } = await supabaseClient.from('private_lessons').update({ is_paid: true }).eq('id', lessonId);
-    if(error) showToast("Hata oluştu: " + error.message, "error");
-    else { showToast("💵 Para kasaya girdi, ders ödendi olarak işaretlendi!", "success"); fetchStudentLessons(studentId); }
+    
+    if(error) {
+        showToast("Hata oluştu: " + error.message, "error");
+    } else {
+        showToast("💵 Para kasaya girdi, ders ödendi olarak işaretlendi!", "success");
+        fetchStudentLessons(studentId); // Listeyi tazeleyip borcu düşürür
+    }
 }
 
+// SİHİRLİ PDF OLUŞTURMA BUTONU
 window.generatePDF = function() {
     showToast("PDF hazırlanıyor, lütfen bekleyin...", "info");
     const element = document.getElementById('pdfTemplate');
@@ -1056,29 +1103,7 @@ window.generatePDF = function() {
     });
 }
 
-window.generateCertificate = function() {
-    showToast("🏆 Altın Sertifika Hazırlanıyor...", "info");
-    const element = document.getElementById('certificateTemplate');
-    const sName = document.getElementById('profileStudentName').innerText;
-    
-    const certNameEl = document.getElementById('certStudentName');
-    if (certNameEl) certNameEl.innerText = sName;
-    
-    const opt = {
-      margin:       0,
-      filename:     `${sName}_VIP_Sertifika.pdf`,
-      image:        { type: 'jpeg', quality: 1 },
-      html2canvas:  { scale: 3, useCORS: true, letterRendering: true }, 
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' } 
-    };
-
-    element.parentElement.classList.remove('hidden'); 
-    html2pdf().set(opt).from(element).save().then(() => {
-        element.parentElement.classList.add('hidden'); 
-        showToast("🌟 Sertifika Başarıyla İndirildi!", "success");
-    });
-}
-
+// SİHİRLİ VELİ LİNKİ KOPYALAMA MOTORU
 window.copyParentLink = function() {
     const studentId = document.getElementById('profStudentId').value;
     const currentUrl = window.location.href.split('/').slice(0, -1).join('/'); 
@@ -1092,7 +1117,7 @@ window.copyParentLink = function() {
 }
 
 // ==========================================
-// 10. DİNAMİK KARŞILAMA MESAJI MOTORU
+// 10. DİNAMİK KARŞILAMA MESAJI MOTORU (30 ADET)
 // ==========================================
 function setDynamicMotivations() {
     const welcomeMsgs = [
