@@ -6,17 +6,27 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 // ==========================================
-// UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
+// UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU (SPAM KORUMALI)
 // ==========================================
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     if(!container) return;
+
+    // 🚨 YENİ: SPAM KORUMASI 
+    // Ekranda halihazırda "aynı" mesaja sahip bir bildirim varsa, yenisini çıkarma!
+    const existingToasts = container.querySelectorAll('.toast-msg');
+    for (let i = 0; i < existingToasts.length; i++) {
+        if (existingToasts[i].innerText === message) return; // Fonksiyonu iptal et
+    }
+
     const toast = document.createElement('div');
     const bgColor = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-blue-600');
     const icon = type === 'success' ? '✅' : (type === 'error' ? '⚠️' : 'ℹ️');
 
     toast.className = `${bgColor} text-white px-5 py-3.5 rounded-2xl shadow-xl shadow-${bgColor}/30 font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
-    toast.innerHTML = `<span class="text-lg">${icon}</span> <span>${message}</span>`;
+    
+    // Mesajı özel bir span içine (toast-msg) aldık ki sistem okuyup tanıyabilsin
+    toast.innerHTML = `<span class="text-lg">${icon}</span> <span class="toast-msg">${message}</span>`;
     container.appendChild(toast);
     
     setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 10);
@@ -25,6 +35,7 @@ function showToast(message, type = 'success') {
         setTimeout(() => toast.remove(), 300); 
     }, 3000);
 }
+
 
 function customConfirm(message, btnText = "Evet, Sil") {
     return new Promise((resolve) => {
