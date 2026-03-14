@@ -422,14 +422,15 @@ async function fetchStudents() {
         let avgWidth = studAvg > 0 ? studAvg : 0;
         let badgeHtml = '';
 
+        // 🌟 YENİ AMELİYAT: Absolute'u sildik, hizalamayı direkt butonun yanına taşıdık! 🌟
         if(studAvg >= 85) {
             avgColor = 'bg-green-500';
-            badgeHtml = '<span class="absolute top-4 right-4 bg-gradient-to-r from-amber-400 to-yellow-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg border-2 border-white dark:border-slate-800 z-10" title="Parlayan Yıldız">⭐</span>';
+            badgeHtml = '<span class="bg-gradient-to-r from-amber-400 to-yellow-500 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm shadow-md border-2 border-white dark:border-slate-800" title="Parlayan Yıldız">⭐</span>';
         } else if(studAvg >= 50) {
             avgColor = 'bg-yellow-500';
         } else if(studAvg > 0) {
             avgColor = 'bg-red-500';
-            badgeHtml = '<span class="absolute top-4 right-4 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg border-2 border-white dark:border-slate-800 z-10 animate-pulse" title="Dikkat Gerekli">⚠️</span>';
+            badgeHtml = '<span class="bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm shadow-md border-2 border-white dark:border-slate-800 animate-pulse" title="Dikkat Gerekli">⚠️</span>';
         }
 
         const debtHtml = studDebt > 0 
@@ -448,7 +449,6 @@ async function fetchStudents() {
         card.className = "w-full h-full bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 relative group flex flex-col";
         
         card.innerHTML = `
-            ${badgeHtml}
             <div class="flex justify-between items-start mb-5">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 text-indigo-600 dark:text-indigo-300 flex items-center justify-center text-lg font-black shadow-inner border border-indigo-50 dark:border-slate-600">
@@ -459,9 +459,12 @@ async function fetchStudents() {
                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Kayıt: ${dateStr}</p>
                     </div>
                 </div>
-                <button onclick="deleteStudent('${student.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition" title="Öğrenciyi Sil">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
+                <div class="flex items-center gap-3">
+                    ${badgeHtml}
+                    <button onclick="deleteStudent('${student.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition" title="Öğrenciyi Sil">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
             </div>
 
             <div class="mb-5 flex-1">
@@ -489,6 +492,7 @@ async function fetchStudents() {
         searchInput.dispatchEvent(new Event('input'));
     }
 }
+
 
 // ==========================================
 // 4. ÖDEV MOTORLARI 
