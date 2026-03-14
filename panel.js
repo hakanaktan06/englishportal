@@ -419,7 +419,7 @@ async function fetchStudents() {
             badgeHtml = '<span class="absolute -top-3 -right-3 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg border-2 border-white dark:border-slate-800 z-10 animate-pulse" title="Dikkat Gerekli">⚠️</span>';
         }
 
-        // YENİ: Profesyonel Yanıp Sönen Kırmızı Işık (Dual-Dot Ping)
+        // Profesyonel Yanıp Sönen Kırmızı Işık (Dual-Dot Ping)
         const debtHtml = studDebt > 0 
             ? `<div class="flex items-center gap-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-800 shadow-sm">
                  <div class="relative flex h-2.5 w-2.5">
@@ -433,7 +433,6 @@ async function fetchStudents() {
         const dateStr = new Date(student.created_at).toLocaleDateString('tr-TR', { month: 'short', year: 'numeric' });
 
         const card = document.createElement('div');
-        // Kayan (Carousel) Kart Tasarımı
         card.className = "w-[85vw] sm:w-[320px] shrink-0 snap-center bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 relative group flex flex-col";
         
         card.innerHTML = `
@@ -939,7 +938,7 @@ if(newLessonForm) {
             document.getElementById('lessonDuration').value = '';
             document.getElementById('lessonPrice').value = ''; 
             fetchStudentLessons(studentId);
-            fetchStudents(); // Ana sayfadaki borcu da güncellesin
+            fetchStudents(); 
         }
     });
 }
@@ -1034,7 +1033,7 @@ window.deleteLesson = async function(id) {
     if (!await customConfirm("Ders kaydını silmek istediğine emin misin?")) return;
     await supabaseClient.from('private_lessons').delete().eq('id', id);
     fetchStudentLessons(document.getElementById('profStudentId').value);
-    fetchStudents(); // Ana sayfadaki borcu da güncellesin
+    fetchStudents(); 
 }
 
 window.markAsPaid = async function(lessonId, studentId) {
@@ -1044,7 +1043,7 @@ window.markAsPaid = async function(lessonId, studentId) {
     else { 
         showToast("💵 Para kasaya girdi, ders ödendi olarak işaretlendi!", "success"); 
         fetchStudentLessons(studentId); 
-        fetchStudents(); // Ana sayfadaki borcu da güncellesin
+        fetchStudents(); 
     }
 }
 
