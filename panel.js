@@ -270,7 +270,7 @@ async function fetchAgenda() {
             <div class="flex flex-col items-center justify-center py-10 text-gray-400">
                 <span class="text-5xl mb-3 opacity-50">☕</span>
                 <p class="text-sm font-bold text-gray-500">Yaklaşan bir programınız yok.</p>
-                <p class="text-xs mt-1">Gülbahar Öğretmenim, şimdi kafa dinleme vakti!</p>
+                <p class="text-xs mt-1">Gül Öğretmenim, şimdi kafa dinleme vakti!</p>
             </div>`;
         return;
     }
