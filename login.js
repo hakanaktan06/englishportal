@@ -22,23 +22,30 @@ loginForm.addEventListener('submit', async (e) => {
     loginBtn.disabled = true;
 
     // Kullanıcının girdiği bilgileri al
-    const email = document.getElementById('emailInput').value;
+    const rawInput = document.getElementById('loginInput').value.trim();
     const password = document.getElementById('passwordInput').value;
+
+    let finalEmail = rawInput;
+
+    // 🪄 SİHİRLİ DOKUNUŞ: Eğer yazılan şeyde "@" işareti YOKSA, bu bir öğrencidir. Hayalet domaini ekle!
+    if (!rawInput.includes('@')) {
+        finalEmail = rawInput.replace(/\s+/g, '').toLowerCase() + '@englishportal.com';
+    }
 
     // 1. ADIM: Supabase Auth ile Giriş Denemesi
     const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-        email: email,
+        email: finalEmail,
         password: password
     });
 
     // Eğer şifre yanlışsa veya hesap yoksa
     if (authError) {
-        showError("E-posta veya şifre hatalı kanka. Tekrar dene!");
+        showError("Kullanıcı adı veya şifre hatalı kanka. Tekrar dene!");
         resetButton(originalBtnText);
         return;
     }
 
-    // 2. ADIM: Başarılı girişten sonra kullanıcının Rolünü (Öğretmen mi Öğrenci mi) bul
+    // 2. ADIM: Başarılı girişten sonra kullanıcının Rolünü bul
     const userId = authData.user.id;
     
     const { data: profileData, error: profileError } = await supabaseClient
@@ -57,10 +64,8 @@ loginForm.addEventListener('submit', async (e) => {
     const userRole = profileData.role;
 
     if (userRole === 'teacher') {
-        // Yenge giriş yaptıysa Öğretmen Paneline fırlat
         window.location.href = 'panel.html';
     } else if (userRole === 'student') {
-        // Öğrenci giriş yaptıysa Öğrenci Sınav Paneline fırlat
         window.location.href = 'student.html';
     } else {
         showError("Kanka senin yetkin belli değil sistemde.");
@@ -88,3 +93,15 @@ document.getElementById('togglePasswordBtn')?.addEventListener('click', () => {
     pwd.setAttribute('type', type);
 });
 
+// ==========================================
+// OTOMATİK OTURUM KONTROLÜ (Zaten giriş yapmışsa bir daha sorma)
+// ==========================================
+async function checkActiveSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+        const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+        if (profile && profile.role === 'teacher') window.location.href = 'panel.html';
+        else if (profile && profile.role === 'student') window.location.href = 'student.html';
+    }
+}
+checkActiveSession();
