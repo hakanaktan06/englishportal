@@ -1309,5 +1309,12 @@ if (btnGenerateAI) {
     });
 }
 
+// GÜNÜN TARİHİNİ ÖDEV FORMUNA OTOMATİK YAZDIRMA
+document.addEventListener("DOMContentLoaded", () => {
+    const hwDueDateInput = document.getElementById('hwDueDate');
+    if (hwDueDateInput) hwDueDateInput.value = new Date().toISOString().split('T')[0];
+});
+
+
 setDynamicMotivations();
 switchTab('dashboard');
