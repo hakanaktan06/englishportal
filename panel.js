@@ -477,9 +477,11 @@ async function fetchStudents() {
 
             <div class="flex items-center justify-between mt-auto border-t border-gray-50 dark:border-slate-700 pt-5">
                 ${debtHtml}
-                <button onclick="openStudentProfile('${student.id}', '${student.full_name.replace(/'/g, "\\'")}')" class="bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-600 dark:hover:bg-indigo-500 text-indigo-600 dark:text-indigo-400 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all shadow-sm">
-                    PROFİLİ AÇ ↗
-                </button>
+                // Eski satırı silip bunu yapıştır:
+<button onclick="openStudentProfile('${student.id}', '${student.full_name.replace(/'/g, "\\'")}', '${student.parent_phone || ''}')" class="bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-600 dark:hover:bg-indigo-500 text-indigo-600 dark:text-indigo-400 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all shadow-sm">
+    PROFİLİ AÇ ↗
+</button>
+
             </div>
         `;
         listContainer.appendChild(card);
