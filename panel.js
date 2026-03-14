@@ -738,15 +738,16 @@ async function fetchQuestionsForQuiz(quizId) {
             <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-sm relative group hover:border-indigo-200 transition">
                 <div class="flex items-start">
                     <span class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black mr-3 mt-1">${index + 1}</span>
-                    <div class="flex-1">
+                                        <div class="flex-1" lang="en">
                         <p class="text-sm font-black text-gray-800 dark:text-white leading-tight mb-3">${q.question_text}</p>
-                        <div class="grid grid-cols-2 gap-2 text-[10px] font-bold uppercase">
+                        <div class="grid grid-cols-2 gap-2 text-xs font-bold">
                             <span class="p-2 rounded-xl ${q.correct_option === 'A' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">A: ${q.option_a}</span>
                             <span class="p-2 rounded-xl ${q.correct_option === 'B' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">B: ${q.option_b}</span>
                             <span class="p-2 rounded-xl ${q.correct_option === 'C' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">C: ${q.option_c}</span>
                             <span class="p-2 rounded-xl ${q.correct_option === 'D' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">D: ${q.option_d}</span>
                         </div>
                     </div>
+
                 </div>
                 <button onclick="deleteQuestion('${q.id}')" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition text-red-300 hover:text-red-500 text-2xl font-black">&times;</button>
             </div>`;
