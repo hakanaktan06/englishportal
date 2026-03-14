@@ -1317,5 +1317,21 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+// ETKİNLİK FİLTRELEME MOTORU
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('filter-btn')) {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.className = "filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition";
+        });
+        e.target.className = "filter-btn bg-purple-600 text-white px-5 py-2.5 rounded-xl text-xs font-black whitespace-nowrap shadow-[0_0_15px_rgba(147,51,234,0.4)] transition";
+        
+        const filter = e.target.getAttribute('data-filter');
+        document.querySelectorAll('.activity-card').forEach(card => {
+            card.style.display = (filter === 'all' || card.getAttribute('data-category') === filter) ? 'flex' : 'none';
+        });
+    }
+});
+
+
 setDynamicMotivations();
 switchTab('dashboard');
