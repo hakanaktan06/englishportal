@@ -10,7 +10,6 @@
 
     <meta property="og:title" content="English Portal - VIP Eğitim">
     <meta property="og:description" content="Öğrenciler için interaktif ödev, sınav ve gelişim takip platformu.">
-    <meta property="og:image" content="https://placehold.co/1200x630/1e1b4b/ffffff.png?text=English+Portal%0AVIP+Ozel+Ders+Sistemi&font=Montserrat">
     <meta property="og:type" content="website">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -24,6 +23,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
+    
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
 <body class="bg-gray-50 dark:bg-slate-900 transition-colors duration-300 flex h-[100dvh] overflow-hidden text-gray-800 dark:text-gray-100 relative">
     
@@ -146,7 +150,7 @@
         <div id="section-students" class="page-section w-full hidden pb-10">
             <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
                 <div>
-                    <h2 class="text-xl md:text-2xl font-extrabold text-gray-800 dark:text-white">VIP İstihbarat Paneli</h2>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-gray-800 dark:text-white">VIP Öğrenci Paneli</h2>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-widest font-bold hidden sm:block">Performans ve Finans Analizi</p>
                 </div>
                 <button id="addStudentBtn" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg transition flex items-center gap-2">
@@ -177,8 +181,8 @@
                     </div>
                 </div>
 
-                <div id="studentList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <div class="col-span-full text-center text-gray-400 italic py-10 animate-pulse">Veriler toplanıyor...</div>
+                <div id="studentList" class="flex overflow-x-auto gap-4 md:gap-6 pb-6 pt-2 snap-x snap-mandatory hide-scrollbar">
+                    <div class="w-full text-center text-gray-400 italic py-10 animate-pulse">Veriler toplanıyor...</div>
                 </div>
             </div>
         </div>
@@ -282,7 +286,7 @@
             <div class="p-4 md:p-6 max-w-7xl mx-auto w-full">
                 <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                        <table class="w-full text-left whitespace-nowrap">
                             <thead>
                                 <tr class="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs uppercase border-b border-blue-100 dark:border-blue-800">
                                     <th class="p-4 font-semibold">Öğrenci Adı</th>
