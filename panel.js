@@ -33,7 +33,7 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-function customConfirm(message, btnText = "Evet, Sil") {
+function customConfirm(message, btnText = "Evet, İşlemi Yap") {
     return new Promise((resolve) => {
         const modal = document.getElementById('customConfirmModal');
         const box = document.getElementById('customConfirmBox');
@@ -326,10 +326,10 @@ if(studentFormEl) {
         const originalText = submitBtn.innerText;
         submitBtn.innerText = "⏳ Kaydediliyor...";
 
-                const name = document.getElementById('studentName').value;
+        const name = document.getElementById('studentName').value;
         const rawUsername = document.getElementById('studentUsername').value; 
         const password = document.getElementById('studentPassword').value;
-        const parentPhone = document.getElementById('parentPhone').value; // YENİ: Numarayı çektik
+        const parentPhone = document.getElementById('parentPhone').value; 
 
         const dummyEmail = rawUsername.replace(/\s+/g, '').toLowerCase() + '@englishportal.com';
 
@@ -338,7 +338,6 @@ if(studentFormEl) {
         if (error) { showToast("Hata: " + error.message, "error"); submitBtn.innerText = originalText; return; }
 
         if (data.user) {
-            // YENİ: parent_phone verisini de profiles tablosuna kaydediyoruz!
             const { error: profileError } = await supabaseClient.from('profiles').insert([{ id: data.user.id, full_name: name, role: 'student', parent_phone: parentPhone }]);
             
             if (profileError) showToast("Hata: " + profileError.message, "error");
@@ -356,7 +355,7 @@ if(studentFormEl) {
 
 
 window.deleteStudent = async function(id) {
-    const onay = await customConfirm("Bu öğrenciyi kalıcı olarak silmek istediğine emin misin? Dönüşü yok!");
+    const onay = await customConfirm("Bu öğrenciyi kalıcı olarak silmek istediğine emin misin? Dönüşü yok!", "Evet, Sil");
     if (!onay) return; 
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
     if (error) showToast("Silerken hata oldu: " + error.message, "error"); 
@@ -475,13 +474,12 @@ async function fetchStudents() {
                 </div>
             </div>
 
-                        <div class="flex items-center justify-between mt-auto border-t border-gray-50 dark:border-slate-700 pt-5">
+            <div class="flex items-center justify-between mt-auto border-t border-gray-50 dark:border-slate-700 pt-5">
                 ${debtHtml}
                 <button onclick="openStudentProfile('${student.id}', '${student.full_name.replace(/'/g, "\\'")}', '${student.parent_phone || ''}')" class="bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-600 dark:hover:bg-indigo-500 text-indigo-600 dark:text-indigo-400 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all shadow-sm">
                     PROFİLİ AÇ ↗
                 </button>
             </div>
-
         `;
         listContainer.appendChild(card);
     });
@@ -496,7 +494,7 @@ async function fetchStudents() {
 // 4. ÖDEV MOTORLARI 
 // ==========================================
 window.deleteHomework = async function(id) {
-    const onay = await customConfirm("Bu ödevi tamamen siliyorum, emin misin?");
+    const onay = await customConfirm("Bu ödevi tamamen siliyorum, emin misin?", "Evet, Sil");
     if (!onay) return;
     const { error } = await supabaseClient.from('homeworks').delete().eq('id', id);
     if (error) showToast("Ödev silinirken hata oldu!", "error");
@@ -608,7 +606,7 @@ if (activityFormEl) {
 }
 
 window.deleteActivity = async (id) => {
-    const onay = await customConfirm("Bu etkinliği sileyim mi kanka?");
+    const onay = await customConfirm("Bu etkinliği sileyim mi kanka?", "Evet, Sil");
     if (!onay) return;
     const { error } = await supabaseClient.from('activities').delete().eq('id', id);
     if (error) showToast("Silinirken hata!", "error"); else fetchActivities();
@@ -790,7 +788,7 @@ if (questionFormEl) {
 }
 
 window.deleteQuestion = async (id) => {
-    const onay = await customConfirm("Kanka bu soruyu sileyim mi?");
+    const onay = await customConfirm("Kanka bu soruyu sileyim mi?", "Evet, Sil");
     if (!onay) return;
     await supabaseClient.from('questions').delete().eq('id', id);
     showToast("Soru silindi.", "success");
@@ -824,7 +822,7 @@ async function fetchQuizzes() {
 }
 
 window.deleteQuiz = async (id) => {
-    const onay = await customConfirm("Bu sınavı ve içindeki TÜM soruları siliyorum, emin misin?");
+    const onay = await customConfirm("Bu sınavı ve içindeki TÜM soruları siliyorum, emin misin?", "Evet, Sil");
     if (!onay) return;
     await supabaseClient.from('quizzes').delete().eq('id', id);
     showToast("Sınav tamamen silindi.", "success");
@@ -873,7 +871,7 @@ async function fetchResults() {
 }
 
 window.deleteResult = async function(id) {
-    const onay = await customConfirm("Bu öğrencinin sınav sonucunu kalıcı olarak siliyorum, emin misin?");
+    const onay = await customConfirm("Bu öğrencinin sınav sonucunu kalıcı olarak siliyorum, emin misin?", "Evet, Sil");
     if (!onay) return;
     await supabaseClient.from('quiz_results').delete().eq('id', id);
     fetchResults(); 
@@ -920,10 +918,9 @@ window.closeTeacherAnalysisModal = () => document.getElementById('teacherAnalysi
 // ==========================================
 window.openStudentProfile = async function(id, name, phone) {
     document.getElementById('profStudentId').value = id;
-    document.getElementById('profParentPhone').value = phone || ''; // YENİ: Numarayı gizli kutuya yazdık
+    document.getElementById('profParentPhone').value = phone || ''; // Numarayı gizli kutuya yazdık
     document.getElementById('profileStudentName').innerText = name;
 
-    
     const today = new Date().toLocaleDateString('tr-TR');
     document.getElementById('pdfDate').innerText = today;
     
@@ -1051,7 +1048,7 @@ async function fetchStudentLessons(studentId) {
 }
 
 window.deleteLesson = async function(id) {
-    if (!await customConfirm("Ders kaydını silmek istediğine emin misin?")) return;
+    if (!await customConfirm("Ders kaydını silmek istediğine emin misin?", "Evet, Sil")) return;
     await supabaseClient.from('private_lessons').delete().eq('id', id);
     fetchStudentLessons(document.getElementById('profStudentId').value);
     fetchStudents(); 
@@ -1101,32 +1098,27 @@ window.generateCertificate = function() {
 window.sendWhatsAppReport = function() {
     const studentName = document.getElementById('profileStudentName').innerText;
     const studentId = document.getElementById('profStudentId').value;
-    let rawPhone = document.getElementById('profParentPhone').value; // Numarayı çektik
+    let rawPhone = document.getElementById('profParentPhone').value; 
     
-    // Eğer numara girilmemişse hocayı uyar
     if (!rawPhone || rawPhone.trim() === '') {
         showToast("Bu öğrencinin veli numarası sisteme kayıtlı değil!", "error");
         return;
     }
 
-    // Telefon numarasını WhatsApp'ın anlayacağı uluslararası formata çeviriyoruz
-    let phone = rawPhone.replace(/\D/g, ''); // Sadece rakamları bırakır
-    if(phone.startsWith('0')) phone = phone.substring(1); // Baştaki 0'ı siler
-    if(phone.length === 10) phone = '90' + phone; // Başına TR kodu (90) ekler
+    let phone = rawPhone.replace(/\D/g, ''); 
+    if(phone.startsWith('0')) phone = phone.substring(1); 
+    if(phone.length === 10) phone = '90' + phone; 
 
     const currentUrl = window.location.href.split('/').slice(0, -1).join('/'); 
     const magicLink = `${currentUrl}/veli.html?id=${studentId}`;
 
     const message = `🌟 Merhaba Sayın Velimiz,\n\nÖğrencimiz *${studentName}*'ın İngilizce derslerindeki güncel gelişim raporu, sınav sonuçları ve ödev durumunu aşağıdaki akıllı linkten inceleyebilirsiniz:\n\n🔗 ${magicLink}\n\nİyi günler dilerim! 👩‍🏫`;
 
-    // DİKKAT: Artık linkin içinde velinin direkt telefon numarası var!
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     
-    // WhatsApp'ı yeni sekmede aç ve mesajı hazırla
     window.open(whatsappUrl, '_blank');
     showToast("Veli sohbeti açılıyor...", "success");
 }
-
 
 // ==========================================
 // 10. DİNAMİK KARŞILAMA MESAJI MOTORU
@@ -1255,22 +1247,20 @@ if (btnGenerateAI) {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-                                body: JSON.stringify({
+                body: JSON.stringify({
                     model: 'gpt-4o-mini',
                     messages: [
                         { 
                             role: 'system', 
                             content: `Sen uzman bir İngilizce öğretmenisin. Verilen konuya göre tam ${qCount} adet çoktan seçmeli (A, B, C, D) İngilizce sorusu hazırla. Çıktıyı SADECE ve KESİNLİKLE geçerli bir JSON dizisi formatında ver. Soru ve şıklardaki İngilizce kelimelerde kesinlikle Türkçe karakter (İ, ı, ş, ğ vb.) kullanma, sadece standart İngilizce alfabesi kullan. Markdown kullanma. Format: [{"q": "Soru", "a": "A", "b": "B", "c": "C", "d": "D", "correct": "A"}]` 
                         },
-                        // DİKKAT: Burası silinmişti, geri ekledik! Yoksa AI konuyu bilemez!
                         { 
                             role: 'user', 
                             content: `Konu: ${topic}` 
                         }
-                    ], // Bu köşeli parantez de silinmişti, geri koyduk!
+                    ], 
                     temperature: 0.7
                 })
-
             });
 
             const data = await response.json();
