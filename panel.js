@@ -112,7 +112,6 @@ if(sideOpenBtn) sideOpenBtn.addEventListener('click', toggleMobileSidebar);
 if(sideCloseBtn) sideCloseBtn.addEventListener('click', toggleMobileSidebar);
 if(sideOverlay) sideOverlay.addEventListener('click', toggleMobileSidebar);
 
-
 // ==========================================
 // 2. SEKMELER ARASI GEÇİŞ VE NAVİGASYON
 // ==========================================
@@ -183,7 +182,6 @@ if(btnStudents) btnStudents.addEventListener('click', (e) => { e.preventDefault(
 if(btnActivities) btnActivities.addEventListener('click', (e) => { e.preventDefault(); switchTab('activities'); });
 if(btnQuizzes) btnQuizzes.addEventListener('click', (e) => { e.preventDefault(); switchTab('quizzes'); });
 if(btnResults) btnResults.addEventListener('click', (e) => { e.preventDefault(); switchTab('results'); });
-
 
 // ==========================================
 // KOKPİT (DASHBOARD) İSTATİSTİK VE AJANDA MOTORU
@@ -311,12 +309,22 @@ const openStudBtn = document.getElementById('addStudentBtn');
 const closeStudBtn = document.getElementById('closeModalBtn');
 const studentFormEl = document.getElementById('newStudentForm');
 
-if(openStudBtn) openStudBtn.addEventListener('click', () => { if(studentModalEl) studentModalEl.classList.remove('hidden'); });
-if(closeStudBtn) closeStudBtn.addEventListener('click', () => { if(studentModalEl) studentModalEl.classList.add('hidden'); });
+if(openStudBtn) {
+    openStudBtn.addEventListener('click', () => { 
+        if(studentModalEl) studentModalEl.classList.remove('hidden'); 
+    });
+}
+
+if(closeStudBtn) {
+    closeStudBtn.addEventListener('click', () => { 
+        if(studentModalEl) studentModalEl.classList.add('hidden'); 
+    });
+}
 
 if(studentFormEl) {
     studentFormEl.addEventListener('submit', async function(e) {
         e.preventDefault(); 
+        
         const submitBtn = studentFormEl.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerText;
         submitBtn.innerText = "⏳ Kaydediliyor...";
@@ -354,49 +362,58 @@ if(studentFormEl) {
 window.deleteStudent = async function(id) {
     const onay = await customConfirm("Bu öğrenciyi kalıcı olarak silmek istediğine emin misin? Dönüşü yok!");
     if (!onay) return; 
+    
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
-    if (error) showToast("Silerken hata oldu: " + error.message, "error"); 
-    else { showToast("Öğrenci silindi.", "success"); fetchStudents(); }
+        
+    if (error) { 
+        showToast("Silerken hata oldu: " + error.message, "error"); 
+    } else { 
+        showToast("Öğrenci silindi.", "success");
+        fetchStudents(); 
+    }
 };
 
 async function fetchStudents() {
     const { data, error } = await supabaseClient.from('profiles').select('*').eq('role', 'student').order('created_at', { ascending: false });
+    if (error) return; 
+
     const tbody = document.getElementById('studentList');
     const totalStudents = document.getElementById('totalStudents');
-    if (error || !tbody) return; 
 
     if (!data || data.length === 0) {
         if(totalStudents) totalStudents.innerText = "0";
-        tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-500 italic">Henüz hiç öğrenci yok.</td></tr>`;
+        if(tbody) tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-500 italic">Henüz hiç öğrenci yok.</td></tr>`;
         return;
     }
 
     if(totalStudents) totalStudents.innerText = data.length;
-    tbody.innerHTML = ''; 
+    if(tbody) tbody.innerHTML = ''; 
 
     data.forEach(student => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-gray-100 hover:bg-indigo-50/20 transition";
         const dateObj = new Date(student.created_at);
         const date = dateObj.toLocaleDateString('tr-TR');
 
-        tbody.innerHTML += `
-            <tr class="border-b border-gray-100 hover:bg-indigo-50/20 transition">
-                <td class="p-4 font-bold text-gray-800 flex items-center text-sm">
-                    <div class="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs mr-3 shadow-sm">
-                        ${student.full_name.charAt(0).toUpperCase()}
-                    </div>
-                    ${student.full_name}
-                </td>
-                <td class="p-4 text-gray-400 text-xs italic font-medium">Öğrenci Hesabı</td>
-                <td class="p-4 text-gray-500 text-xs font-bold">${date}</td>
-                <td class="p-4">
-                    <div class="flex items-center justify-end space-x-2">
-                        <button onclick="openStudentProfile('${student.id}', '${student.full_name.replace(/'/g, "\\'")}')" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition whitespace-nowrap">
-                            📂 PROFİL & KARNE
-                        </button>
-                        <button onclick="deleteStudent('${student.id}')" class="text-gray-300 hover:text-red-500 p-2 text-lg transition" title="Öğrenciyi Sil">🗑️</button>
-                    </div>
-                </td>
-            </tr>`;
+        tr.innerHTML = `
+            <td class="p-4 font-bold text-gray-800 flex items-center text-sm">
+                <div class="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs mr-3 shadow-sm">
+                    ${student.full_name.charAt(0).toUpperCase()}
+                </div>
+                ${student.full_name}
+            </td>
+            <td class="p-4 text-gray-400 text-xs italic font-medium">Öğrenci Hesabı</td>
+            <td class="p-4 text-gray-500 text-xs font-bold">${date}</td>
+            <td class="p-4">
+                <div class="flex items-center justify-end space-x-2">
+                    <button onclick="openStudentProfile('${student.id}', '${student.full_name.replace(/'/g, "\\'")}')" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition whitespace-nowrap">
+                        📂 PROFİL & KARNE
+                    </button>
+                    <button onclick="deleteStudent('${student.id}')" class="text-gray-300 hover:text-red-500 p-2 text-lg transition" title="Öğrenciyi Sil">🗑️</button>
+                </div>
+            </td>
+        `;
+        if(tbody) tbody.appendChild(tr);
     });
 }
 
@@ -406,9 +423,14 @@ async function fetchStudents() {
 window.deleteHomework = async function(id) {
     const onay = await customConfirm("Bu ödevi tamamen siliyorum, emin misin?");
     if (!onay) return;
+    
     const { error } = await supabaseClient.from('homeworks').delete().eq('id', id);
+
     if (error) showToast("Ödev silinirken hata oldu!", "error");
-    else { showToast("Ödev silindi.", "success"); fetchHomeworks(); }
+    else {
+        showToast("Ödev silindi.", "success");
+        fetchHomeworks();
+    }
 };
 
 async function fillStudentSelect() {
@@ -424,6 +446,7 @@ const homeworkFormEl = document.getElementById('newHomeworkForm');
 if(homeworkFormEl) {
     homeworkFormEl.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
         const studentId = document.getElementById('hwStudentSelect').value;
         if (!studentId) { showToast("Önce öğrenciyi seçmelisin!", "error"); return; }
 
@@ -437,8 +460,9 @@ if(homeworkFormEl) {
             due_date: document.getElementById('hwDueDate').value
         }]);
 
-        if (error) showToast("Ödev hatası: " + error.message, "error"); 
-        else { 
+        if (error) { 
+            showToast("Ödev hatası: " + error.message, "error"); 
+        } else { 
             showToast("Ödev başarıyla verildi!", "success"); 
             homeworkFormEl.reset(); 
             fetchHomeworks(); 
@@ -460,7 +484,9 @@ async function fetchHomeworks() {
     tbody.innerHTML = '';
     data.forEach(hw => {
         const date = new Date(hw.due_date).toLocaleDateString('tr-TR');
-        const statusHtml = hw.status === 'Tamamlandı' 
+        const status = hw.status || 'bekliyor';
+        
+        let statusHtml = status === 'Tamamlandı' 
             ? `<span class="px-3 py-1 bg-green-50 text-green-600 border border-green-100 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto">Tamamlandı</span>` 
             : `<span class="px-3 py-1 bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto">Bekliyor</span>`;
 
@@ -507,8 +533,9 @@ if (activityFormEl) {
             link: document.getElementById('actLink').value
         }]);
 
-        if (error) showToast("Hata: " + error.message, "error");
-        else {
+        if (error) {
+            showToast("Hata: " + error.message, "error");
+        } else {
             showToast("Etkinlik kütüphaneye eklendi!", "success");
             activityFormEl.reset();
             fetchActivities();
@@ -520,6 +547,7 @@ if (activityFormEl) {
 window.deleteActivity = async (id) => {
     const onay = await customConfirm("Bu etkinliği sileyim mi kanka?");
     if (!onay) return;
+    
     const { error } = await supabaseClient.from('activities').delete().eq('id', id);
     if (error) showToast("Silinirken hata!", "error"); else fetchActivities();
 };
@@ -580,7 +608,7 @@ if (timeBtns) {
             const val = btn.getAttribute('data-time');
             if (val === 'custom') {
                 if (customTimeContainer) customTimeContainer.classList.remove('hidden');
-                if (customTimeInput) customTimeInput.focus();
+                if (customTimeInput) customTimeInput.focus(); 
                 if (finalQuizTime) finalQuizTime.value = 'custom';
             } else {
                 if (customTimeContainer) customTimeContainer.classList.add('hidden');
@@ -887,7 +915,6 @@ if(newLessonForm) {
     });
 }
 
-
 let profileChartInstance = null;
 let pdfChartInstance = null;
 
@@ -904,7 +931,7 @@ async function fetchStudentLessons(studentId) {
     if (!lessons || lessons.length === 0) {
         list.innerHTML = '<p class="text-gray-400 text-sm italic p-4 text-center">Henüz seans kaydı girilmemiş.</p>';
         pdfList.innerHTML = '<p class="text-gray-500 italic">Bu dönem kayıtlı seans bulunmamaktadır.</p>';
-        } else {
+    } else {
         let totalUnpaid = 0; // Toplam Borç Sayacı
 
         lessons.forEach(l => {
@@ -957,7 +984,6 @@ async function fetchStudentLessons(studentId) {
             badgeEl.classList.add('hidden');
         }
     }
-
 
     // 2. SINAVLARI ÇEK VE GRAFİĞİ ÇİZ
     const { data: results } = await supabaseClient.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: true });
@@ -1049,8 +1075,6 @@ window.markAsPaid = async function(lessonId, studentId) {
     }
 }
 
-
-
 // SİHİRLİ PDF OLUŞTURMA BUTONU
 window.generatePDF = function() {
     showToast("PDF hazırlanıyor, lütfen bekleyin...", "info");
@@ -1075,7 +1099,6 @@ window.generatePDF = function() {
 // SİHİRLİ VELİ LİNKİ KOPYALAMA MOTORU
 window.copyParentLink = function() {
     const studentId = document.getElementById('profStudentId').value;
-    // Sitenin mevcut adresinin sonuna veli.html ve öğrenci ID'sini ekler
     const currentUrl = window.location.href.split('/').slice(0, -1).join('/'); 
     const link = `${currentUrl}/veli.html?id=${studentId}`;
     
@@ -1086,14 +1109,10 @@ window.copyParentLink = function() {
     });
 }
 
-// BAŞLANGIÇ ÇALIŞTIRMALARI
-switchTab('dashboard');
-
 // ==========================================
 // 10. DİNAMİK KARŞILAMA MESAJI MOTORU (30 ADET)
 // ==========================================
 function setDynamicMotivations() {
-    // Gülbahar Hoca'ya özel hazırlanmış 30 farklı motivasyon mesajı
     const welcomeMsgs = [
         "Bugün yeni başarı hikayeleri yazmak ve geleceği şekillendirmek için harika bir gün. İyi çalışmalar dileriz!",
         "Öğrencilerinizin hayatında bıraktığınız iz, geleceği aydınlatıyor. Harika bir ders günü olsun!",
@@ -1127,13 +1146,12 @@ function setDynamicMotivations() {
         "Sadece ders anlatmıyor, hayallere dokunuyorsunuz. Emeklerinizin karşılığını fazlasıyla alacağınız bir gün olsun!"
     ];
 
-    // Havuzdan rastgele mesaj seç
     const randomMsg = welcomeMsgs[Math.floor(Math.random() * welcomeMsgs.length)];
     const msgEl = document.getElementById('dynamicWelcomeMsg');
-
-    // Ekrana yazdır
     if(msgEl) msgEl.innerText = randomMsg;
 }
 
-// Sayfa her açıldığında/yenilendiğinde motoru çalıştır
 setDynamicMotivations();
+
+// BAŞLANGIÇ ÇALIŞTIRMALARI
+switchTab('dashboard');
