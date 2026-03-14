@@ -919,10 +919,11 @@ window.closeTeacherAnalysisModal = () => document.getElementById('teacherAnalysi
 // ==========================================
 // 9. VIP ÖĞRENCİ PROFİLİ VE PDF KARNE MOTORU
 // ==========================================
-window.openStudentProfile = async function(id, name) {
+window.openStudentProfile = async function(id, name, phone) {
     document.getElementById('profStudentId').value = id;
+    document.getElementById('profParentPhone').value = phone || ''; // YENİ: Numarayı gizli kutuya yazdık
     document.getElementById('profileStudentName').innerText = name;
-    document.getElementById('pdfStudentName').innerText = name;
+
     
     const today = new Date().toLocaleDateString('tr-TR');
     document.getElementById('pdfDate').innerText = today;
