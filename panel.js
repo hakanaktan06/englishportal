@@ -12,11 +12,9 @@ function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     if(!container) return;
 
-    // 🚨 YENİ: SPAM KORUMASI 
-    // Ekranda halihazırda "aynı" mesaja sahip bir bildirim varsa, yenisini çıkarma!
     const existingToasts = container.querySelectorAll('.toast-msg');
     for (let i = 0; i < existingToasts.length; i++) {
-        if (existingToasts[i].innerText === message) return; // Fonksiyonu iptal et
+        if (existingToasts[i].innerText === message) return; 
     }
 
     const toast = document.createElement('div');
@@ -25,7 +23,6 @@ function showToast(message, type = 'success') {
 
     toast.className = `${bgColor} text-white px-5 py-3.5 rounded-2xl shadow-xl shadow-${bgColor}/30 font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
     
-    // Mesajı özel bir span içine (toast-msg) aldık ki sistem okuyup tanıyabilsin
     toast.innerHTML = `<span class="text-lg">${icon}</span> <span class="toast-msg">${message}</span>`;
     container.appendChild(toast);
     
@@ -35,7 +32,6 @@ function showToast(message, type = 'success') {
         setTimeout(() => toast.remove(), 300); 
     }, 3000);
 }
-
 
 function customConfirm(message, btnText = "Evet, Sil") {
     return new Promise((resolve) => {
@@ -361,7 +357,7 @@ window.deleteStudent = async function(id) {
 };
 
 // ===============================================
-// VIP KARTLAR (SLIDER CAROUSEL) VE METRİKLER 
+// VIP KARTLAR VE METRİKLER 
 // ===============================================
 async function fetchStudents() {
     const listContainer = document.getElementById('studentList');
@@ -379,7 +375,7 @@ async function fetchStudents() {
         document.getElementById('statClassAvg').innerText = "%0";
         document.getElementById('statTotalDebt').innerText = "₺0";
         document.getElementById('statHwRate').innerText = "%0";
-        listContainer.innerHTML = `<div class="w-full p-10 text-center text-gray-500 dark:text-gray-400 italic font-medium">Henüz sisteme kayıtlı öğrenci bulunmuyor.</div>`;
+        listContainer.innerHTML = `<div class="col-span-full w-full p-10 text-center text-gray-500 dark:text-gray-400 italic font-medium">Henüz sisteme kayıtlı öğrenci bulunmuyor.</div>`;
         return;
     }
 
@@ -430,7 +426,6 @@ async function fetchStudents() {
             badgeHtml = '<span class="absolute -top-3 -right-3 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg border-2 border-white dark:border-slate-800 z-10 animate-pulse" title="Dikkat Gerekli">⚠️</span>';
         }
 
-        // Profesyonel Yanıp Sönen Kırmızı Işık (Dual-Dot Ping)
         const debtHtml = studDebt > 0 
             ? `<div class="flex items-center gap-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-800 shadow-sm">
                  <div class="relative flex h-2.5 w-2.5">
@@ -444,8 +439,8 @@ async function fetchStudents() {
         const dateStr = new Date(student.created_at).toLocaleDateString('tr-TR', { month: 'short', year: 'numeric' });
 
         const card = document.createElement('div');
-        // Kayan (Carousel) Kart Tasarımı
-        card.className = "w-[85vw] sm:w-[320px] shrink-0 snap-center bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 relative group flex flex-col";
+        // KART SINIFI DÜZELTİLDİ: Artık Slider Değil, GRID ile uyumlu sağlam kart
+        card.className = "w-full h-full bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 relative group flex flex-col";
         
         card.innerHTML = `
             ${badgeHtml}
@@ -484,7 +479,6 @@ async function fetchStudents() {
         listContainer.appendChild(card);
     });
 
-    // Sayfa yenilendiğinde arama kutusunda yazı varsa filtreyi tekrar uygula
     const searchInput = document.getElementById('searchStudentInput');
     if(searchInput && searchInput.value.trim() !== '') {
         searchInput.dispatchEvent(new Event('input'));
@@ -1065,13 +1059,19 @@ window.markAsPaid = async function(lessonId, studentId) {
     }
 }
 
+// ==========================================
+// YENİ DÜZELTİLMİŞ PDF VE SERTİFİKA MOTORU
+// ==========================================
 window.generatePDF = function() {
     showToast("PDF hazırlanıyor, lütfen bekleyin...", "info");
     const element = document.getElementById('pdfTemplate');
     const sName = document.getElementById('profileStudentName').innerText;
     const opt = { margin: 0, filename: `${sName}_Gelisim_Raporu.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-    element.parentElement.classList.remove('hidden'); 
-    html2pdf().set(opt).from(element).save().then(() => { element.parentElement.classList.add('hidden'); showToast("PDF Başarıyla İndirildi!", "success"); });
+    
+    // Görünür yapma (classList) satırları silindi, arkada inip biter.
+    html2pdf().set(opt).from(element).save().then(() => { 
+        showToast("PDF Başarıyla İndirildi!", "success"); 
+    });
 }
 
 window.generateCertificate = function() {
@@ -1081,8 +1081,11 @@ window.generateCertificate = function() {
     const certNameEl = document.getElementById('certStudentName');
     if (certNameEl) certNameEl.innerText = sName;
     const opt = { margin: 0, filename: `${sName}_VIP_Sertifika.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 3, useCORS: true, letterRendering: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } };
-    element.parentElement.classList.remove('hidden'); 
-    html2pdf().set(opt).from(element).save().then(() => { element.parentElement.classList.add('hidden'); showToast("🌟 Sertifika Başarıyla İndirildi!", "success"); });
+    
+    // Görünür yapma (classList) satırları silindi, arkada inip biter.
+    html2pdf().set(opt).from(element).save().then(() => { 
+        showToast("🌟 Sertifika Başarıyla İndirildi!", "success"); 
+    });
 }
 
 window.copyParentLink = function() {
