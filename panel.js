@@ -422,15 +422,18 @@ async function fetchStudents() {
         let avgWidth = studAvg > 0 ? studAvg : 0;
         let badgeHtml = '';
 
-        if(studAvg >= 85) {
+                if(studAvg >= 85) {
             avgColor = 'bg-green-500';
-            badgeHtml = '<span class="absolute -top-3 -right-3 bg-gradient-to-r from-amber-400 to-yellow-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg border-2 border-white dark:border-slate-800 z-10" title="Parlayan Yıldız">⭐</span>';
+            // YENİ: top-4 right-4 yapılarak kartın tam içine estetikçe yerleştirildi
+            badgeHtml = '<span class="absolute top-4 right-4 bg-gradient-to-r from-amber-400 to-yellow-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg border-2 border-white dark:border-slate-800 z-10" title="Parlayan Yıldız">⭐</span>';
         } else if(studAvg >= 50) {
             avgColor = 'bg-yellow-500';
         } else if(studAvg > 0) {
             avgColor = 'bg-red-500';
-            badgeHtml = '<span class="absolute -top-3 -right-3 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg border-2 border-white dark:border-slate-800 z-10 animate-pulse" title="Dikkat Gerekli">⚠️</span>';
+            // YENİ: top-4 right-4 yapılarak kartın tam içine estetikçe yerleştirildi
+            badgeHtml = '<span class="absolute top-4 right-4 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg border-2 border-white dark:border-slate-800 z-10 animate-pulse" title="Dikkat Gerekli">⚠️</span>';
         }
+
 
         const debtHtml = studDebt > 0 
             ? `<div class="flex items-center gap-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-800 shadow-sm">
