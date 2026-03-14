@@ -805,25 +805,37 @@ async function fetchQuizzes() {
     if (!container || error) return;
 
     if (!data || data.length === 0) {
-        container.innerHTML = `<div class="col-span-full bg-white dark:bg-slate-800 p-20 rounded-[50px] text-center text-gray-400 font-bold italic border-2 border-dashed border-gray-100 dark:border-slate-700">Henüz hiç sınav hazırlamamışsın.</div>`;
+        container.innerHTML = `<div class="col-span-full bg-white dark:bg-slate-800 p-20 rounded-[30px] text-center text-gray-400 font-bold border-2 border-dashed border-gray-100 dark:border-slate-700">Henüz hiç sınav hazırlamamışsın. Yukarıdan ilk sınavını oluştur!</div>`;
         return;
     }
 
     container.innerHTML = '';
     data.forEach(quiz => {
         container.innerHTML += `
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 hover:border-red-200 transition flex justify-between items-center group">
-                <div class="flex-1 mr-4 overflow-hidden">
-                    <h4 class="text-base font-black text-gray-800 dark:text-white group-hover:text-red-600 transition truncate">${quiz.title}</h4>
-                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest italic">Yayın Aktif</p>
+            <div class="bg-white dark:bg-slate-800 p-5 md:p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-all duration-300 flex justify-between items-center group hover:shadow-md">
+                <div class="flex-1 mr-4 overflow-hidden flex items-center gap-4">
+                    <div class="hidden sm:flex w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 items-center justify-center text-xl shadow-inner border border-indigo-100 dark:border-indigo-800/50 shrink-0">
+                        📝
+                    </div>
+                    <div class="overflow-hidden">
+                        <h4 class="text-base md:text-lg font-black text-gray-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition truncate">${quiz.title}</h4>
+                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Yayında
+                        </p>
+                    </div>
                 </div>
-                <div class="flex space-x-2 shrink-0">
-                    <button onclick="openQuestionEditor('${quiz.id}', '${quiz.title.replace(/'/g, "\\'")}')" class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition shadow-sm">YÖNET</button>
-                    <button onclick="deleteQuiz('${quiz.id}')" class="bg-gray-50 dark:bg-slate-700 text-gray-300 dark:text-gray-500 hover:text-red-500 p-2 rounded-xl transition text-lg">🗑️</button>
+                <div class="flex items-center space-x-2 shrink-0">
+                    <button onclick="openQuestionEditor('${quiz.id}', '${quiz.title.replace(/'/g, "\\'")}')" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white px-4 py-2.5 rounded-xl text-[10px] md:text-xs font-black transition-all shadow-sm border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-1.5">
+                        ⚙️ YÖNET
+                    </button>
+                    <button onclick="deleteQuiz('${quiz.id}')" class="bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-2.5 rounded-xl transition text-lg border border-gray-100 dark:border-slate-600" title="Sınavı Sil">
+                        🗑️
+                    </button>
                 </div>
             </div>`;
     });
 }
+
 
 window.deleteQuiz = async (id) => {
     const onay = await customConfirm("Bu sınavı ve içindeki TÜM soruları siliyorum, emin misin?", "Evet, Sil");
