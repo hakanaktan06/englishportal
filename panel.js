@@ -382,7 +382,7 @@ async function fetchStudents() {
 
     if (!data || data.length === 0) {
         if(totalStudents) totalStudents.innerText = "0";
-        if(tbody) tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-500 italic">Henüz hiç öğrenci yok.</td></tr>`;
+        if(tbody) tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-500 dark:text-gray-400 italic">Henüz hiç öğrenci yok.</td></tr>`;
         return;
     }
 
@@ -391,31 +391,32 @@ async function fetchStudents() {
 
     data.forEach(student => {
         const tr = document.createElement('tr');
-        tr.className = "border-b border-gray-100 hover:bg-indigo-50/20 transition";
+        tr.className = "border-b border-gray-100 dark:border-slate-700/50 hover:bg-indigo-50/20 dark:hover:bg-slate-800 transition";
         const dateObj = new Date(student.created_at);
         const date = dateObj.toLocaleDateString('tr-TR');
 
         tr.innerHTML = `
-            <td class="p-4 font-bold text-gray-800 flex items-center text-sm">
-                <div class="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs mr-3 shadow-sm">
+            <td class="p-4 font-bold text-gray-800 dark:text-white flex items-center text-sm">
+                <div class="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs mr-3 shadow-sm">
                     ${student.full_name.charAt(0).toUpperCase()}
                 </div>
                 ${student.full_name}
             </td>
-            <td class="p-4 text-gray-400 text-xs italic font-medium">Öğrenci Hesabı</td>
-            <td class="p-4 text-gray-500 text-xs font-bold">${date}</td>
+            <td class="p-4 text-gray-400 dark:text-gray-500 text-xs italic font-medium">Öğrenci Hesabı</td>
+            <td class="p-4 text-gray-500 dark:text-gray-400 text-xs font-bold">${date}</td>
             <td class="p-4">
                 <div class="flex items-center justify-end space-x-2">
-                    <button onclick="openStudentProfile('${student.id}', '${student.full_name.replace(/'/g, "\\'")}')" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition whitespace-nowrap">
+                    <button onclick="openStudentProfile('${student.id}', '${student.full_name.replace(/'/g, "\\'")}')" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition whitespace-nowrap">
                         📂 PROFİL & KARNE
                     </button>
-                    <button onclick="deleteStudent('${student.id}')" class="text-gray-300 hover:text-red-500 p-2 text-lg transition" title="Öğrenciyi Sil">🗑️</button>
+                    <button onclick="deleteStudent('${student.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 p-2 text-lg transition" title="Öğrenciyi Sil">🗑️</button>
                 </div>
             </td>
         `;
         if(tbody) tbody.appendChild(tr);
     });
 }
+
 
 // ==========================================
 // 4. ÖDEV MOTORLARI 
