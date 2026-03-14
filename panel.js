@@ -608,7 +608,7 @@ if (timeBtns) {
             const val = btn.getAttribute('data-time');
             if (val === 'custom') {
                 if (customTimeContainer) customTimeContainer.classList.remove('hidden');
-                if (customTimeInput) customTimeInput.focus(); 
+                if (customTimeInput) customTimeInput.focus();
                 if (finalQuizTime) finalQuizTime.value = 'custom';
             } else {
                 if (customTimeContainer) customTimeContainer.classList.add('hidden');
@@ -879,6 +879,10 @@ window.openStudentProfile = async function(id, name) {
     
     const today = new Date().toLocaleDateString('tr-TR');
     document.getElementById('pdfDate').innerText = today;
+    
+    const certDateEl = document.getElementById('certDate');
+    if (certDateEl) certDateEl.innerText = today;
+    
     document.getElementById('lessonDate').value = new Date().toISOString().split('T')[0]; 
 
     document.getElementById('studentProfileModal').classList.remove('hidden');
@@ -915,6 +919,7 @@ if(newLessonForm) {
     });
 }
 
+
 let profileChartInstance = null;
 let pdfChartInstance = null;
 
@@ -931,7 +936,7 @@ async function fetchStudentLessons(studentId) {
     if (!lessons || lessons.length === 0) {
         list.innerHTML = '<p class="text-gray-400 text-sm italic p-4 text-center">Henüz seans kaydı girilmemiş.</p>';
         pdfList.innerHTML = '<p class="text-gray-500 italic">Bu dönem kayıtlı seans bulunmamaktadır.</p>';
-    } else {
+        } else {
         let totalUnpaid = 0; // Toplam Borç Sayacı
 
         lessons.forEach(l => {
@@ -984,6 +989,7 @@ async function fetchStudentLessons(studentId) {
             badgeEl.classList.add('hidden');
         }
     }
+
 
     // 2. SINAVLARI ÇEK VE GRAFİĞİ ÇİZ
     const { data: results } = await supabaseClient.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: true });
@@ -1096,6 +1102,31 @@ window.generatePDF = function() {
     });
 }
 
+// YENİ: VİP SERTİFİKA BASMA MOTORU (YATAY)
+window.generateCertificate = function() {
+    showToast("🏆 Altın Sertifika Hazırlanıyor...", "info");
+    const element = document.getElementById('certificateTemplate');
+    const sName = document.getElementById('profileStudentName').innerText;
+    
+    // Öğrenci ismini sertifikaya yazdır
+    const certNameEl = document.getElementById('certStudentName');
+    if (certNameEl) certNameEl.innerText = sName;
+    
+    const opt = {
+      margin:       0,
+      filename:     `${sName}_VIP_Sertifika.pdf`,
+      image:        { type: 'jpeg', quality: 1 },
+      html2canvas:  { scale: 3, useCORS: true, letterRendering: true }, // Yüksek kalite
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' } // A4 YATAY
+    };
+
+    element.parentElement.classList.remove('hidden'); 
+    html2pdf().set(opt).from(element).save().then(() => {
+        element.parentElement.classList.add('hidden'); 
+        showToast("🌟 Sertifika Başarıyla İndirildi!", "success");
+    });
+}
+
 // SİHİRLİ VELİ LİNKİ KOPYALAMA MOTORU
 window.copyParentLink = function() {
     const studentId = document.getElementById('profStudentId').value;
@@ -1151,7 +1182,40 @@ function setDynamicMotivations() {
     if(msgEl) msgEl.innerText = randomMsg;
 }
 
-setDynamicMotivations();
+// ==========================================
+// 11. YENİ: GECE MODU (DARK MODE) MOTORU
+// ==========================================
+const dmToggleBtn = document.getElementById('darkModeToggle');
+const htmlElement = document.documentElement;
+const iconMoon = document.getElementById('icon-moon');
+const iconSun = document.getElementById('icon-sun');
 
-// BAŞLANGIÇ ÇALIŞTIRMALARI
+// Hafızayı Kontrol Et (Daha önce ne seçmişti?)
+if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    htmlElement.classList.add('dark');
+    if (iconMoon) iconMoon.classList.add('hidden');
+    if (iconSun) iconSun.classList.remove('hidden');
+}
+
+// Tıklama Olayı
+if (dmToggleBtn) {
+    dmToggleBtn.addEventListener('click', () => {
+        htmlElement.classList.toggle('dark');
+        
+        if (htmlElement.classList.contains('dark')) {
+            localStorage.setItem('theme', 'dark');
+            iconMoon.classList.add('hidden');
+            iconSun.classList.remove('hidden');
+            showToast("Gece Modu Aktif 🌙", "success");
+        } else {
+            localStorage.setItem('theme', 'light');
+            iconMoon.classList.remove('hidden');
+            iconSun.classList.add('hidden');
+            showToast("Gündüz Modu Aktif ☀️", "success");
+        }
+    });
+}
+
+// Sistemi Başlat
+setDynamicMotivations();
 switchTab('dashboard');
