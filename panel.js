@@ -68,7 +68,6 @@ async function checkTeacherSecurity() {
             return;
         }
 
-        // GÜVENLİK GEÇİLDİĞİNDE SPLASH EKRANINI KALDIR! (GARANTİLİ)
         setTimeout(() => {
             const splash = document.getElementById('splashScreen');
             if(splash) {
@@ -187,7 +186,7 @@ if(btnResults) btnResults.addEventListener('click', (e) => { e.preventDefault();
 
 
 // ==========================================
-// KOKPİT (DASHBOARD) İSTATİSTİK MOTORU
+// KOKPİT (DASHBOARD) İSTATİSTİK VE AJANDA MOTORU
 // ==========================================
 async function fetchDashboardStats() {
     const { count: studentCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student');
@@ -211,28 +210,19 @@ async function fetchDashboardStats() {
     const dAvg = document.getElementById('dashAvgScore');
     if (dAvg) dAvg.innerText = avgScore ? `%${avgScore}` : '%0';
 
-    // YENİ: AJANDAYI ÇALIŞTIR
-    if (typeof fetchAgenda === 'function') {
-        fetchAgenda();
-    }
+    fetchAgenda();
 }
 
-// ==========================================
-// YENİ: AJANDA ÇEKME MOTORU
-// ==========================================
 async function fetchAgenda() {
     const agendaContainer = document.getElementById('agendaList');
     if (!agendaContainer) return;
 
-    // Bugünü bul
     const todayStr = new Date().toISOString().split('T')[0];
 
-    // Bugünden sonraki Özel Dersleri Çek
     const { data: lessons } = await supabaseClient.from('private_lessons')
         .select('lesson_date, lesson_time, topic, profiles(full_name)')
         .gte('lesson_date', todayStr);
 
-    // Bugünden sonraki veya bekleyen Ödevleri Çek
     const { data: homeworks } = await supabaseClient.from('homeworks')
         .select('due_date, title, status, profiles(full_name)')
         .gte('due_date', todayStr);
@@ -267,9 +257,7 @@ async function fetchAgenda() {
         });
     }
 
-    // Tarihe göre sırala (En yakından en uzağa)
     agendaItems.sort((a, b) => a.dateObj - b.dateObj);
-
     agendaContainer.innerHTML = '';
 
     if (agendaItems.length === 0) {
@@ -282,7 +270,6 @@ async function fetchAgenda() {
         return;
     }
 
-    // Ajanda Maddelerini Ekrana Bas
     agendaItems.slice(0, 10).forEach(item => {
         const d = item.dateObj;
         const dayName = d.toLocaleDateString('tr-TR', { weekday: 'long' });
@@ -316,7 +303,6 @@ async function fetchAgenda() {
     });
 }
 
-
 // ==========================================
 // 3. ÖĞRENCİ MOTORLARI (KAYIT, SİLME, LİSTELEME)
 // ==========================================
@@ -325,22 +311,12 @@ const openStudBtn = document.getElementById('addStudentBtn');
 const closeStudBtn = document.getElementById('closeModalBtn');
 const studentFormEl = document.getElementById('newStudentForm');
 
-if(openStudBtn) {
-    openStudBtn.addEventListener('click', () => { 
-        if(studentModalEl) studentModalEl.classList.remove('hidden'); 
-    });
-}
-
-if(closeStudBtn) {
-    closeStudBtn.addEventListener('click', () => { 
-        if(studentModalEl) studentModalEl.classList.add('hidden'); 
-    });
-}
+if(openStudBtn) openStudBtn.addEventListener('click', () => { if(studentModalEl) studentModalEl.classList.remove('hidden'); });
+if(closeStudBtn) closeStudBtn.addEventListener('click', () => { if(studentModalEl) studentModalEl.classList.add('hidden'); });
 
 if(studentFormEl) {
     studentFormEl.addEventListener('submit', async function(e) {
         e.preventDefault(); 
-        
         const submitBtn = studentFormEl.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerText;
         submitBtn.innerText = "⏳ Kaydediliyor...";
@@ -378,61 +354,51 @@ if(studentFormEl) {
 window.deleteStudent = async function(id) {
     const onay = await customConfirm("Bu öğrenciyi kalıcı olarak silmek istediğine emin misin? Dönüşü yok!");
     if (!onay) return; 
-    
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
-        
-    if (error) { 
-        showToast("Silerken hata oldu: " + error.message, "error"); 
-    } else { 
-        showToast("Öğrenci silindi.", "success");
-        fetchStudents(); 
-    }
+    if (error) showToast("Silerken hata oldu: " + error.message, "error"); 
+    else { showToast("Öğrenci silindi.", "success"); fetchStudents(); }
 };
 
 async function fetchStudents() {
     const { data, error } = await supabaseClient.from('profiles').select('*').eq('role', 'student').order('created_at', { ascending: false });
-    if (error) return; 
-
     const tbody = document.getElementById('studentList');
     const totalStudents = document.getElementById('totalStudents');
+    if (error || !tbody) return; 
 
     if (!data || data.length === 0) {
         if(totalStudents) totalStudents.innerText = "0";
-        if(tbody) tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-500 italic">Henüz hiç öğrenci yok.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-500 italic">Henüz hiç öğrenci yok.</td></tr>`;
         return;
     }
 
     if(totalStudents) totalStudents.innerText = data.length;
-    if(tbody) tbody.innerHTML = ''; 
+    tbody.innerHTML = ''; 
 
     data.forEach(student => {
-        const tr = document.createElement('tr');
-        tr.className = "border-b border-gray-100 hover:bg-indigo-50/20 transition";
         const dateObj = new Date(student.created_at);
         const date = dateObj.toLocaleDateString('tr-TR');
 
-        tr.innerHTML = `
-            <td class="p-4 font-bold text-gray-800 flex items-center text-sm">
-                <div class="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs mr-3 shadow-sm">
-                    ${student.full_name.charAt(0).toUpperCase()}
-                </div>
-                ${student.full_name}
-            </td>
-            <td class="p-4 text-gray-400 text-xs italic font-medium">Öğrenci Hesabı</td>
-            <td class="p-4 text-gray-500 text-xs font-bold">${date}</td>
-            <td class="p-4">
-                <div class="flex items-center justify-end space-x-2">
-                    <button onclick="openStudentProfile('${student.id}', '${student.full_name.replace(/'/g, "\\'")}')" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition whitespace-nowrap">
-                        📂 PROFİL & KARNE
-                    </button>
-                    <button onclick="deleteStudent('${student.id}')" class="text-gray-300 hover:text-red-500 p-2 text-lg transition" title="Öğrenciyi Sil">🗑️</button>
-                </div>
-            </td>
-        `;
-        if(tbody) tbody.appendChild(tr);
+        tbody.innerHTML += `
+            <tr class="border-b border-gray-100 hover:bg-indigo-50/20 transition">
+                <td class="p-4 font-bold text-gray-800 flex items-center text-sm">
+                    <div class="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs mr-3 shadow-sm">
+                        ${student.full_name.charAt(0).toUpperCase()}
+                    </div>
+                    ${student.full_name}
+                </td>
+                <td class="p-4 text-gray-400 text-xs italic font-medium">Öğrenci Hesabı</td>
+                <td class="p-4 text-gray-500 text-xs font-bold">${date}</td>
+                <td class="p-4">
+                    <div class="flex items-center justify-end space-x-2">
+                        <button onclick="openStudentProfile('${student.id}', '${student.full_name.replace(/'/g, "\\'")}')" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition whitespace-nowrap">
+                            📂 PROFİL & KARNE
+                        </button>
+                        <button onclick="deleteStudent('${student.id}')" class="text-gray-300 hover:text-red-500 p-2 text-lg transition" title="Öğrenciyi Sil">🗑️</button>
+                    </div>
+                </td>
+            </tr>`;
     });
 }
-
 
 // ==========================================
 // 4. ÖDEV MOTORLARI 
@@ -440,14 +406,9 @@ async function fetchStudents() {
 window.deleteHomework = async function(id) {
     const onay = await customConfirm("Bu ödevi tamamen siliyorum, emin misin?");
     if (!onay) return;
-    
     const { error } = await supabaseClient.from('homeworks').delete().eq('id', id);
-
     if (error) showToast("Ödev silinirken hata oldu!", "error");
-    else {
-        showToast("Ödev silindi.", "success");
-        fetchHomeworks();
-    }
+    else { showToast("Ödev silindi.", "success"); fetchHomeworks(); }
 };
 
 async function fillStudentSelect() {
@@ -463,7 +424,6 @@ const homeworkFormEl = document.getElementById('newHomeworkForm');
 if(homeworkFormEl) {
     homeworkFormEl.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const studentId = document.getElementById('hwStudentSelect').value;
         if (!studentId) { showToast("Önce öğrenciyi seçmelisin!", "error"); return; }
 
@@ -477,9 +437,8 @@ if(homeworkFormEl) {
             due_date: document.getElementById('hwDueDate').value
         }]);
 
-        if (error) { 
-            showToast("Ödev hatası: " + error.message, "error"); 
-        } else { 
+        if (error) showToast("Ödev hatası: " + error.message, "error"); 
+        else { 
             showToast("Ödev başarıyla verildi!", "success"); 
             homeworkFormEl.reset(); 
             fetchHomeworks(); 
@@ -501,9 +460,7 @@ async function fetchHomeworks() {
     tbody.innerHTML = '';
     data.forEach(hw => {
         const date = new Date(hw.due_date).toLocaleDateString('tr-TR');
-        const status = hw.status || 'bekliyor';
-        
-        let statusHtml = status === 'Tamamlandı' 
+        const statusHtml = hw.status === 'Tamamlandı' 
             ? `<span class="px-3 py-1 bg-green-50 text-green-600 border border-green-100 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto">Tamamlandı</span>` 
             : `<span class="px-3 py-1 bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto">Bekliyor</span>`;
 
@@ -534,7 +491,6 @@ window.closeStudentNoteModal = function() {
     if (modalNote) modalNote.classList.add('hidden');
 };
 
-
 // ==========================================
 // 5. ETKİNLİK MOTORLARI 
 // ==========================================
@@ -551,9 +507,8 @@ if (activityFormEl) {
             link: document.getElementById('actLink').value
         }]);
 
-        if (error) {
-            showToast("Hata: " + error.message, "error");
-        } else {
+        if (error) showToast("Hata: " + error.message, "error");
+        else {
             showToast("Etkinlik kütüphaneye eklendi!", "success");
             activityFormEl.reset();
             fetchActivities();
@@ -565,7 +520,6 @@ if (activityFormEl) {
 window.deleteActivity = async (id) => {
     const onay = await customConfirm("Bu etkinliği sileyim mi kanka?");
     if (!onay) return;
-    
     const { error } = await supabaseClient.from('activities').delete().eq('id', id);
     if (error) showToast("Silinirken hata!", "error"); else fetchActivities();
 };
@@ -598,16 +552,16 @@ async function fetchActivities() {
     });
 }
 
-
 // ==========================================
 // 6. SINAV MOTORU VE AKILLI SÜRE SEÇİCİ
 // ==========================================
+let currentActiveQuizId = null;
+
 document.getElementById('addQuizBtn')?.addEventListener('click', () => {
     const modalQuiz = document.getElementById('quizNameModal');
     if (modalQuiz) modalQuiz.classList.remove('hidden');
 });
 
-// Süre butonları için animasyonlu seçim motoru
 const timeBtns = document.querySelectorAll('.time-btn');
 const customTimeContainer = document.getElementById('customTimeContainer');
 const finalQuizTime = document.getElementById('finalQuizTime');
@@ -616,19 +570,17 @@ const customTimeInput = document.getElementById('quizTimeInput');
 if (timeBtns) {
     timeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Tüm butonları gri yap
             timeBtns.forEach(b => {
                 b.classList.remove('bg-red-500', 'text-white', 'border-red-500', 'shadow-md');
                 b.classList.add('bg-gray-50', 'text-gray-500', 'border-gray-100');
             });
-            // Tıklanan butonu Kırmızı (Aktif) yap
             btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-gray-100');
             btn.classList.add('bg-red-500', 'text-white', 'border-red-500', 'shadow-md');
 
             const val = btn.getAttribute('data-time');
             if (val === 'custom') {
                 if (customTimeContainer) customTimeContainer.classList.remove('hidden');
-                if (customTimeInput) customTimeInput.focus(); // Klavyeyi otomatik aç
+                if (customTimeInput) customTimeInput.focus();
                 if (finalQuizTime) finalQuizTime.value = 'custom';
             } else {
                 if (customTimeContainer) customTimeContainer.classList.add('hidden');
@@ -638,7 +590,6 @@ if (timeBtns) {
     });
 }
 
-// Sınavı Kaydetme Butonu
 const saveQuizTitleBtn = document.getElementById('saveQuizTitleBtn');
 if (saveQuizTitleBtn) {
     saveQuizTitleBtn.addEventListener('click', async () => {
@@ -647,7 +598,6 @@ if (saveQuizTitleBtn) {
         const timeLimitVal = document.getElementById('finalQuizTime') ? document.getElementById('finalQuizTime').value : '0';
         let timeLimit = 0;
 
-        // Süreyi belirle (Özel seçildiyse kutudan al, yoksa buton değerini al)
         if (timeLimitVal === 'custom') {
             timeLimit = parseInt(document.getElementById('quizTimeInput').value) || 0;
         } else {
