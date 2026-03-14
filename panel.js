@@ -891,21 +891,13 @@ window.openTeacherAnalysis = function(resultId) {
     const taCont = document.getElementById('taDetailsContainer');
 
     if(taCont) {
-        taCont.innerHTML = '';
-        const details = res.details || [];
-        if(details.length === 0) {
-            taCont.innerHTML = '<p class="text-center text-gray-400 font-bold mt-10">Bu sınav için detaylı analiz bulunmuyor.</p>';
-        } else {
-            details.forEach(detail => {
-                const boxStyle = detail.is_correct ? 'border-green-300 bg-green-50 dark:bg-green-900/10 dark:border-green-800' : 'border-red-300 bg-red-50 dark:bg-red-900/10 dark:border-red-800';
-                const iconInfo = detail.is_correct ? '✓' : '✗';
-                taCont.innerHTML += `
-                    <div class="p-6 rounded-[30px] border-2 mb-6 ${boxStyle} shadow-sm">
-                        <div class="flex items-start gap-4 mb-4">
-                            <span class="bg-gray-800 text-white w-8 h-8 rounded-full flex items-center justify-center font-black">${iconInfo}</span>
-                            <h4 class="text-lg font-black text-gray-800 dark:text-white pt-1">${detail.q_no}. ${detail.q_text}</h4>
+                        taCont.innerHTML += `
+                    <div class="p-4 md:p-6 rounded-[20px] md:rounded-[30px] border-2 mb-4 md:mb-6 ${boxStyle} shadow-sm">
+                        <div class="flex items-start gap-3 md:gap-4 mb-3 md:mb-4">
+                            <span class="bg-gray-800 text-white w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center font-black text-sm md:text-base shrink-0">${iconInfo}</span>
+                            <h4 class="text-sm md:text-lg font-black text-gray-800 dark:text-white pt-0.5 md:pt-1 leading-snug">${detail.q_no}. ${detail.q_text}</h4>
                         </div>
-                        <div class="pl-12 text-sm font-bold text-gray-500 dark:text-gray-400">
+                        <div class="pl-9 md:pl-12 text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400">
                             Cevabı: ${detail.selected_opt} | Doğru: ${detail.correct_opt}
                         </div>
                     </div>`;
