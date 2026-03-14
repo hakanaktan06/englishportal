@@ -40,11 +40,22 @@
                 <p class="text-lg text-indigo-100/80 font-medium leading-relaxed relative z-10">
                     Öğretmenler için güçlü bir yönetim paneli, öğrenciler için eğlenceli ve interaktif bir öğrenme ve sınav merkezi. Lütfen hesabınıza giriş yapın.
                 </p>
+                
                 <div class="mt-10 flex items-center space-x-4 relative z-10">
-                    <span class="bg-white/10 px-5 py-2.5 rounded-xl text-sm font-bold backdrop-blur-md border border-white/20 shadow-xl">📚 Ödev Takibi</span>
-                    <span class="bg-white/10 px-5 py-2.5 rounded-xl text-sm font-bold backdrop-blur-md border border-white/20 shadow-xl">📝 Sınav Merkezi</span>
+                    <span class="bg-white/10 px-5 py-2.5 rounded-xl text-sm font-bold backdrop-blur-md border border-white/20 shadow-xl flex items-center group">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 mr-2.5 text-blue-300">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Ödev Takibi
+                    </span>
+                    <span class="bg-white/10 px-5 py-2.5 rounded-xl text-sm font-bold backdrop-blur-md border border-white/20 shadow-xl flex items-center group">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 mr-2.5 text-purple-300">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                        </svg>
+                        Sınav Merkezi
+                    </span>
                 </div>
-            </div>
+                </div>
         </div>
 
         <div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 md:p-24 relative">
@@ -59,12 +70,14 @@
                     <p class="text-gray-500 font-bold mt-2 text-[10px] uppercase tracking-widest">Kullanıcı Adı veya E-Posta ile Giriş Yapın</p>
                 </div>
 
-                <form id="loginForm" class="space-y-5">
+                                <form id="loginForm" class="space-y-5">
                     
                     <div class="space-y-2 relative">
                         <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Kullanıcı Adı veya E-Posta</label>
                         <div class="relative flex items-center">
-                            <span class="absolute left-4 text-gray-400 pointer-events-none">👤</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 absolute left-4 text-gray-400 pointer-events-none">
+                              <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
+                            </svg>
                             <input type="text" id="loginInput" class="w-full pl-12 pr-5 py-4 rounded-2xl border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 outline-none transition-all text-gray-800 font-bold shadow-inner" placeholder="Örn: ahmet123 veya e-posta" required>
                         </div>
                     </div>
@@ -72,7 +85,9 @@
                     <div class="space-y-2 relative">
                         <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Şifre</label>
                         <div class="relative flex items-center">
-                            <span class="absolute left-4 text-gray-400 pointer-events-none">🔑</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 absolute left-4 text-gray-400 pointer-events-none">
+                              <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clip-rule="evenodd" />
+                            </svg>
                             <input type="password" id="passwordInput" class="w-full pl-12 pr-12 py-4 rounded-2xl border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 outline-none transition-all text-gray-800 font-bold shadow-inner" placeholder="••••••••" required>
                             <button type="button" id="togglePasswordBtn" class="absolute right-4 text-gray-400 hover:text-indigo-600 transition p-2">
                                 <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -80,14 +95,18 @@
                         </div>
                     </div>
 
-                    <div id="errorBox" class="hidden bg-red-50 text-red-600 p-4 rounded-2xl text-xs font-black text-center border border-red-200 uppercase tracking-widest shadow-sm">
-                        ⚠️ Kullanıcı adı veya şifre hatalı!
+                    <div id="errorBox" class="hidden bg-red-50 text-red-600 p-4 rounded-2xl text-xs font-black text-center border border-red-200 uppercase tracking-widest shadow-sm flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 mr-1.5 -mt-0.5">
+                          <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                        </svg>
+                        KULLANICI ADI VEYA ŞİFRE HATALI!
                     </div>
 
                     <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black py-4 rounded-2xl text-sm tracking-widest uppercase shadow-lg shadow-indigo-300 transition transform active:scale-95 flex justify-center items-center mt-6">
                         <span>SİSTEME GİRİŞ YAP</span>
                     </button>
                 </form>
+
 
                 <div class="mt-8 text-center border-t border-gray-100 pt-6">
                     <p class="text-xs text-gray-400 font-bold">Sisteme kayıtlı değilseniz, lütfen öğretmeninizle iletişime geçin.</p>
