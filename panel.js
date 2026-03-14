@@ -275,27 +275,27 @@ async function fetchAgenda() {
         
         const isToday = d.toDateString() === new Date().toDateString();
         const dateBadge = isToday 
-            ? `<span class="bg-red-50 border border-red-100 text-red-600 px-2.5 py-1 rounded-md text-[10px] font-black uppercase shadow-sm">BUGÜN</span>`
-            : `<span class="bg-slate-100 border border-slate-200 text-slate-600 px-2.5 py-1 rounded-md text-[10px] font-black uppercase">${shortDate} ${dayName}</span>`;
+            ? `<span class="bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800 text-red-600 dark:text-red-400 px-2.5 py-1 rounded-md text-[10px] font-black uppercase shadow-sm">BUGÜN</span>`
+            : `<span class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-md text-[10px] font-black uppercase">${shortDate} ${dayName}</span>`;
 
         const icon = item.type === 'lesson' 
-            ? `<div class="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm"><span class="text-xl">👩‍🏫</span></div>`
-            : `<div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 shadow-sm"><span class="text-xl">📚</span></div>`;
+            ? `<div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-sm"><span class="text-xl">👩‍🏫</span></div>`
+            : `<div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm"><span class="text-xl">📚</span></div>`;
 
         const timeHtml = item.type === 'lesson' && item.timeStr !== 'Belirtilmedi' 
-            ? `<span class="ml-2 text-xs font-black text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-md">⏰ ${item.timeStr}</span>` 
+            ? `<span class="ml-2 text-xs font-black text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md">⏰ ${item.timeStr}</span>` 
             : '';
 
         agendaContainer.innerHTML += `
-            <div class="flex items-center gap-4 p-3.5 hover:bg-slate-50/80 rounded-2xl border border-transparent hover:border-slate-200 transition group cursor-default">
+            <div class="flex items-center gap-4 p-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-700 rounded-2xl border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition group cursor-default">
                 ${icon}
                 <div class="flex-1">
                     <div class="flex items-center gap-2 mb-1.5">
                         ${dateBadge}
                         ${timeHtml}
                     </div>
-                    <h4 class="text-sm font-black text-gray-800 leading-tight group-hover:text-indigo-700 transition">${item.title}</h4>
-                    <p class="text-xs font-medium text-gray-500 mt-1 truncate max-w-[250px] sm:max-w-md">${item.desc}</p>
+                    <h4 class="text-sm font-black text-gray-800 dark:text-white leading-tight group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition">${item.title}</h4>
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 truncate max-w-[250px] sm:max-w-md">${item.desc}</p>
                 </div>
             </div>`;
     });
@@ -309,22 +309,12 @@ const openStudBtn = document.getElementById('addStudentBtn');
 const closeStudBtn = document.getElementById('closeModalBtn');
 const studentFormEl = document.getElementById('newStudentForm');
 
-if(openStudBtn) {
-    openStudBtn.addEventListener('click', () => { 
-        if(studentModalEl) studentModalEl.classList.remove('hidden'); 
-    });
-}
-
-if(closeStudBtn) {
-    closeStudBtn.addEventListener('click', () => { 
-        if(studentModalEl) studentModalEl.classList.add('hidden'); 
-    });
-}
+if(openStudBtn) openStudBtn.addEventListener('click', () => { if(studentModalEl) studentModalEl.classList.remove('hidden'); });
+if(closeStudBtn) closeStudBtn.addEventListener('click', () => { if(studentModalEl) studentModalEl.classList.add('hidden'); });
 
 if(studentFormEl) {
     studentFormEl.addEventListener('submit', async function(e) {
         e.preventDefault(); 
-        
         const submitBtn = studentFormEl.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerText;
         submitBtn.innerText = "⏳ Kaydediliyor...";
@@ -362,15 +352,9 @@ if(studentFormEl) {
 window.deleteStudent = async function(id) {
     const onay = await customConfirm("Bu öğrenciyi kalıcı olarak silmek istediğine emin misin? Dönüşü yok!");
     if (!onay) return; 
-    
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
-        
-    if (error) { 
-        showToast("Silerken hata oldu: " + error.message, "error"); 
-    } else { 
-        showToast("Öğrenci silindi.", "success");
-        fetchStudents(); 
-    }
+    if (error) showToast("Silerken hata oldu: " + error.message, "error"); 
+    else { showToast("Öğrenci silindi.", "success"); fetchStudents(); }
 };
 
 async function fetchStudents() {
@@ -417,21 +401,15 @@ async function fetchStudents() {
     });
 }
 
-
 // ==========================================
 // 4. ÖDEV MOTORLARI 
 // ==========================================
 window.deleteHomework = async function(id) {
     const onay = await customConfirm("Bu ödevi tamamen siliyorum, emin misin?");
     if (!onay) return;
-    
     const { error } = await supabaseClient.from('homeworks').delete().eq('id', id);
-
     if (error) showToast("Ödev silinirken hata oldu!", "error");
-    else {
-        showToast("Ödev silindi.", "success");
-        fetchHomeworks();
-    }
+    else { showToast("Ödev silindi.", "success"); fetchHomeworks(); }
 };
 
 async function fillStudentSelect() {
@@ -447,7 +425,6 @@ const homeworkFormEl = document.getElementById('newHomeworkForm');
 if(homeworkFormEl) {
     homeworkFormEl.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const studentId = document.getElementById('hwStudentSelect').value;
         if (!studentId) { showToast("Önce öğrenciyi seçmelisin!", "error"); return; }
 
@@ -461,9 +438,8 @@ if(homeworkFormEl) {
             due_date: document.getElementById('hwDueDate').value
         }]);
 
-        if (error) { 
-            showToast("Ödev hatası: " + error.message, "error"); 
-        } else { 
+        if (error) showToast("Ödev hatası: " + error.message, "error"); 
+        else { 
             showToast("Ödev başarıyla verildi!", "success"); 
             homeworkFormEl.reset(); 
             fetchHomeworks(); 
@@ -478,7 +454,7 @@ async function fetchHomeworks() {
     if (error || !tbody) return;
 
     if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400 italic text-sm">Henüz hiç ödev verilmemiş.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400 dark:text-gray-500 italic text-sm">Henüz hiç ödev verilmemiş.</td></tr>';
         return;
     }
 
@@ -505,7 +481,6 @@ async function fetchHomeworks() {
             </tr>`;
     });
 }
-
 
 window.openStudentNoteModal = function(noteText) {
     const elNote = document.getElementById('fullStudentNoteText');
@@ -535,9 +510,8 @@ if (activityFormEl) {
             link: document.getElementById('actLink').value
         }]);
 
-        if (error) {
-            showToast("Hata: " + error.message, "error");
-        } else {
+        if (error) showToast("Hata: " + error.message, "error");
+        else {
             showToast("Etkinlik kütüphaneye eklendi!", "success");
             activityFormEl.reset();
             fetchActivities();
@@ -549,7 +523,6 @@ if (activityFormEl) {
 window.deleteActivity = async (id) => {
     const onay = await customConfirm("Bu etkinliği sileyim mi kanka?");
     if (!onay) return;
-    
     const { error } = await supabaseClient.from('activities').delete().eq('id', id);
     if (error) showToast("Silinirken hata!", "error"); else fetchActivities();
 };
@@ -569,14 +542,14 @@ async function fetchActivities() {
 
     data.forEach(act => {
         container.innerHTML += `
-            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col justify-between hover:shadow-md transition">
                 <div>
                     <span class="text-4xl">${icons[act.category] || '🔗'}</span>
-                    <h4 class="font-black mt-3 text-gray-800 uppercase text-xs tracking-widest">${act.title}</h4>
+                    <h4 class="font-black mt-3 text-gray-800 dark:text-white uppercase text-xs tracking-widest">${act.title}</h4>
                 </div>
-                <div class="mt-5 flex justify-between items-center border-t pt-3">
-                    <a href="${act.link}" target="_blank" class="text-indigo-600 font-black text-[10px] hover:underline uppercase tracking-tighter">AÇ ↗</a>
-                    <button onclick="deleteActivity('${act.id}')" class="text-gray-300 hover:text-red-500 transition text-xl">🗑️</button>
+                <div class="mt-5 flex justify-between items-center border-t dark:border-slate-700 pt-3">
+                    <a href="${act.link}" target="_blank" class="text-indigo-600 dark:text-indigo-400 font-black text-[10px] hover:underline uppercase tracking-tighter">AÇ ↗</a>
+                    <button onclick="deleteActivity('${act.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition text-xl">🗑️</button>
                 </div>
             </div>`;
     });
@@ -602,9 +575,9 @@ if (timeBtns) {
         btn.addEventListener('click', () => {
             timeBtns.forEach(b => {
                 b.classList.remove('bg-red-500', 'text-white', 'border-red-500', 'shadow-md');
-                b.classList.add('bg-gray-50', 'text-gray-500', 'border-gray-100');
+                b.classList.add('bg-gray-50', 'text-gray-500', 'border-gray-100', 'dark:bg-slate-700', 'dark:text-gray-300', 'dark:border-slate-600');
             });
-            btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-gray-100');
+            btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-gray-100', 'dark:bg-slate-700', 'dark:text-gray-300', 'dark:border-slate-600');
             btn.classList.add('bg-red-500', 'text-white', 'border-red-500', 'shadow-md');
 
             const val = btn.getAttribute('data-time');
@@ -675,7 +648,7 @@ async function fetchQuestionsForQuiz(quizId) {
 
     if (!data || data.length === 0) {
         if(countDisplay) countDisplay.innerText = "0";
-        listContainer.innerHTML = '<div class="text-center py-20 text-gray-300 font-bold italic">Henüz hiç soru eklenmemiş.</div>';
+        listContainer.innerHTML = '<div class="text-center py-20 text-gray-300 dark:text-gray-600 font-bold italic">Henüz hiç soru eklenmemiş.</div>';
         return;
     }
 
@@ -684,16 +657,16 @@ async function fetchQuestionsForQuiz(quizId) {
 
     data.forEach((q, index) => {
         listContainer.innerHTML += `
-            <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm relative group hover:border-indigo-200 transition">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-sm relative group hover:border-indigo-200 transition">
                 <div class="flex items-start">
-                    <span class="bg-indigo-100 text-indigo-600 w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black mr-3 mt-1">${index + 1}</span>
+                    <span class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black mr-3 mt-1">${index + 1}</span>
                     <div class="flex-1">
-                        <p class="text-sm font-black text-gray-800 leading-tight mb-3">${q.question_text}</p>
+                        <p class="text-sm font-black text-gray-800 dark:text-white leading-tight mb-3">${q.question_text}</p>
                         <div class="grid grid-cols-2 gap-2 text-[10px] font-bold uppercase">
-                            <span class="p-2 rounded-xl ${q.correct_option === 'A' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-400'}">A: ${q.option_a}</span>
-                            <span class="p-2 rounded-xl ${q.correct_option === 'B' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-400'}">B: ${q.option_b}</span>
-                            <span class="p-2 rounded-xl ${q.correct_option === 'C' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-400'}">C: ${q.option_c}</span>
-                            <span class="p-2 rounded-xl ${q.correct_option === 'D' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-400'}">D: ${q.option_d}</span>
+                            <span class="p-2 rounded-xl ${q.correct_option === 'A' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">A: ${q.option_a}</span>
+                            <span class="p-2 rounded-xl ${q.correct_option === 'B' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">B: ${q.option_b}</span>
+                            <span class="p-2 rounded-xl ${q.correct_option === 'C' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">C: ${q.option_c}</span>
+                            <span class="p-2 rounded-xl ${q.correct_option === 'D' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">D: ${q.option_d}</span>
                         </div>
                     </div>
                 </div>
@@ -744,21 +717,21 @@ async function fetchQuizzes() {
     if (!container || error) return;
 
     if (!data || data.length === 0) {
-        container.innerHTML = `<div class="col-span-full bg-white p-20 rounded-[50px] text-center text-gray-400 font-bold italic border-2 border-dashed border-gray-100">Henüz hiç sınav hazırlamamışsın.</div>`;
+        container.innerHTML = `<div class="col-span-full bg-white dark:bg-slate-800 p-20 rounded-[50px] text-center text-gray-400 font-bold italic border-2 border-dashed border-gray-100 dark:border-slate-700">Henüz hiç sınav hazırlamamışsın.</div>`;
         return;
     }
 
     container.innerHTML = '';
     data.forEach(quiz => {
         container.innerHTML += `
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:border-red-200 transition flex justify-between items-center group">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 hover:border-red-200 transition flex justify-between items-center group">
                 <div class="flex-1 mr-4 overflow-hidden">
-                    <h4 class="text-base font-black text-gray-800 group-hover:text-red-600 transition truncate">${quiz.title}</h4>
+                    <h4 class="text-base font-black text-gray-800 dark:text-white group-hover:text-red-600 transition truncate">${quiz.title}</h4>
                     <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest italic">Yayın Aktif</p>
                 </div>
                 <div class="flex space-x-2 shrink-0">
-                    <button onclick="openQuestionEditor('${quiz.id}', '${quiz.title.replace(/'/g, "\\'")}')" class="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition shadow-sm">YÖNET</button>
-                    <button onclick="deleteQuiz('${quiz.id}')" class="bg-gray-50 text-gray-300 hover:text-red-500 p-2 rounded-xl transition text-lg">🗑️</button>
+                    <button onclick="openQuestionEditor('${quiz.id}', '${quiz.title.replace(/'/g, "\\'")}')" class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition shadow-sm">YÖNET</button>
+                    <button onclick="deleteQuiz('${quiz.id}')" class="bg-gray-50 dark:bg-slate-700 text-gray-300 dark:text-gray-500 hover:text-red-500 p-2 rounded-xl transition text-lg">🗑️</button>
                 </div>
             </div>`;
     });
@@ -818,7 +791,6 @@ async function fetchResults() {
     });
 }
 
-
 window.deleteResult = async function(id) {
     const onay = await customConfirm("Bu öğrencinin sınav sonucunu kalıcı olarak siliyorum, emin misin?");
     if (!onay) return;
@@ -846,18 +818,18 @@ window.openTeacherAnalysis = function(resultId) {
         taCont.innerHTML = '';
         const details = res.details || [];
         if(details.length === 0) {
-            taCont.innerHTML = '<p class="text-center text-gray-400 font-bold mt-10">Bu sınav için detaylı analiz bulunmuyor. (Öğrenci eski sürümde çözmüş).</p>';
+            taCont.innerHTML = '<p class="text-center text-gray-400 font-bold mt-10">Bu sınav için detaylı analiz bulunmuyor.</p>';
         } else {
             details.forEach(detail => {
-                const boxStyle = detail.is_correct ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50';
+                const boxStyle = detail.is_correct ? 'border-green-300 bg-green-50 dark:bg-green-900/10 dark:border-green-800' : 'border-red-300 bg-red-50 dark:bg-red-900/10 dark:border-red-800';
                 const iconInfo = detail.is_correct ? '✓' : '✗';
                 taCont.innerHTML += `
                     <div class="p-6 rounded-[30px] border-2 mb-6 ${boxStyle} shadow-sm">
                         <div class="flex items-start gap-4 mb-4">
                             <span class="bg-gray-800 text-white w-8 h-8 rounded-full flex items-center justify-center font-black">${iconInfo}</span>
-                            <h4 class="text-lg font-black text-gray-800 pt-1">${detail.q_no}. ${detail.q_text}</h4>
+                            <h4 class="text-lg font-black text-gray-800 dark:text-white pt-1">${detail.q_no}. ${detail.q_text}</h4>
                         </div>
-                        <div class="pl-12 text-sm font-bold text-gray-500">
+                        <div class="pl-12 text-sm font-bold text-gray-500 dark:text-gray-400">
                             Cevabı: ${detail.selected_opt} | Doğru: ${detail.correct_opt}
                         </div>
                     </div>`;
@@ -901,8 +873,6 @@ if(newLessonForm) {
         const lTime = document.getElementById('lessonTime').value;
         const lDuration = document.getElementById('lessonDuration').value;
         const lTopic = document.getElementById('lessonTopic').value;
-        
-        // YENİ MUHASEBE VERİLERİ
         const lPrice = document.getElementById('lessonPrice').value;
         const lIsPaid = document.getElementById('lessonIsPaid').value === 'true';
 
@@ -916,20 +886,17 @@ if(newLessonForm) {
             showToast("Ders başarıyla profile işlendi.", "success");
             document.getElementById('lessonTopic').value = '';
             document.getElementById('lessonDuration').value = '';
-            document.getElementById('lessonPrice').value = ''; // Kutuyu temizle
+            document.getElementById('lessonPrice').value = ''; 
             fetchStudentLessons(studentId);
         }
     });
 }
 
-
 let profileChartInstance = null;
 let pdfChartInstance = null;
 
 async function fetchStudentLessons(studentId) {
-    // 1. DERSLERİ ÇEK
     const { data: lessons } = await supabaseClient.from('private_lessons').select('*').eq('student_id', studentId).order('lesson_date', { ascending: false });
-    
     const list = document.getElementById('lessonList');
     const pdfList = document.getElementById('pdfLessonList');
     if(!list || !pdfList) return;
@@ -939,43 +906,38 @@ async function fetchStudentLessons(studentId) {
     if (!lessons || lessons.length === 0) {
         list.innerHTML = '<p class="text-gray-400 text-sm italic p-4 text-center">Henüz seans kaydı girilmemiş.</p>';
         pdfList.innerHTML = '<p class="text-gray-500 italic">Bu dönem kayıtlı seans bulunmamaktadır.</p>';
-        } else {
-        let totalUnpaid = 0; // Toplam Borç Sayacı
-
+    } else {
+        let totalUnpaid = 0; 
         lessons.forEach(l => {
             const date = new Date(l.lesson_date).toLocaleDateString('tr-TR');
             const time = l.lesson_time ? l.lesson_time : '';
             const duration = l.duration_hours ? `${l.duration_hours} Saat` : '';
             
-            // BORÇ HESABI
             if (!l.is_paid) totalUnpaid += Number(l.price || 0);
 
-            // Ödeme rozeti ve butonu
             const payBadge = l.is_paid 
-                ? `<span class="text-[10px] font-black bg-green-50 border border-green-200 text-green-700 px-2 py-1 rounded-md">🟢 ÖDENDİ</span>`
-                : `<button onclick="markAsPaid('${l.id}', '${studentId}')" class="text-[10px] font-black bg-red-50 hover:bg-red-500 hover:text-white border border-red-200 text-red-600 px-2 py-1 rounded-md transition shadow-sm">🔴 ÖDENMEDİ (Tahsil Et)</button>`;
+                ? `<span class="text-[10px] font-black bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-2 py-1 rounded-md">🟢 ÖDENDİ</span>`
+                : `<button onclick="markAsPaid('${l.id}', '${studentId}')" class="text-[10px] font-black bg-red-50 dark:bg-red-900/30 hover:bg-red-500 hover:text-white border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-2 py-1 rounded-md transition shadow-sm">🔴 ÖDENMEDİ (Tahsil Et)</button>`;
 
-            const priceText = l.price ? `<span class="text-[10px] font-black bg-slate-100 border border-slate-200 text-slate-700 px-2 py-1 rounded-md">₺${l.price}</span>` : '';
+            const priceText = l.price ? `<span class="text-[10px] font-black bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-gray-200 px-2 py-1 rounded-md">₺${l.price}</span>` : '';
 
-            // Ekranda Görünen Havalı Kart Tasarımı
             list.innerHTML += `
-                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col hover:border-indigo-200 transition">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm flex flex-col hover:border-indigo-200 transition">
                     <div class="flex justify-between items-start">
                         <div class="flex flex-wrap gap-2 mb-2">
-                            <span class="text-[10px] font-black bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-1 rounded-md">📅 ${date}</span>
-                            ${time ? `<span class="text-[10px] font-black bg-purple-50 border border-purple-100 text-purple-700 px-2 py-1 rounded-md">⏰ ${time}</span>` : ''}
-                            ${duration ? `<span class="text-[10px] font-black bg-orange-50 border border-orange-100 text-orange-700 px-2 py-1 rounded-md">⏳ ${duration}</span>` : ''}
+                            <span class="text-[10px] font-black bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 px-2 py-1 rounded-md">📅 ${date}</span>
+                            ${time ? `<span class="text-[10px] font-black bg-purple-50 dark:bg-purple-900/30 border border-purple-100 dark:border-purple-800 text-purple-700 dark:text-purple-400 px-2 py-1 rounded-md">⏰ ${time}</span>` : ''}
+                            ${duration ? `<span class="text-[10px] font-black bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800 text-orange-700 dark:text-orange-400 px-2 py-1 rounded-md">⏳ ${duration}</span>` : ''}
                             ${priceText}
                         </div>
-                        <button onclick="deleteLesson('${l.id}')" class="text-gray-300 hover:text-red-500 transition text-xl leading-none ml-3" title="Kaydı Sil">&times;</button>
+                        <button onclick="deleteLesson('${l.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 transition text-xl leading-none ml-3" title="Kaydı Sil">&times;</button>
                     </div>
-                    <p class="text-sm font-bold text-gray-700 mt-1 leading-snug">${l.topic}</p>
-                    <div class="mt-3 border-t border-gray-50 pt-2 flex justify-between items-center">
+                    <p class="text-sm font-bold text-gray-700 dark:text-white mt-1 leading-snug">${l.topic}</p>
+                    <div class="mt-3 border-t border-gray-50 dark:border-slate-700 pt-2 flex justify-between items-center">
                         ${payBadge}
                     </div>
                 </div>`;
             
-            // PDF İçindeki Profesyonel Rapor Tasarımı (Ödeme durumu PDF'e gitmez, şık dursun)
             pdfList.innerHTML += `
                 <div class="mb-4 border-b border-gray-100 pb-3">
                     <p class="text-xs font-black text-indigo-600 tracking-wider">${date} ${time ? `| Saat: ${time}` : ''} ${duration ? `| Süre: ${duration}` : ''}</p>
@@ -983,7 +945,6 @@ async function fetchStudentLessons(studentId) {
                 </div>`;
         });
 
-        // Toplam Borcu Ekrana Bas
         const badgeEl = document.getElementById('unpaidTotalBadge');
         if (totalUnpaid > 0) {
             badgeEl.innerText = `Bekleyen: ₺${totalUnpaid}`;
@@ -993,8 +954,6 @@ async function fetchStudentLessons(studentId) {
         }
     }
 
-
-    // 2. SINAVLARI ÇEK VE GRAFİĞİ ÇİZ
     const { data: results } = await supabaseClient.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: true });
     
     const pdfQuizList = document.getElementById('pdfQuizList');
@@ -1011,7 +970,6 @@ async function fetchStudentLessons(studentId) {
         results.forEach(r => {
             labels.push(r.quizzes.title);
             scores.push(r.score);
-            
             let color = r.score >= 80 ? 'text-green-600' : (r.score >= 50 ? 'text-yellow-600' : 'text-red-600');
             if(pdfQuizList) {
                 pdfQuizList.innerHTML = `
@@ -1071,20 +1029,13 @@ window.deleteLesson = async function(id) {
     fetchStudentLessons(document.getElementById('profStudentId').value);
 }
 
-// TEK TIKLA TAHSİLAT YAPMA MOTORU
 window.markAsPaid = async function(lessonId, studentId) {
     showToast("Tahsilat işleniyor...", "info");
     const { error } = await supabaseClient.from('private_lessons').update({ is_paid: true }).eq('id', lessonId);
-    
-    if(error) {
-        showToast("Hata oluştu: " + error.message, "error");
-    } else {
-        showToast("💵 Para kasaya girdi, ders ödendi olarak işaretlendi!", "success");
-        fetchStudentLessons(studentId); // Listeyi tazeleyip borcu düşürür
-    }
+    if(error) showToast("Hata oluştu: " + error.message, "error");
+    else { showToast("💵 Para kasaya girdi, ders ödendi olarak işaretlendi!", "success"); fetchStudentLessons(studentId); }
 }
 
-// SİHİRLİ PDF OLUŞTURMA BUTONU
 window.generatePDF = function() {
     showToast("PDF hazırlanıyor, lütfen bekleyin...", "info");
     const element = document.getElementById('pdfTemplate');
@@ -1105,13 +1056,11 @@ window.generatePDF = function() {
     });
 }
 
-// YENİ: VİP SERTİFİKA BASMA MOTORU (YATAY)
 window.generateCertificate = function() {
     showToast("🏆 Altın Sertifika Hazırlanıyor...", "info");
     const element = document.getElementById('certificateTemplate');
     const sName = document.getElementById('profileStudentName').innerText;
     
-    // Öğrenci ismini sertifikaya yazdır
     const certNameEl = document.getElementById('certStudentName');
     if (certNameEl) certNameEl.innerText = sName;
     
@@ -1119,8 +1068,8 @@ window.generateCertificate = function() {
       margin:       0,
       filename:     `${sName}_VIP_Sertifika.pdf`,
       image:        { type: 'jpeg', quality: 1 },
-      html2canvas:  { scale: 3, useCORS: true, letterRendering: true }, // Yüksek kalite
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' } // A4 YATAY
+      html2canvas:  { scale: 3, useCORS: true, letterRendering: true }, 
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' } 
     };
 
     element.parentElement.classList.remove('hidden'); 
@@ -1130,7 +1079,6 @@ window.generateCertificate = function() {
     });
 }
 
-// SİHİRLİ VELİ LİNKİ KOPYALAMA MOTORU
 window.copyParentLink = function() {
     const studentId = document.getElementById('profStudentId').value;
     const currentUrl = window.location.href.split('/').slice(0, -1).join('/'); 
@@ -1144,7 +1092,7 @@ window.copyParentLink = function() {
 }
 
 // ==========================================
-// 10. DİNAMİK KARŞILAMA MESAJI MOTORU (30 ADET)
+// 10. DİNAMİK KARŞILAMA MESAJI MOTORU
 // ==========================================
 function setDynamicMotivations() {
     const welcomeMsgs = [
@@ -1186,21 +1134,19 @@ function setDynamicMotivations() {
 }
 
 // ==========================================
-// 11. YENİ: GECE MODU (DARK MODE) MOTORU
+// 11. GECE MODU (DARK MODE) MOTORU
 // ==========================================
 const dmToggleBtn = document.getElementById('darkModeToggle');
 const htmlElement = document.documentElement;
 const iconMoon = document.getElementById('icon-moon');
 const iconSun = document.getElementById('icon-sun');
 
-// Hafızayı Kontrol Et (Daha önce ne seçmişti?)
 if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     htmlElement.classList.add('dark');
     if (iconMoon) iconMoon.classList.add('hidden');
     if (iconSun) iconSun.classList.remove('hidden');
 }
 
-// Tıklama Olayı
 if (dmToggleBtn) {
     dmToggleBtn.addEventListener('click', () => {
         htmlElement.classList.toggle('dark');
@@ -1219,6 +1165,5 @@ if (dmToggleBtn) {
     });
 }
 
-// Sistemi Başlat
 setDynamicMotivations();
 switchTab('dashboard');
