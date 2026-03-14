@@ -342,40 +342,41 @@
         </div>
     </div>
 
-    <div id="quizNameModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div id="quizNameModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white dark:bg-slate-800 rounded-[30px] p-6 md:p-8 w-full max-w-sm shadow-2xl text-center relative overflow-hidden border border-transparent dark:border-slate-700">
             <div class="absolute -right-10 -top-10 opacity-5 pointer-events-none"><span class="text-9xl">⏱️</span></div>
             
-            <div class="w-16 h-16 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner border border-red-100 dark:border-red-800 relative z-10">📝</div>
+            <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner border border-indigo-100 dark:border-indigo-800 relative z-10">📝</div>
             <h3 class="text-2xl font-black text-gray-800 dark:text-white mb-1 relative z-10">Sınav Ayarları</h3>
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6 relative z-10">Başlık ve Süre Belirle</p>
 
-            <input type="text" id="quizTitleInput" class="w-full p-4 rounded-2xl border-2 border-gray-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:border-red-400 outline-none mb-5 text-center text-lg font-bold transition shadow-sm relative z-10" placeholder="Sınav Adı (Örn: 1. Dönem)">
+            <input type="text" id="quizTitleInput" class="w-full p-4 rounded-2xl border-2 border-gray-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:border-indigo-400 outline-none mb-5 text-center text-lg font-bold transition shadow-sm relative z-10" placeholder="Sınav Adı (Örn: 1. Dönem)">
             
             <div class="mb-6 text-left relative z-10">
                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Sınav Süresi</label>
                 <div class="grid grid-cols-3 gap-2" id="timeSelectorGrid">
-                    <button type="button" class="time-btn bg-red-500 text-white border-2 border-red-500 font-black py-2.5 rounded-xl text-xs transition shadow-md" data-time="0">Süresiz</button>
-                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="10">10 Dk</button>
-                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="15">15 Dk</button>
-                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="20">20 Dk</button>
-                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="30">30 Dk</button>
-                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-red-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="custom">Özel ⚙️</button>
+                    <button type="button" class="time-btn bg-indigo-600 text-white border-2 border-indigo-600 font-black py-2.5 rounded-xl text-xs transition shadow-md" data-time="0">Süresiz</button>
+                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-indigo-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="10">10 Dk</button>
+                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-indigo-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="15">15 Dk</button>
+                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-indigo-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="20">20 Dk</button>
+                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-indigo-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="30">30 Dk</button>
+                    <button type="button" class="time-btn bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-300 border-2 border-gray-100 dark:border-slate-600 hover:border-indigo-200 font-bold py-2.5 rounded-xl text-xs transition" data-time="custom">Özel ⚙️</button>
                 </div>
                 
                 <div id="customTimeContainer" class="hidden mt-3 relative transform transition-all">
-                    <input type="number" id="quizTimeInput" inputmode="numeric" pattern="[0-9]*" class="w-full p-3.5 pl-4 pr-12 rounded-xl border-2 border-red-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:border-red-400 outline-none text-center font-bold text-gray-700 dark:text-white transition" placeholder="Kaç dakika?">
-                    <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-[10px] font-black text-red-400 uppercase tracking-widest">DK</span>
+                    <input type="number" id="quizTimeInput" inputmode="numeric" pattern="[0-9]*" class="w-full p-3.5 pl-4 pr-12 rounded-xl border-2 border-indigo-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:border-indigo-400 outline-none text-center font-bold text-gray-700 dark:text-white transition" placeholder="Kaç dakika?">
+                    <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-[10px] font-black text-indigo-400 uppercase tracking-widest">DK</span>
                 </div>
                 <input type="hidden" id="finalQuizTime" value="0">
             </div>
 
             <div class="flex space-x-3 relative z-10">
                 <button onclick="document.getElementById('quizNameModal').classList.add('hidden')" class="flex-1 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-300 font-bold py-4 rounded-2xl hover:bg-gray-200 dark:hover:bg-slate-600 transition">İptal</button>
-                <button id="saveQuizTitleBtn" class="flex-[2] bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 transition text-white font-black py-4 rounded-2xl shadow-lg transform active:scale-95">Oluştur 🚀</button>
+                <button id="saveQuizTitleBtn" class="flex-[2] bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 transition text-white font-black py-4 rounded-2xl shadow-lg transform active:scale-95">Oluştur 🚀</button>
             </div>
         </div>
     </div>
+
 
     <div id="questionModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto p-4">
         <div class="bg-white dark:bg-slate-800 rounded-[40px] w-full max-w-6xl h-[90vh] flex flex-col shadow-2xl overflow-hidden relative border border-transparent dark:border-slate-700">
