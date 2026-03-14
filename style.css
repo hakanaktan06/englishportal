@@ -1,17 +1,38 @@
-/* Arka planı lüks bir mor/mavi geçişi yapıyoruz */
+/* TÜM SİTENİN TEMEL AYARLARI */
 body {
-    background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+    /* Genel font ailesi */
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    
     /* MOBIL SCROLL FIX BAŞLANGIÇ */
     overscroll-behavior-y: none; /* iOS'taki aşağı çekip yenileme / zıplama efektini kapatır */
     touch-action: pan-y; /* Sadece dikey kaydırmaya izin verir */
     /* MOBIL SCROLL FIX BİTİŞ */
 }
 
-/* Profesyonel Cam Efekti (Apple tarzı) */
+/* BUZLU CAM (GLASSMORPHISM) EFEKTİ
+  Not: Sadece belirli yerlerde (Giriş kutusu vb.) kullanmak için.
+  Arka plan görseli artık index.html'de Tailwind ile gömüldü. 
+*/
 .glass-panel {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Özel Scrollbar Tasarımı (Telefonda ve PC'de şık dursun) 
+*/
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05); 
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(79, 70, 229, 0.3); 
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(79, 70, 229, 0.6); 
 }
