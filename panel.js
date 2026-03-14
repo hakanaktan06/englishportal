@@ -433,6 +433,7 @@ async function fetchStudents() {
         const dateStr = new Date(student.created_at).toLocaleDateString('tr-TR', { month: 'short', year: 'numeric' });
 
         const card = document.createElement('div');
+        // Kayan (Carousel) Kart Tasarımı
         card.className = "w-[85vw] sm:w-[320px] shrink-0 snap-center bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition-all duration-300 relative group flex flex-col";
         
         card.innerHTML = `
@@ -471,6 +472,12 @@ async function fetchStudents() {
         `;
         listContainer.appendChild(card);
     });
+
+    // Sayfa yenilendiğinde arama kutusunda yazı varsa filtreyi tekrar uygula
+    const searchInput = document.getElementById('searchStudentInput');
+    if(searchInput && searchInput.value.trim() !== '') {
+        searchInput.dispatchEvent(new Event('input'));
+    }
 }
 
 // ==========================================
@@ -1127,27 +1134,20 @@ if (dmToggleBtn) {
 }
 
 // ==========================================
-// 12. YENİ: GERÇEK ZAMANLI ÖĞRENCİ ARAMA MOTORU
+// 12. GERÇEK ZAMANLI ÖĞRENCİ ARAMA MOTORU
 // ==========================================
-const studentSearchInput = document.getElementById('studentSearchInput');
+const searchStudentInput = document.getElementById('searchStudentInput');
 
-if (studentSearchInput) {
-    studentSearchInput.addEventListener('input', function(e) {
-        // Kullanıcının yazdığı metni küçült (Türkçe karakter uyumlu)
+if (searchStudentInput) {
+    searchStudentInput.addEventListener('input', function(e) {
         const searchTerm = e.target.value.toLocaleLowerCase('tr-TR');
-        
-        // Öğrenci kartlarının hepsini seç
         const studentCards = document.querySelectorAll('#studentList > div.group'); 
         let visibleCount = 0;
 
         studentCards.forEach(card => {
-            // Kartın içindeki <h4> etiketini (Öğrenci Adı) bul
             const studentNameEl = card.querySelector('h4');
-            
             if (studentNameEl) {
                 const studentName = studentNameEl.innerText.toLocaleLowerCase('tr-TR');
-                
-                // Eğer yazılan harfler ismin içinde varsa kartı GÖSTER, yoksa GİZLE
                 if (studentName.includes(searchTerm)) {
                     card.style.display = ''; 
                     visibleCount++;
@@ -1157,14 +1157,13 @@ if (studentSearchInput) {
             }
         });
 
-        // Eğer hiçbir sonuç bulunamazsa "Bulunamadı" mesajı göster
         let noResultMsg = document.getElementById('noSearchResultInfo');
         
         if (visibleCount === 0 && studentCards.length > 0) {
             if (!noResultMsg) {
                 noResultMsg = document.createElement('div');
                 noResultMsg.id = 'noSearchResultInfo';
-                noResultMsg.className = 'w-full text-center py-10 text-gray-400 dark:text-gray-500 font-bold';
+                noResultMsg.className = 'w-full text-center py-10 text-gray-400 dark:text-gray-500 font-bold shrink-0';
                 noResultMsg.innerHTML = 'Böyle bir öğrenci bulunamadı 🕵️‍♂️';
                 document.getElementById('studentList').appendChild(noResultMsg);
             } else {
@@ -1175,7 +1174,6 @@ if (studentSearchInput) {
         }
     });
 }
-
 
 setDynamicMotivations();
 switchTab('dashboard');
