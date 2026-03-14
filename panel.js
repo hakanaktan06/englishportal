@@ -326,20 +326,21 @@ if(studentFormEl) {
         const originalText = submitBtn.innerText;
         submitBtn.innerText = "⏳ Kaydediliyor...";
 
-        const name = document.getElementById('studentName').value;
-        const rawUsername = document.getElementById('studentUsername').value; // YENİ: Kullanıcı adını çektik
+                const name = document.getElementById('studentName').value;
+        const rawUsername = document.getElementById('studentUsername').value; 
         const password = document.getElementById('studentPassword').value;
+        const parentPhone = document.getElementById('parentPhone').value; // YENİ: Numarayı çektik
 
-        // 🪄 SİHİRLİ DOKUNUŞ: Boşlukları sil, küçük harf yap ve hayalet e-postayı oluştur!
         const dummyEmail = rawUsername.replace(/\s+/g, '').toLowerCase() + '@englishportal.com';
 
-        // Supabase'i kandırıyoruz: Ona çaktırmadan hayalet e-postayı yolluyoruz
         const { data, error } = await supabaseClient.auth.signUp({ email: dummyEmail, password: password });
 
         if (error) { showToast("Hata: " + error.message, "error"); submitBtn.innerText = originalText; return; }
 
         if (data.user) {
-            const { error: profileError } = await supabaseClient.from('profiles').insert([{ id: data.user.id, full_name: name, role: 'student' }]);
+            // YENİ: parent_phone verisini de profiles tablosuna kaydediyoruz!
+            const { error: profileError } = await supabaseClient.from('profiles').insert([{ id: data.user.id, full_name: name, role: 'student', parent_phone: parentPhone }]);
+            
             if (profileError) showToast("Hata: " + profileError.message, "error");
             else {
                 showToast("Öğrenci başarıyla eklendi.", "success");
@@ -349,6 +350,7 @@ if(studentFormEl) {
             }
         }
         submitBtn.innerText = originalText;
+
     });
 }
 
