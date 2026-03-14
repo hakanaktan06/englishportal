@@ -187,7 +187,7 @@ if(btnResults) btnResults.addEventListener('click', (e) => { e.preventDefault();
 
 
 // ==========================================
-// KOKPİT (DASHBOARD) İSTATİSTİK VE AJANDA MOTORU
+// KOKPİT (DASHBOARD) İSTATİSTİK MOTORU
 // ==========================================
 async function fetchDashboardStats() {
     const { count: studentCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student');
@@ -211,10 +211,15 @@ async function fetchDashboardStats() {
     const dAvg = document.getElementById('dashAvgScore');
     if (dAvg) dAvg.innerText = avgScore ? `%${avgScore}` : '%0';
 
-    // AJANDAYI ÇALIŞTIR
-    fetchAgenda();
+    // YENİ: AJANDAYI ÇALIŞTIR
+    if (typeof fetchAgenda === 'function') {
+        fetchAgenda();
+    }
 }
 
+// ==========================================
+// YENİ: AJANDA ÇEKME MOTORU
+// ==========================================
 async function fetchAgenda() {
     const agendaContainer = document.getElementById('agendaList');
     if (!agendaContainer) return;
