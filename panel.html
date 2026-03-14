@@ -275,18 +275,19 @@
             </div>
         </div>
 
-        <div id="section-quizzes" class="page-section w-full hidden pb-10">
-            <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 flex justify-between items-center border-b border-gray-100 dark:border-slate-700">
+               <div id="section-quizzes" class="page-section w-full hidden pb-10">
+            <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center sticky top-0 z-10 gap-4 border-b border-gray-100 dark:border-slate-700">
                 <div>
-                    <h2 class="text-xl md:text-2xl font-extrabold text-red-600 dark:text-red-400">Sınav & Test Merkezi</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Sınavlarını oluştur ve sorularını yönet.</p>
+                    <h2 class="text-2xl md:text-3xl font-black text-gray-800 dark:text-white tracking-tight flex items-center gap-2">
+                        <span class="text-indigo-500 dark:text-indigo-400">📝</span> Sınav & Test Merkezi
+                    </h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 font-medium leading-relaxed">Sınavlarını oluştur, süre belirle ve sorularını yönet.</p>
                 </div>
-                <button id="addQuizBtn" class="bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white px-5 py-2.5 rounded-2xl font-black text-xs md:text-sm shadow-[0_0_15px_rgba(244,63,94,0.4)] border border-red-400/50 transition transform active:scale-95 flex items-center gap-2">
-    <span class="text-lg leading-none">+</span> YENİ SINAV
-</button>
-
+                <button id="addQuizBtn" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-[0_4px_15px_rgba(79,70,229,0.3)] border border-indigo-400/50 transition-all transform active:scale-95 flex items-center gap-2">
+                    <span class="text-xl leading-none">+</span> YENİ SINAV OLUŞTUR
+                </button>
             </header>
-            <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 gap-6" id="quizList"></div>
+            <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-6" id="quizList"></div>
         </div>
 
         <div id="section-results" class="page-section w-full hidden pb-10">
