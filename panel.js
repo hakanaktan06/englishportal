@@ -488,23 +488,24 @@ async function fetchHomeworks() {
         const status = hw.status || 'bekliyor';
         
         let statusHtml = status === 'Tamamlandı' 
-            ? `<span class="px-3 py-1 bg-green-50 text-green-600 border border-green-100 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto">Tamamlandı</span>` 
-            : `<span class="px-3 py-1 bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto">Bekliyor</span>`;
+            ? `<span class="px-3 py-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-800 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto">Tamamlandı</span>` 
+            : `<span class="px-3 py-1 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 border border-yellow-100 dark:border-yellow-800 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto">Bekliyor</span>`;
 
         let noteHtml = hw.student_note 
-            ? `<button onclick="openStudentNoteModal('${hw.student_note.replace(/'/g, "&#39;").replace(/"/g, "&quot;").replace(/\n/g, "\\n")}')" class="mt-2 w-full bg-yellow-100 hover:bg-yellow-500 text-yellow-700 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition shadow-sm border border-yellow-200 hover:border-yellow-600">NOTU GÖR</button>` 
+            ? `<button onclick="openStudentNoteModal('${hw.student_note.replace(/'/g, "&#39;").replace(/"/g, "&quot;").replace(/\n/g, "\\n")}')" class="mt-2 w-full bg-yellow-100 dark:bg-yellow-900/50 hover:bg-yellow-500 text-yellow-700 dark:text-yellow-400 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition shadow-sm border border-yellow-200 dark:border-yellow-700">NOTU GÖR</button>` 
             : '';
 
         tbody.innerHTML += `
-            <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition">
-                <td class="p-4 font-bold text-gray-800 text-sm">${hw.profiles ? hw.profiles.full_name : 'Bilinmeyen'}</td>
-                <td class="p-4 text-gray-600 text-sm truncate max-w-[200px]" title="${hw.title}">${hw.title}</td>
-                <td class="p-4 text-red-500 font-bold text-xs">${date}</td>
+            <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-gray-50/50 dark:hover:bg-slate-800 transition">
+                <td class="p-4 font-bold text-gray-800 dark:text-white text-sm">${hw.profiles ? hw.profiles.full_name : 'Bilinmeyen'}</td>
+                <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title}">${hw.title}</td>
+                <td class="p-4 text-red-500 dark:text-red-400 font-bold text-xs">${date}</td>
                 <td class="p-4 text-center">${statusHtml}${noteHtml}</td>
-                <td class="p-4 text-right"><button onclick="deleteHomework('${hw.id}')" class="text-gray-300 hover:text-red-500 p-2 text-xl transition" title="Ödevi Sil">🗑️</button></td>
+                <td class="p-4 text-right"><button onclick="deleteHomework('${hw.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 p-2 text-xl transition" title="Ödevi Sil">🗑️</button></td>
             </tr>`;
     });
 }
+
 
 window.openStudentNoteModal = function(noteText) {
     const elNote = document.getElementById('fullStudentNoteText');
