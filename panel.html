@@ -553,12 +553,12 @@
         </div>
     </div>
 
-    <div class="hidden">
+        <div style="position: absolute; left: -9999px; top: -9999px; width: 0; height: 0; overflow: hidden; pointer-events: none;">
+        
         <div id="pdfTemplate" class="p-10 bg-white w-[800px] text-gray-800 font-sans relative">
             <div class="absolute inset-0 opacity-5 flex items-center justify-center pointer-events-none">
                 <span class="text-[150px] font-black transform -rotate-45 text-indigo-900">ENGLISH PORTAL</span>
             </div>
-            
             <div class="flex justify-between items-end border-b-4 border-indigo-600 pb-6 mb-8">
                 <div>
                     <h1 class="text-4xl font-black text-indigo-900 tracking-tighter">GELİŞİM RAPORU</h1>
@@ -569,12 +569,10 @@
                     <p class="text-xl font-black text-indigo-600" id="pdfDate">12.10.2026</p>
                 </div>
             </div>
-
             <div class="bg-indigo-50 p-6 rounded-2xl mb-8 border border-indigo-100">
                 <p class="text-sm font-bold text-indigo-400 uppercase tracking-widest">ÖĞRENCİ BİLGİLERİ</p>
                 <h2 class="text-3xl font-black text-indigo-900 mt-1" id="pdfStudentName">Ahmet Yılmaz</h2>
             </div>
-
             <div class="grid grid-cols-2 gap-8">
                 <div>
                     <h3 class="text-lg font-black text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">📚 İşlenen Özel Dersler</h3>
@@ -582,13 +580,10 @@
                 </div>
                 <div>
                     <h3 class="text-lg font-black text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">📈 Sınav Başarı Grafiği & Sonuçlar</h3>
-                    <div class="w-full h-40 mb-5 relative">
-                        <canvas id="pdfChart"></canvas>
-                    </div>
+                    <div class="w-full h-40 mb-5 relative"><canvas id="pdfChart"></canvas></div>
                     <div id="pdfQuizList" class="space-y-4"></div>
                 </div>
             </div>
-
             <div class="mt-16 pt-8 border-t-2 border-gray-100 flex justify-between items-center text-sm font-medium text-gray-500">
                 <p>Bu rapor sistem tarafından otomatik oluşturulmuştur.</p>
                 <div class="text-center">
@@ -597,19 +592,15 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="hidden">
         <div id="certificateTemplate" class="w-[1123px] h-[794px] bg-slate-900 relative flex flex-col items-center justify-center p-16 text-center font-sans overflow-hidden" style="background: radial-gradient(circle, #1e1b4b 0%, #000000 100%);">
             <div class="absolute inset-5 border-8 border-[#d4af37] opacity-90 pointer-events-none"></div>
             <div class="absolute inset-8 border-2 border-[#d4af37] opacity-50 pointer-events-none"></div>
             <div class="absolute opacity-5 text-[#d4af37] text-[400px] font-black transform -rotate-12 pointer-events-none">EP</div>
-
             <h1 class="text-7xl font-black text-[#d4af37] mb-6 tracking-widest uppercase relative z-10" style="font-family: 'Times New Roman', serif;">Certificate of Achievement</h1>
             <p class="text-2xl text-gray-300 font-light mb-16 tracking-widest uppercase relative z-10">This is proudly presented to</p>
             <h2 class="text-8xl font-bold text-white mb-12 italic border-b-4 border-[#d4af37] pb-6 px-16 relative z-10" id="certStudentName" style="font-family: 'Georgia', serif;">Öğrenci Adı</h2>
             <p class="text-2xl text-gray-300 max-w-4xl leading-relaxed mb-20 font-light relative z-10">For outstanding dedication, hard work, and exceptional progress in English language learning. Your commitment to educational excellence is truly inspiring.</p>
-
             <div class="flex justify-between items-end w-full max-w-5xl px-12 relative z-10">
                 <div class="text-center">
                     <div class="w-64 border-b-2 border-[#d4af37] mb-3 pb-2 text-white font-black text-4xl" style="font-family: 'Brush Script MT', cursive;">G. Öğretmen</div>
@@ -628,6 +619,7 @@
             </div>
         </div>
     </div>
+
 
     <script src="panel.js"></script>
 </body>
