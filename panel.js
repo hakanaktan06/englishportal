@@ -33,7 +33,7 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-function customConfirm(message, btnText = "Evet, İşlemi Yap") {
+function customConfirm(message, btnText = "Evet, Sil") {
     return new Promise((resolve) => {
         const modal = document.getElementById('customConfirmModal');
         const box = document.getElementById('customConfirmBox');
@@ -422,18 +422,15 @@ async function fetchStudents() {
         let avgWidth = studAvg > 0 ? studAvg : 0;
         let badgeHtml = '';
 
-                if(studAvg >= 85) {
+        if(studAvg >= 85) {
             avgColor = 'bg-green-500';
-            // YENİ: top-4 right-4 yapılarak kartın tam içine estetikçe yerleştirildi
             badgeHtml = '<span class="absolute top-4 right-4 bg-gradient-to-r from-amber-400 to-yellow-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg border-2 border-white dark:border-slate-800 z-10" title="Parlayan Yıldız">⭐</span>';
         } else if(studAvg >= 50) {
             avgColor = 'bg-yellow-500';
         } else if(studAvg > 0) {
             avgColor = 'bg-red-500';
-            // YENİ: top-4 right-4 yapılarak kartın tam içine estetikçe yerleştirildi
             badgeHtml = '<span class="absolute top-4 right-4 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg border-2 border-white dark:border-slate-800 z-10 animate-pulse" title="Dikkat Gerekli">⚠️</span>';
         }
-
 
         const debtHtml = studDebt > 0 
             ? `<div class="flex items-center gap-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-800 shadow-sm">
@@ -628,7 +625,7 @@ async function fetchActivities() {
     container.innerHTML = '';
     const icons = { video: '📺', game: '🎮', pdf: '📄' };
 
-        data.forEach(act => {
+    data.forEach(act => {
         container.innerHTML += `
             <div class="activity-card bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col justify-between hover:shadow-md transition" data-category="${act.category}">
                 <div>
@@ -641,7 +638,6 @@ async function fetchActivities() {
                 </div>
             </div>`;
     });
-
 }
 
 // ==========================================
@@ -891,7 +887,15 @@ window.openTeacherAnalysis = function(resultId) {
     const taCont = document.getElementById('taDetailsContainer');
 
     if(taCont) {
-                        taCont.innerHTML += `
+        taCont.innerHTML = '';
+        const details = res.details || [];
+        if(details.length === 0) {
+            taCont.innerHTML = '<p class="text-center text-gray-400 font-bold mt-10">Bu sınav için detaylı analiz bulunmuyor.</p>';
+        } else {
+            details.forEach(detail => {
+                const boxStyle = detail.is_correct ? 'border-green-300 bg-green-50 dark:bg-green-900/10 dark:border-green-800' : 'border-red-300 bg-red-50 dark:bg-red-900/10 dark:border-red-800';
+                const iconInfo = detail.is_correct ? '✓' : '✗';
+                taCont.innerHTML += `
                     <div class="p-4 md:p-6 rounded-[20px] md:rounded-[30px] border-2 mb-4 md:mb-6 ${boxStyle} shadow-sm">
                         <div class="flex items-start gap-3 md:gap-4 mb-3 md:mb-4">
                             <span class="bg-gray-800 text-white w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center font-black text-sm md:text-base shrink-0">${iconInfo}</span>
@@ -1305,13 +1309,6 @@ if (btnGenerateAI) {
     });
 }
 
-// GÜNÜN TARİHİNİ ÖDEV FORMUNA OTOMATİK YAZDIRMA
-document.addEventListener("DOMContentLoaded", () => {
-    const hwDueDateInput = document.getElementById('hwDueDate');
-    if (hwDueDateInput) hwDueDateInput.value = new Date().toISOString().split('T')[0];
-});
-
-
 // ETKİNLİK FİLTRELEME MOTORU
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('filter-btn')) {
@@ -1327,6 +1324,11 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// GÜNÜN TARİHİNİ ÖDEV FORMUNA OTOMATİK YAZDIRMA
+document.addEventListener("DOMContentLoaded", () => {
+    const hwDueDateInput = document.getElementById('hwDueDate');
+    if (hwDueDateInput) hwDueDateInput.value = new Date().toISOString().split('T')[0];
+});
 
 setDynamicMotivations();
 switchTab('dashboard');
