@@ -1189,5 +1189,123 @@ if (searchStudentInput) {
     });
 }
 
+// ==========================================
+// 13. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU (GÜVENLİ VERSİYON)
+// ==========================================
+
+const btnGenerateAI = document.getElementById('btnGenerateAI');
+if (btnGenerateAI) {
+    btnGenerateAI.addEventListener('click', async () => {
+        if (!currentActiveQuizId) { showToast('Önce bir sınav seçmelisin!', 'error'); return; }
+        
+        const topicInput = document.getElementById('aiTopicInput');
+        const topic = topicInput.value.trim();
+        
+        if (!topic) { showToast('Lütfen yapay zeka için bir konu yazın!', 'error'); return; }
+
+        // GÜVENLİK GÜNCELLEMESİ: Şifreyi GitHub yerine Hocanın kendi tarayıcı hafızasından (Local Storage) alıyoruz
+        let apiKey = localStorage.getItem('openai_api_key');
+        
+        // Eğer hafızada şifre yoksa (ilk defa giriyorsa) ekranda sor
+        if (!apiKey) {
+            apiKey = prompt("Lütfen OpenAI API Şifrenizi (sk-...) girin:\n\n(Bu şifre sadece sizin cihazınızda kalır, sisteme kaydedilmez ve %100 güvendedir.)");
+            
+            // Hoca İptal'e basarsa veya boş bırakırsa işlemi durdur
+            if (!apiKey) {
+                showToast('API şifresi girilmediği için işlem iptal edildi.', 'error');
+                return;
+            }
+            // Şifreyi hocanın bilgisayarına kaydet (Bir daha sormaması için)
+            localStorage.setItem('openai_api_key', apiKey.trim());
+        }
+
+        const originalText = btnGenerateAI.innerText;
+        btnGenerateAI.innerText = '⏳ DÜŞÜNÜYOR...';
+        btnGenerateAI.disabled = true;
+
+        try {
+            // OpenAI'ye şifreyle birlikte istek atıyoruz
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}` // Hocanın girdiği şifre burada kullanılır
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'Sen uzman bir İngilizce öğretmenisin. Verilen konuya göre 5 adet çoktan seçmeli (A, B, C, D) İngilizce sorusu hazırla. Çıktıyı SADECE ve KESİNLİKLE geçerli bir JSON dizisi formatında ver. Hiçbir açıklama metni veya markdown kullanma. Format: [{"q": "Soru", "a": "A", "b": "B", "c": "C", "d": "D", "correct": "A"}]'
+                        },
+                        {
+                            role: 'user',
+                            content: `Konu: ${topic}`
+                        }
+                    ],
+                    temperature: 0.7
+                })
+            });
+
+            const data = await response.json();
+            
+            // HATA KONTROLÜ (Şifre yanlışsa veya kredi bitmişse)
+            if (data.error) {
+                console.error("OpenAI Hatası:", data.error);
+                showToast('API Hatası! Şifreniz yanlış veya krediniz bitmiş olabilir.', 'error');
+                
+                // Eğer şifre cidden hatalıysa, hafızadan silelim ki bir daha sorabilsin
+                if(data.error.code === 'invalid_api_key') {
+                     localStorage.removeItem('openai_api_key');
+                     showToast('Hatalı şifre sıfırlandı. Lütfen tekrar deneyin.', 'info');
+                }
+                
+                btnGenerateAI.innerText = originalText;
+                btnGenerateAI.disabled = false;
+                return;
+            }
+
+            // Yapay zekanın verdiği metni JSON'a çevir
+            let jsonStr = data.choices[0].message.content.trim();
+            if (jsonStr.startsWith('```json')) jsonStr = jsonStr.replace('```json', '');
+            if (jsonStr.endsWith('```')) jsonStr = jsonStr.replace('```', '');
+            jsonStr = jsonStr.trim();
+
+            const questions = JSON.parse(jsonStr);
+            showToast('Yapay zeka soruları yazdı! Sisteme yükleniyor...', 'info');
+
+            // Soruları Supabase formatına getir
+            const inserts = questions.map(q => ({
+                quiz_id: currentActiveQuizId,
+                question_text: q.q,
+                option_a: q.a,
+                option_b: q.b,
+                option_c: q.c,
+                option_d: q.d,
+                correct_option: q.correct
+            }));
+
+            // Veritabanına gönder
+            const { error } = await supabaseClient.from('questions').insert(inserts);
+
+            if (error) throw error;
+
+            showToast('🪄 Sihir gerçekleşti! 5 soru eklendi.', 'success');
+            topicInput.value = '';
+            
+            // Sorular eklendikten sonra listeyi yenile
+            fetchQuestionsForQuiz(currentActiveQuizId);
+
+        } catch (err) {
+            console.error(err);
+            showToast('Sorular üretilemedi veya AI yanıtı çözülemedi.', 'error');
+        }
+
+        btnGenerateAI.innerText = originalText;
+        btnGenerateAI.disabled = false;
+    });
+}
+
+
 setDynamicMotivations();
 switchTab('dashboard');
