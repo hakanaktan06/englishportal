@@ -1189,8 +1189,8 @@ if (searchStudentInput) {
     });
 }
 
-// ==========================================
-// 13. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU (GÜVENLİ VERSİYON)
+==========================================
+// 13. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU (DİNAMİK SORU SAYISI)
 // ==========================================
 
 const btnGenerateAI = document.getElementById('btnGenerateAI');
@@ -1199,23 +1199,23 @@ if (btnGenerateAI) {
         if (!currentActiveQuizId) { showToast('Önce bir sınav seçmelisin!', 'error'); return; }
         
         const topicInput = document.getElementById('aiTopicInput');
+        const countInput = document.getElementById('aiQuestionCount'); // YENİ: Soru sayısı kutusunu aldık
+        
         const topic = topicInput.value.trim();
+        let qCount = parseInt(countInput.value); // Yazılan sayıyı okuduk
         
         if (!topic) { showToast('Lütfen yapay zeka için bir konu yazın!', 'error'); return; }
+        
+        // Mantık Kontrolü: Hoca saçma bir sayı girerse (Örn: -5 veya 100) sistemi koru
+        if (isNaN(qCount) || qCount < 1) qCount = 5;
+        if (qCount > 20) { showToast('API sağlığı için tek seferde en fazla 20 soru üretebilirsiniz.', 'error'); return; }
 
-        // GÜVENLİK GÜNCELLEMESİ: Şifreyi GitHub yerine Hocanın kendi tarayıcı hafızasından (Local Storage) alıyoruz
+        // Şifreyi tarayıcı hafızasından çek (Senin önceden girdiğin şifre)
         let apiKey = localStorage.getItem('openai_api_key');
         
-        // Eğer hafızada şifre yoksa (ilk defa giriyorsa) ekranda sor
         if (!apiKey) {
-            apiKey = prompt("Lütfen OpenAI API Şifrenizi (sk-...) girin:\n\n(Bu şifre sadece sizin cihazınızda kalır, sisteme kaydedilmez ve %100 güvendedir.)");
-            
-            // Hoca İptal'e basarsa veya boş bırakırsa işlemi durdur
-            if (!apiKey) {
-                showToast('API şifresi girilmediği için işlem iptal edildi.', 'error');
-                return;
-            }
-            // Şifreyi hocanın bilgisayarına kaydet (Bir daha sormaması için)
+            apiKey = prompt("Lütfen OpenAI API Şifrenizi (sk-...) girin:\n\n(Bu şifre sadece sizin cihazınızda kalır, sisteme kaydedilmez.)");
+            if (!apiKey) { showToast('API şifresi girilmediği için işlem iptal edildi.', 'error'); return; }
             localStorage.setItem('openai_api_key', apiKey.trim());
         }
 
@@ -1224,19 +1224,19 @@ if (btnGenerateAI) {
         btnGenerateAI.disabled = true;
 
         try {
-            // OpenAI'ye şifreyle birlikte istek atıyoruz
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}` // Hocanın girdiği şifre burada kullanılır
+                    'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
                     model: 'gpt-4o-mini',
                     messages: [
                         {
                             role: 'system',
-                            content: 'Sen uzman bir İngilizce öğretmenisin. Verilen konuya göre 5 adet çoktan seçmeli (A, B, C, D) İngilizce sorusu hazırla. Çıktıyı SADECE ve KESİNLİKLE geçerli bir JSON dizisi formatında ver. Hiçbir açıklama metni veya markdown kullanma. Format: [{"q": "Soru", "a": "A", "b": "B", "c": "C", "d": "D", "correct": "A"}]'
+                            // DİKKAT: Yapay zekaya artık hocanın girdiği sayıyı (qCount) emrediyoruz!
+                            content: `Sen uzman bir İngilizce öğretmenisin. Verilen konuya göre tam ${qCount} adet çoktan seçmeli (A, B, C, D) İngilizce sorusu hazırla. Çıktıyı SADECE ve KESİNLİKLE geçerli bir JSON dizisi formatında ver. Hiçbir açıklama metni veya markdown kullanma. Format: [{"q": "Soru", "a": "A", "b": "B", "c": "C", "d": "D", "correct": "A"}]`
                         },
                         {
                             role: 'user',
@@ -1249,12 +1249,10 @@ if (btnGenerateAI) {
 
             const data = await response.json();
             
-            // HATA KONTROLÜ (Şifre yanlışsa veya kredi bitmişse)
             if (data.error) {
                 console.error("OpenAI Hatası:", data.error);
                 showToast('API Hatası! Şifreniz yanlış veya krediniz bitmiş olabilir.', 'error');
                 
-                // Eğer şifre cidden hatalıysa, hafızadan silelim ki bir daha sorabilsin
                 if(data.error.code === 'invalid_api_key') {
                      localStorage.removeItem('openai_api_key');
                      showToast('Hatalı şifre sıfırlandı. Lütfen tekrar deneyin.', 'info');
@@ -1265,16 +1263,14 @@ if (btnGenerateAI) {
                 return;
             }
 
-            // Yapay zekanın verdiği metni JSON'a çevir
             let jsonStr = data.choices[0].message.content.trim();
             if (jsonStr.startsWith('```json')) jsonStr = jsonStr.replace('```json', '');
             if (jsonStr.endsWith('```')) jsonStr = jsonStr.replace('```', '');
             jsonStr = jsonStr.trim();
 
             const questions = JSON.parse(jsonStr);
-            showToast('Yapay zeka soruları yazdı! Sisteme yükleniyor...', 'info');
+            showToast(`Yapay zeka ${questions.length} soru yazdı! Yükleniyor...`, 'info');
 
-            // Soruları Supabase formatına getir
             const inserts = questions.map(q => ({
                 quiz_id: currentActiveQuizId,
                 question_text: q.q,
@@ -1285,15 +1281,13 @@ if (btnGenerateAI) {
                 correct_option: q.correct
             }));
 
-            // Veritabanına gönder
             const { error } = await supabaseClient.from('questions').insert(inserts);
 
             if (error) throw error;
 
-            showToast('🪄 Sihir gerçekleşti! 5 soru eklendi.', 'success');
+            showToast(`🪄 Sihir gerçekleşti! ${questions.length} soru eklendi.`, 'success');
             topicInput.value = '';
             
-            // Sorular eklendikten sonra listeyi yenile
             fetchQuestionsForQuiz(currentActiveQuizId);
 
         } catch (err) {
@@ -1305,6 +1299,7 @@ if (btnGenerateAI) {
         btnGenerateAI.disabled = false;
     });
 }
+
 
 
 setDynamicMotivations();
