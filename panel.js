@@ -788,7 +788,7 @@ async function fetchResults() {
     if (!tbody || error) return;
 
     if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-gray-400 italic font-bold">Henüz hiç sınav çözen öğrenci yok.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-gray-400 dark:text-gray-500 italic font-bold">Henüz hiç sınav çözen öğrenci yok.</td></tr>';
         return;
     }
 
@@ -800,23 +800,24 @@ async function fetchResults() {
         const dateObj = new Date(res.created_at);
         const date = dateObj.toLocaleDateString('tr-TR') + ' ' + dateObj.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
         
-        let scoreColor = 'text-green-600 bg-green-50 border-green-100';
-        if (res.score < 50) scoreColor = 'text-red-600 bg-red-50 border-red-100';
-        else if (res.score < 80) scoreColor = 'text-yellow-600 bg-yellow-50 border-yellow-100';
+        let scoreColor = 'text-green-600 bg-green-50 border-green-100 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
+        if (res.score < 50) scoreColor = 'text-red-600 bg-red-50 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
+        else if (res.score < 80) scoreColor = 'text-yellow-600 bg-yellow-50 border-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800';
 
         tbody.innerHTML += `
-            <tr class="border-b border-gray-50 hover:bg-blue-50/30 transition text-sm">
-                <td class="p-4 font-black text-gray-800">${res.profiles ? res.profiles.full_name : 'Bilinmeyen Öğrenci'}</td>
-                <td class="p-4 text-gray-600 font-bold">${res.quizzes ? res.quizzes.title : 'Silinmiş Sınav'}</td>
+            <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-blue-50/30 dark:hover:bg-slate-800 transition text-sm">
+                <td class="p-4 font-black text-gray-800 dark:text-white">${res.profiles ? res.profiles.full_name : 'Bilinmeyen Öğrenci'}</td>
+                <td class="p-4 text-gray-600 dark:text-gray-300 font-bold">${res.quizzes ? res.quizzes.title : 'Silinmiş Sınav'}</td>
                 <td class="p-4 text-center"><span class="px-3 py-1 rounded-xl font-black text-xs uppercase tracking-wider border ${scoreColor}">${res.score} PUAN</span></td>
-                <td class="p-4 text-gray-400 text-xs font-bold">${date}</td>
+                <td class="p-4 text-gray-400 dark:text-gray-500 text-xs font-bold">${date}</td>
                 <td class="p-4 text-right flex items-center justify-end space-x-2">
-                    <button onclick="openTeacherAnalysis('${res.id}')" class="bg-blue-100 hover:bg-blue-600 text-blue-600 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition">GÖZ AT</button>
-                    <button onclick="deleteResult('${res.id}')" class="text-gray-300 hover:text-red-500 p-2 rounded-xl text-xl transition" title="Sonucu Sil">🗑️</button>
+                    <button onclick="openTeacherAnalysis('${res.id}')" class="bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-600 text-blue-600 dark:text-blue-400 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition">GÖZ AT</button>
+                    <button onclick="deleteResult('${res.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 p-2 rounded-xl text-xl transition" title="Sonucu Sil">🗑️</button>
                 </td>
             </tr>`;
     });
 }
+
 
 window.deleteResult = async function(id) {
     const onay = await customConfirm("Bu öğrencinin sınav sonucunu kalıcı olarak siliyorum, emin misin?");
