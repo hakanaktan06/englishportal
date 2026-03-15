@@ -538,7 +538,8 @@ if(homeworkFormEl) {
             student_id: studentId,
             title: document.getElementById('hwTitle').value,
             description: document.getElementById('hwDesc').value,
-            due_date: document.getElementById('hwDueDate').value
+            due_date: document.getElementById('hwDueDate').value,
+            status: 'Bekliyor'
         }]);
 
         if (error) showToast("Ödev hatası: " + error.message, "error"); 
@@ -549,49 +550,84 @@ if(homeworkFormEl) {
 
 async function fetchHomeworks() {
     const { data, error } = await supabaseClient.from('homeworks').select('*, profiles(full_name)').order('created_at', { ascending: false });
-    const tbody = document.getElementById('homeworkList');
-    if (error || !tbody) return;
+    const tbodyPending = document.getElementById('pendingHomeworkList');
+    const tbodyCompleted = document.getElementById('completedHomeworkList');
+    
+    if (error || !tbodyPending || !tbodyCompleted) return;
 
-    if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400 dark:text-gray-500 italic text-sm">Henüz hiç ödev verilmemiş.</td></tr>';
+    tbodyPending.innerHTML = '';
+    tbodyCompleted.innerHTML = '';
+
+    const validData = data || [];
+    const pending = validData.filter(h => h.status !== 'Tamamlandı');
+    const completed = validData.filter(h => h.status === 'Tamamlandı');
+
+    if (pending.length === 0) {
+        tbodyPending.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-400 dark:text-gray-500 italic text-sm">Bekleyen ödev bulunmuyor.</td></tr>';
+    } else {
+        pending.forEach(hw => {
+            const date = new Date(hw.due_date).toLocaleDateString('tr-TR');
+            tbodyPending.innerHTML += `
+                <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-gray-50/50 dark:hover:bg-slate-800 transition">
+                    <td class="p-4 font-bold text-gray-800 dark:text-white text-sm">${hw.profiles ? hw.profiles.full_name : 'Bilinmeyen'}</td>
+                    <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title}">${hw.title}</td>
+                    <td class="p-4 text-amber-600 dark:text-amber-400 font-bold text-xs">${date}</td>
+                    <td class="p-4 text-right flex items-center justify-end gap-2">
+                        <button onclick="approveHomework('${hw.id}', '${hw.student_id}')" class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white p-2.5 rounded-xl transition shadow-sm border border-emerald-100 dark:border-emerald-800" title="Ödevi Onayla ve +50 XP Ver">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        </button>
+                        <button onclick="deleteHomework('${hw.id}')" class="bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white p-2.5 rounded-xl transition shadow-sm border border-rose-100 dark:border-rose-800" title="Ödevi Sil">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    if (completed.length === 0) {
+        tbodyCompleted.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-400 dark:text-gray-500 italic text-sm">Henüz onaylanmış ödev yok.</td></tr>';
+    } else {
+        completed.forEach(hw => {
+            const date = new Date(hw.due_date).toLocaleDateString('tr-TR');
+            tbodyCompleted.innerHTML += `
+                <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-gray-50/50 dark:hover:bg-slate-800 transition">
+                    <td class="p-4 font-bold text-gray-800 dark:text-white text-sm">${hw.profiles ? hw.profiles.full_name : 'Bilinmeyen'}</td>
+                    <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title}">${hw.title}</td>
+                    <td class="p-4 text-emerald-600 dark:text-emerald-400 font-bold text-xs">${date}</td>
+                    <td class="p-4 text-right flex items-center justify-end gap-2">
+                        <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-200 dark:border-emerald-700">ONAYLI</span>
+                        <button onclick="deleteHomework('${hw.id}')" class="bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2 rounded-xl transition border border-gray-100 dark:border-slate-600" title="Kayıtlardan Sil">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                </tr>`;
+        });
+    }
+}
+
+window.approveHomework = async function(hwId, studentId) {
+    const onay = await customConfirm("Ödevi onaylayıp öğrenciye +50 XP kazandırmak istediğinize emin misiniz?", "Evet, Onayla");
+    if (!onay) return;
+
+    showToast("Ödev onaylanıyor...", "info");
+
+    const { error } = await supabaseClient.from('homeworks').update({ status: 'Tamamlandı' }).eq('id', hwId);
+    if (error) {
+        showToast("Hata oluştu: " + error.message, "error");
         return;
     }
 
-    tbody.innerHTML = '';
-    data.forEach(hw => {
-        const date = new Date(hw.due_date).toLocaleDateString('tr-TR');
-        const status = hw.status || 'bekliyor';
-        
-        let statusHtml = status === 'Tamamlandı' 
-            ? `<span class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Tamamlandı</span>` 
-            : `<span class="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Bekliyor</span>`;
+    const { data: prof } = await supabaseClient.from('profiles').select('xp').eq('id', studentId).single();
+    if (prof) {
+        const newXp = (prof.xp || 0) + 50;
+        await supabaseClient.from('profiles').update({ xp: newXp }).eq('id', studentId);
+    }
 
-        let noteHtml = hw.student_note 
-            ? `<button onclick="openStudentNoteModal('${hw.student_note.replace(/'/g, "&#39;").replace(/"/g, "&quot;").replace(/\n/g, "\\n")}')" class="mt-2 w-full bg-indigo-50 dark:bg-indigo-900/50 hover:bg-indigo-500 text-indigo-700 dark:text-indigo-300 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition shadow-sm border border-indigo-200 dark:border-indigo-700 flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> NOTU GÖR</button>` 
-            : '';
-
-        tbody.innerHTML += `
-            <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-gray-50/50 dark:hover:bg-slate-800 transition">
-                <td class="p-4 font-bold text-gray-800 dark:text-white text-sm">${hw.profiles ? hw.profiles.full_name : 'Bilinmeyen'}</td>
-                <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title}">${hw.title}</td>
-                <td class="p-4 text-indigo-600 dark:text-indigo-400 font-bold text-xs">${date}</td>
-                <td class="p-4 text-center">${statusHtml}${noteHtml}</td>
-                <td class="p-4 text-right"><button onclick="deleteHomework('${hw.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 dark:hover:text-rose-400 p-2 transition" title="Ödevi Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></td>
-            </tr>`;
-    });
-}
-
-window.openStudentNoteModal = function(noteText) {
-    const elNote = document.getElementById('fullStudentNoteText');
-    const modalNote = document.getElementById('studentNoteModal');
-    if (elNote) elNote.innerText = noteText;
-    if (modalNote) modalNote.classList.remove('hidden');
+    showToast("Ödev onaylandı! Öğrenciye +50 XP eklendi.", "success");
+    fetchHomeworks();
+    fetchStudents();
 };
 
-window.closeStudentNoteModal = function() {
-    const modalNote = document.getElementById('studentNoteModal');
-    if (modalNote) modalNote.classList.add('hidden');
-};
 
 // ==========================================
 // 5. ETKİNLİK MOTORLARI 
