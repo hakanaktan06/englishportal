@@ -73,15 +73,14 @@ function customConfirm(message, btnText = "Evet, İşlemi Yap") {
 }
 
 // ==========================================
-// GÜVENLİK (FEDAİ) MOTORU VE SPLASH KAPATMA
+// GÜVENLİK (FEDAİ) MOTORU VE SÜRE KONTROLÜ
 // ==========================================
 async function checkTeacherSecurity() {
     try {
         const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
         if (authError || !user) { window.location.href = 'index.html'; return; } 
         
-        // 🌟 is_premium verisini de çekiyoruz
-        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium').eq('id', user.id).single();
+        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until').eq('id', user.id).single();
         if (profileError || !profile || profile.role !== 'teacher') {
             showToast("Erişim Engellendi! Yönetici yetkiniz yok.", "error");
             setTimeout(() => { window.location.href = 'student.html'; }, 1500); 
@@ -90,7 +89,19 @@ async function checkTeacherSecurity() {
 
         currentTeacherId = user.id;
         currentTeacherName = profile.full_name;
-        isPremiumTeacher = profile.is_premium; // ÖĞRETMENİN VIP DURUMUNU HAFIZAYA AL
+
+        // 🌟 TARİH KONTROLÜ (SÜRESİ BİTMİŞ Mİ?) 🌟
+        if (profile.is_premium && profile.premium_until) {
+            const today = new Date();
+            const expiry = new Date(profile.premium_until);
+            if (today > expiry) {
+                isPremiumTeacher = false; // Süre doldu, hoca Freemium'a düştü!
+            } else {
+                isPremiumTeacher = true; // Hala süresi var
+            }
+        } else {
+            isPremiumTeacher = profile.is_premium; 
+        }
 
         const welcomeNameEl = document.getElementById('welcomeTeacherName');
         if(welcomeNameEl) welcomeNameEl.innerText = currentTeacherName + " Hocam";
@@ -108,7 +119,7 @@ async function checkTeacherSecurity() {
             }
 
             // 🌟 TEK SEFERLİK PREMİUM KUTLAMASI 🌟
-            if (profile.is_premium) {
+            if (isPremiumTeacher) {
                 const isCelebrated = localStorage.getItem('premium_celebrated_' + user.id);
                 if (!isCelebrated) {
                     const modal = document.getElementById('premiumCelebrationModal');
@@ -119,7 +130,7 @@ async function checkTeacherSecurity() {
                             modal.classList.remove('opacity-0');
                             box.classList.remove('scale-95');
                         }, 50);
-                        localStorage.setItem('premium_celebrated_' + user.id, 'true'); // Hafızaya yaz ki bir daha göstermesin
+                        localStorage.setItem('premium_celebrated_' + user.id, 'true'); // Hafızaya yaz
                     }
                 }
             }
@@ -141,7 +152,6 @@ window.closePremiumCelebration = function() {
         setTimeout(() => modal.classList.add('hidden'), 500);
     }
 }
-
 
 // ==========================================
 // ÇIKIŞ MOTORU VE MENÜLER
@@ -247,24 +257,21 @@ if(btnResults) btnResults.addEventListener('click', (e) => { e.preventDefault();
 async function fetchDashboardStats() {
     if (!currentTeacherId) return;
 
-    // SADECE BU ÖĞRETMENİN ÖĞRENCİLERİ
+    // SAYILARI AL VE LİMİT İÇİN HAFIZAYA KAYDET
     const { count: studentCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student').eq('teacher_id', currentTeacherId);
-    currentStudentCount = studentCount || 0; // SINIR KONTROLÜ İÇİN HAFIZAYA AL
+    currentStudentCount = studentCount || 0; 
     const dStud = document.getElementById('dashStudentCount');
     if (dStud) dStud.innerText = studentCount || 0;
 
-    // SADECE BU ÖĞRETMENİN SINAVLARI
     const { count: quizCount } = await supabaseClient.from('quizzes').select('*', { count: 'exact', head: true }).eq('teacher_id', currentTeacherId);
-    currentQuizCount = quizCount || 0; // SINIR KONTROLÜ İÇİN HAFIZAYA AL
+    currentQuizCount = quizCount || 0; 
     const dQuiz = document.getElementById('dashQuizCount');
     if (dQuiz) dQuiz.innerText = quizCount || 0;
 
-    // SADECE BU ÖĞRETMENİN ÖDEVLERİ
     const { count: hwCount } = await supabaseClient.from('homeworks').select('*', { count: 'exact', head: true }).eq('teacher_id', currentTeacherId);
     const dHw = document.getElementById('dashHwCount');
     if (dHw) dHw.innerText = hwCount || 0;
 
-    // SADECE BU ÖĞRETMENİN ÖĞRENCİLERİNİN SINAV SONUÇLARI
     const { data: results } = await supabaseClient.from('quiz_results').select('score, profiles!inner(*)').eq('profiles.teacher_id', currentTeacherId);
     let avgScore = 0;
     if(results && results.length > 0) {
@@ -286,12 +293,12 @@ async function fetchAgenda() {
     const { data: lessons } = await supabaseClient.from('private_lessons')
         .select('lesson_date, lesson_time, topic, profiles!inner(full_name)')
         .gte('lesson_date', todayStr)
-        .eq('teacher_id', currentTeacherId); // YALITIM
+        .eq('teacher_id', currentTeacherId); 
 
     const { data: homeworks } = await supabaseClient.from('homeworks')
         .select('due_date, title, status, profiles!inner(full_name)')
         .gte('due_date', todayStr)
-        .eq('teacher_id', currentTeacherId); // YALITIM
+        .eq('teacher_id', currentTeacherId); 
 
     let agendaItems = [];
 
@@ -370,7 +377,7 @@ async function fetchAgenda() {
 }
 
 // ==========================================
-// 3. YENİ NESİL: VIP ÖĞRENCİ İSTİHBARAT MOTORU
+// 3. YENİ NESİL: VIP ÖĞRENCİ İSTİHBARAT MOTORU (LİMİTLİ)
 // ==========================================
 const studentModalEl = document.getElementById('addStudentModal');
 const openStudBtn = document.getElementById('addStudentBtn');
@@ -407,7 +414,6 @@ if(studentFormEl) {
         if (error) { showToast("Hata: " + error.message, "error"); submitBtn.innerText = originalText; return; }
 
         if (data.user) {
-            // YALITIM: Yeni öğrenciye bu öğretmenin (currentTeacherId) etiketini vuruyoruz!
             const { error: profileError } = await supabaseClient.from('profiles').insert([{ 
                 id: data.user.id, 
                 full_name: name, 
@@ -422,11 +428,10 @@ if(studentFormEl) {
                 if(studentModalEl) studentModalEl.classList.add('hidden'); 
                 studentFormEl.reset(); 
                 fetchStudents();
-                fetchDashboardStats(); // Sayacı güncelle
+                fetchDashboardStats(); 
             }
         }
         submitBtn.innerText = originalText;
-
     });
 }
 
@@ -447,12 +452,8 @@ async function fetchStudents() {
     
     listContainer.innerHTML = '<div class="w-full py-10 text-center text-gray-500 dark:text-gray-400 font-bold animate-pulse">İstihbarat verileri toplanıyor...</div>';
 
-    // YALITIM: Sadece bu öğretmenin öğrencilerini getir
     const { data: students, error: studErr } = await supabaseClient.from('profiles').select('*').eq('role', 'student').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
-    
-    // YALITIM: Sadece bu öğretmenin öğrencilerinin sonuçlarını getir
     const { data: quizResults } = await supabaseClient.from('quiz_results').select('student_id, score, profiles!inner(*)').eq('profiles.teacher_id', currentTeacherId);
-    
     const { data: lessons } = await supabaseClient.from('private_lessons').select('student_id, price, is_paid').eq('teacher_id', currentTeacherId);
     const { data: homeworks } = await supabaseClient.from('homeworks').select('student_id, status').eq('teacher_id', currentTeacherId);
 
@@ -577,7 +578,6 @@ async function fetchStudents() {
     }
 }
 
-
 // ==========================================
 // 4. ÖDEV MOTORLARI 
 // ==========================================
@@ -590,7 +590,6 @@ window.deleteHomework = async function(id) {
 };
 
 async function fillStudentSelect() {
-    // YALITIM
     const { data } = await supabaseClient.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
     const select = document.getElementById('hwStudentSelect');
     if (data && select) {
@@ -616,7 +615,7 @@ if(homeworkFormEl) {
             description: document.getElementById('hwDesc').value,
             due_date: document.getElementById('hwDueDate').value,
             status: 'Bekliyor',
-            teacher_id: currentTeacherId // YALITIM
+            teacher_id: currentTeacherId
         }]);
 
         if (error) showToast("Ödev hatası: " + error.message, "error"); 
@@ -626,7 +625,6 @@ if(homeworkFormEl) {
 }
 
 async function fetchHomeworks() {
-    // YALITIM
     const { data, error } = await supabaseClient.from('homeworks').select('*, profiles!inner(full_name)').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
     const tbodyPending = document.getElementById('pendingHomeworkList');
     const tbodyCompleted = document.getElementById('completedHomeworkList');
@@ -721,7 +719,7 @@ if (activityFormEl) {
             title: document.getElementById('actTitle').value,
             category: document.getElementById('actCategory').value,
             link: document.getElementById('actLink').value,
-            teacher_id: currentTeacherId // YALITIM
+            teacher_id: currentTeacherId 
         }]);
 
         if (error) showToast("Hata: " + error.message, "error");
@@ -742,7 +740,6 @@ window.deleteActivity = async (id) => {
 };
 
 async function fetchActivities() {
-    // YALITIM
     const { data, error } = await supabaseClient.from('activities').select('*').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
     const container = document.getElementById('activityCards');
     if (!container || error) return;
@@ -775,7 +772,7 @@ async function fetchActivities() {
 }
 
 // ==========================================
-// 6. SINAV MOTORU VE AKILLI SÜRE SEÇİCİ
+// 6. SINAV MOTORU VE AKILLI SÜRE SEÇİCİ (LİMİTLİ)
 // ==========================================
 let currentActiveQuizId = null;
 
@@ -834,7 +831,6 @@ if (saveQuizTitleBtn) {
         
         saveQuizTitleBtn.innerText = "Bekle...";
 
-        // YALITIM
         const { data, error } = await supabaseClient.from('quizzes').insert([{ title, time_limit: timeLimit, teacher_id: currentTeacherId }]).select();
         
         if (error) { showToast("Hata!", "error"); } 
@@ -845,7 +841,7 @@ if (saveQuizTitleBtn) {
             if (titleInput) titleInput.value = '';
             if (customTimeInput) customTimeInput.value = '';
             fetchQuizzes(); 
-            fetchDashboardStats(); // Sınav sayısını güncelle
+            fetchDashboardStats(); 
             openQuestionEditor(data[0].id, data[0].title);
         }
         saveQuizTitleBtn.innerHTML = `Oluştur <svg class="w-4 h-4 ml-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>`;
@@ -936,7 +932,6 @@ window.deleteQuestion = async (id) => {
 };
 
 async function fetchQuizzes() {
-    // YALITIM
     const { data, error } = await supabaseClient.from('quizzes').select('*').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
     const container = document.getElementById('quizList');
     if (!container || error) return;
@@ -973,7 +968,6 @@ async function fetchQuizzes() {
     });
 }
 
-
 window.deleteQuiz = async (id) => {
     const onay = await customConfirm("Bu sınavı ve içindeki TÜM soruları siliyorum, emin misin?", "Evet, Sil");
     if (!onay) return;
@@ -989,7 +983,6 @@ window.deleteQuiz = async (id) => {
 let currentResultsData = {}; 
 
 async function fetchResults() {
-    // YALITIM: Sadece bu öğretmenin öğrencilerinin sonuçları!
     const { data, error } = await supabaseClient.from('quiz_results')
         .select(`*, profiles!inner(full_name, teacher_id), quizzes(title)`)
         .eq('profiles.teacher_id', currentTeacherId)
@@ -1075,7 +1068,7 @@ window.openTeacherAnalysis = function(resultId) {
 window.closeTeacherAnalysisModal = () => document.getElementById('teacherAnalysisModal').classList.add('hidden');
 
 // ==========================================
-// 9. VIP ÖĞRENCİ PROFİLİ VE PDF KARNE MOTORU
+// 9. VIP ÖĞRENCİ PROFİLİ VE PDF KARNE MOTORU (LİMİTLİ)
 // ==========================================
 window.openStudentProfile = async function(id, name, phone) {
     document.getElementById('profStudentId').value = id;
@@ -1106,7 +1099,6 @@ if(newLessonForm) {
         const lPrice = document.getElementById('lessonPrice').value;
         const lIsPaid = document.getElementById('lessonIsPaid').value === 'true';
 
-        // YALITIM
         const { error } = await supabaseClient.from('private_lessons').insert([{
             student_id: studentId, lesson_date: lDate, lesson_time: lTime, duration_hours: lDuration, topic: lTopic, price: lPrice, is_paid: lIsPaid, teacher_id: currentTeacherId
         }]);
