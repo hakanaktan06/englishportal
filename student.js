@@ -8,9 +8,8 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 let currentStudentId = null;
 let currentQuizQuestions = []; 
 let activeTakingQuizId = null;
-let quizTimerInterval = null; // Sınav sayacı için
+let quizTimerInterval = null; 
 
-// MOBİL KAYDIRMA FİX
 document.querySelector('main')?.addEventListener('touchstart', function() {}, {passive: true});
 
 // ==========================================
@@ -20,7 +19,7 @@ function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     if(!container) return;
     const toast = document.createElement('div');
-    const bgColor = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-blue-600');
+    const bgColor = type === 'success' ? 'bg-emerald-500' : (type === 'error' ? 'bg-rose-500' : 'bg-indigo-500');
     const icon = type === 'success' ? '✅' : (type === 'error' ? '⚠️' : 'ℹ️');
 
     toast.className = `${bgColor} text-white px-5 py-3.5 rounded-2xl shadow-xl shadow-${bgColor}/30 font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
@@ -34,7 +33,7 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-function customConfirm(message, btnText = "Evet, Sil") {
+function customConfirm(message, btnText = "Evet, İşlemi Yap") {
     return new Promise((resolve) => {
         const modal = document.getElementById('customConfirmModal');
         const box = document.getElementById('customConfirmBox');
@@ -62,7 +61,38 @@ function customConfirm(message, btnText = "Evet, Sil") {
 }
 
 // ==========================================
-// ÇIKIŞ MOTORU
+// GECE/GÜNDÜZ MODU (TEMA) MOTORU
+// ==========================================
+const dmToggleBtn = document.getElementById('darkModeToggle');
+const htmlElement = document.documentElement;
+const iconMoon = document.getElementById('icon-moon');
+const iconSun = document.getElementById('icon-sun');
+
+if (localStorage.getItem('studentTheme') === 'dark' || (!('studentTheme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    htmlElement.classList.add('dark');
+    if (iconMoon) iconMoon.classList.add('hidden');
+    if (iconSun) iconSun.classList.remove('hidden');
+}
+
+if (dmToggleBtn) {
+    dmToggleBtn.addEventListener('click', () => {
+        htmlElement.classList.toggle('dark');
+        if (htmlElement.classList.contains('dark')) {
+            localStorage.setItem('studentTheme', 'dark');
+            iconMoon.classList.add('hidden');
+            iconSun.classList.remove('hidden');
+            showToast("Gece Modu Aktif 🌙", "success");
+        } else {
+            localStorage.setItem('studentTheme', 'light');
+            iconMoon.classList.remove('hidden');
+            iconSun.classList.add('hidden');
+            showToast("Gündüz Modu Aktif ☀️", "success");
+        }
+    });
+}
+
+// ==========================================
+// ÇIKIŞ MOTORU VE MOBİL MENÜ
 // ==========================================
 document.addEventListener('click', async (e) => {
     if (e.target.closest('#studentLogoutBtn')) {
@@ -74,6 +104,21 @@ document.addEventListener('click', async (e) => {
     }
 });
 
+const sidebarMain = document.getElementById('mainSidebar');
+const sideOverlay = document.getElementById('sidebarOverlay');
+const sideOpenBtn = document.getElementById('openSidebarBtn');
+const sideCloseBtn = document.getElementById('closeSidebarBtn');
+
+function toggleMobileSidebar() {
+    if(sidebarMain) sidebarMain.classList.toggle('-translate-x-full');
+    if(sideOverlay) sideOverlay.classList.toggle('hidden');
+}
+
+if(sideOpenBtn) sideOpenBtn.addEventListener('click', toggleMobileSidebar);
+if(sideCloseBtn) sideCloseBtn.addEventListener('click', toggleMobileSidebar);
+if(sideOverlay) sideOverlay.addEventListener('click', toggleMobileSidebar);
+
+
 // ==========================================
 // 2. OTURUM KONTROLÜ VE SPLASH EKRANI KAPATMA
 // ==========================================
@@ -83,7 +128,6 @@ async function initStudentPortal() {
 
     currentStudentId = user.id;
 
-    // YENİ: xp değerini de çekiyoruz
     const { data: profile } = await supabaseClient.from('profiles').select('full_name, xp').eq('id', currentStudentId).single();
     if (profile) { 
         const nameEl = document.getElementById('studentNameDisplay');
@@ -95,14 +139,12 @@ async function initStudentPortal() {
             welcomeEl.innerText = firstName;
         }
 
-        // YENİ: XP ve Seviye Hesaplama (Her 100 XP = 1 Seviye)
         const currentXp = profile.xp || 0;
         const currentLevel = Math.floor(currentXp / 100) + 1;
         
         const elXp = document.getElementById('studentXpText');
         const elLevel = document.getElementById('studentLevelText');
         
-        // Ekrana havalı bir şekilde yazdırıyoruz
         if(elXp) elXp.innerText = currentXp;
         if(elLevel) elLevel.innerText = currentLevel;
     }
@@ -123,6 +165,10 @@ async function initStudentPortal() {
 // 3. SEKMELER ARASI GEÇİŞ
 // ==========================================
 function switchTab(target) {
+    if(window.innerWidth < 768 && sidebarMain && !sidebarMain.classList.contains('-translate-x-full')) {
+        toggleMobileSidebar();
+    }
+
     const secHw = document.getElementById('section-homeworks');
     const secAct = document.getElementById('section-activities');
     const secQuiz = document.getElementById('section-quizzes');
@@ -135,15 +181,15 @@ function switchTab(target) {
     const btnAct = document.getElementById('btn-activities');
     const btnQuiz = document.getElementById('btn-quizzes');
 
-    if(btnHw) btnHw.classList.remove('bg-white/20', 'shadow-sm');
-    if(btnAct) btnAct.classList.remove('bg-white/20', 'shadow-sm');
-    if(btnQuiz) btnQuiz.classList.remove('bg-white/20', 'shadow-sm');
+    if(btnHw) btnHw.classList.remove('bg-indigo-800', 'shadow-inner');
+    if(btnAct) btnAct.classList.remove('bg-indigo-800', 'shadow-inner');
+    if(btnQuiz) btnQuiz.classList.remove('bg-indigo-800', 'shadow-inner');
 
     const targetSec = document.getElementById(`section-${target}`);
     const targetBtn = document.getElementById(`btn-${target}`);
 
     if(targetSec) targetSec.classList.remove('hidden');
-    if(targetBtn) targetBtn.classList.add('bg-white/20', 'shadow-sm');
+    if(targetBtn) targetBtn.classList.add('bg-indigo-800', 'shadow-inner');
 
     if (target === 'homeworks') fetchMyHomeworks();
     if (target === 'activities') fetchActivities();
@@ -163,7 +209,7 @@ async function fetchMyHomeworks() {
     if (!container) return;
 
     if (!data || data.length === 0) { 
-        container.innerHTML = '<div class="col-span-full bg-white p-8 rounded-2xl text-center text-gray-400 font-medium text-sm border border-dashed border-gray-200">Bekleyen ödevin yok. 🎉</div>'; 
+        container.innerHTML = '<div class="col-span-full bg-white dark:bg-slate-800 p-10 rounded-[30px] text-center text-gray-400 font-bold border-2 border-dashed border-gray-100 dark:border-slate-700">Hiç ödevin kalmamış. Harikasın! 🎉</div>'; 
         return; 
     }
     
@@ -173,16 +219,17 @@ async function fetchMyHomeworks() {
         const isCompleted = hw.status === 'Tamamlandı';
         
         let actionAreaHtml = isCompleted 
-            ? `<div class="w-full bg-green-50 text-green-700 font-bold py-2.5 rounded-lg text-xs text-center border border-green-100 flex items-center justify-center gap-1.5 mt-auto"><span>✅</span> TESLİM EDİLDİ</div>`
-            : `<button onclick="openHomeworkModal('${hw.id}', '${hw.title.replace(/'/g, "\\'")}')" class="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 rounded-lg transition">ÖDEVİ TAMAMLA</button>`;
+            ? `<div class="w-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-black py-3 rounded-xl text-xs text-center border border-green-200 dark:border-green-800 flex items-center justify-center gap-1.5 mt-auto shadow-sm"><span>✅</span> TESLİM EDİLDİ</div>`
+            : `<button onclick="openHomeworkModal('${hw.id}', '${hw.title.replace(/'/g, "\\'")}')" class="mt-auto w-full bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white font-black text-xs py-3 rounded-xl transition transform active:scale-95 shadow-md">ÖDEVİ TAMAMLA</button>`;
 
         container.innerHTML += `
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-200 transition flex flex-col h-full relative overflow-hidden">
-                ${isCompleted ? '<div class="absolute top-0 left-0 w-full h-1 bg-green-500"></div>' : '<div class="absolute top-0 left-0 w-full h-1 bg-yellow-400"></div>'}
-                <h4 class="text-sm font-bold text-gray-800 mb-1.5 mt-1 truncate" title="${hw.title}">${hw.title}</h4>
-                <p class="text-gray-500 text-xs mb-4 flex-1 bg-gray-50/50 p-3 rounded-lg leading-relaxed line-clamp-3" title="${hw.description}">${hw.description}</p>
-                <div class="flex justify-between items-center mb-3">
-                    <span class="text-[10px] font-bold uppercase text-gray-500 flex items-center gap-1">📅 ${dueDate}</span>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl hover:border-indigo-200 dark:hover:border-indigo-800 transition-all flex flex-col h-full relative overflow-hidden group">
+                ${isCompleted ? '<div class="absolute top-0 left-0 w-full h-1.5 bg-green-500"></div>' : '<div class="absolute top-0 left-0 w-full h-1.5 bg-amber-400"></div>'}
+                
+                <h4 class="text-base font-black text-gray-800 dark:text-white mb-2 mt-1 line-clamp-2 leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition" title="${hw.title}">${hw.title}</h4>
+                <p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl leading-relaxed font-medium border border-gray-100 dark:border-slate-700/50" title="${hw.description}">${hw.description}</p>
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-[10px] font-black uppercase text-gray-400 flex items-center gap-1.5 bg-gray-50 dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-slate-600">📅 Teslim: ${dueDate}</span>
                 </div>
                 ${actionAreaHtml}
             </div>`;
@@ -215,7 +262,6 @@ if(hwSubmitForm) {
         if (error) {
             showToast("Hata: " + error.message, "error");
         } else {
-            // YENİ: Ödev teslim edilince veritabanındaki XP'yi 50 artır
             const { data: prof } = await supabaseClient.from('profiles').select('xp').eq('id', currentStudentId).single();
             const newXp = (prof.xp || 0) + 50;
             await supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentStudentId);
@@ -224,14 +270,14 @@ if(hwSubmitForm) {
             
             closeHomeworkModal();
             fetchMyHomeworks(); 
-            initStudentPortal(); // XP rozetinin güncellenmesi için sayfayı tazele
+            initStudentPortal(); 
         }
-        btn.innerText = "BİTİRDİM, GÖNDER";
+        btn.innerText = "BİTİRDİM, GÖNDER ✅";
     });
 }
 
 // ==========================================
-// 5. ETKİNLİKLER 
+// 5. ETKİNLİKLER VE FİLTRELEME
 // ==========================================
 async function fetchActivities() {
     const { data } = await supabaseClient.from('activities').select('*').order('created_at', { ascending: false });
@@ -239,7 +285,7 @@ async function fetchActivities() {
     if (!container) return;
 
     if (!data || data.length === 0) { 
-        container.innerHTML = '<div class="col-span-full bg-white p-8 rounded-2xl text-center text-gray-400 font-medium text-sm border border-dashed">Etkinlik bulunmuyor.</div>'; 
+        container.innerHTML = '<div class="col-span-full bg-white dark:bg-slate-800 p-10 rounded-[30px] text-center text-gray-400 font-bold border-2 border-dashed border-gray-100 dark:border-slate-700">Etkinlik bulunmuyor.</div>'; 
         return; 
     }
     
@@ -248,15 +294,31 @@ async function fetchActivities() {
 
     data.forEach(act => {
         container.innerHTML += `
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:border-purple-200 transition flex flex-col h-full">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="bg-purple-50 p-2.5 rounded-xl text-2xl">${icons[act.category] || '🔗'}</div>
-                    <h4 class="text-sm font-bold text-gray-800 flex-1 line-clamp-2 leading-tight">${act.title}</h4>
+            <div class="activity-card bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl hover:border-purple-300 dark:hover:border-purple-800 transition flex flex-col h-full group" data-category="${act.category}">
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="bg-purple-50 dark:bg-purple-900/30 p-3.5 rounded-2xl text-2xl border border-purple-100 dark:border-purple-800 text-purple-600 dark:text-purple-400 shadow-inner group-hover:scale-110 transition transform">
+                        ${icons[act.category] || '🔗'}
+                    </div>
+                    <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white flex-1 line-clamp-2 leading-tight group-hover:text-purple-600 dark:group-hover:text-purple-400 transition">${act.title}</h4>
                 </div>
-                <a href="${act.link}" target="_blank" class="mt-auto w-full bg-gray-50 hover:bg-purple-500 text-purple-600 hover:text-white transition font-bold py-2.5 rounded-lg text-center text-xs">ETKİNLİĞİ AÇ ↗</a>
+                <a href="${act.link}" target="_blank" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-purple-600 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-purple-600 transition font-black py-3 rounded-xl text-center text-xs tracking-widest uppercase shadow-sm">AÇ VE İNCELE ↗</a>
             </div>`;
     });
 }
+
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('filter-btn')) {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.className = "filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition";
+        });
+        e.target.className = "filter-btn bg-purple-600 text-white px-5 py-2.5 rounded-xl text-xs font-black whitespace-nowrap shadow-[0_0_15px_rgba(147,51,234,0.4)] transition";
+        
+        const filter = e.target.getAttribute('data-filter');
+        document.querySelectorAll('.activity-card').forEach(card => {
+            card.style.display = (filter === 'all' || card.getAttribute('data-category') === filter) ? 'flex' : 'none';
+        });
+    }
+});
 
 // ==========================================
 // 6. SINAV VE ANALİZ MOTORU 
@@ -267,7 +329,7 @@ async function fetchQuizzes() {
     if (!container) return;
 
     if (!data || data.length === 0) { 
-        container.innerHTML = '<div class="col-span-full bg-white p-8 rounded-2xl text-center text-gray-400 font-medium text-sm border border-dashed">Sınav bulunmuyor.</div>'; 
+        container.innerHTML = '<div class="col-span-full bg-white dark:bg-slate-800 p-10 rounded-[30px] text-center text-gray-400 font-bold border-2 border-dashed border-gray-100 dark:border-slate-700">Çözülecek sınav bulunmuyor.</div>'; 
         return; 
     }
     
@@ -275,12 +337,12 @@ async function fetchQuizzes() {
     
     data.forEach(quiz => {
         container.innerHTML += `
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:border-red-200 transition flex flex-col h-full">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="bg-red-50 p-2.5 rounded-xl text-2xl">📝</div>
-                    <h4 class="text-sm font-bold text-gray-800 flex-1 line-clamp-2 leading-tight">${quiz.title}</h4>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl hover:border-red-300 dark:hover:border-red-800 transition flex flex-col h-full group">
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="bg-red-50 dark:bg-red-900/30 p-3.5 rounded-2xl text-2xl border border-red-100 dark:border-red-800 text-red-600 dark:text-red-400 shadow-inner group-hover:scale-110 transition transform">📝</div>
+                    <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white flex-1 line-clamp-2 leading-tight group-hover:text-red-600 dark:group-hover:text-red-400 transition">${quiz.title}</h4>
                 </div>
-                <button onclick="startQuiz('${quiz.id}', '${quiz.title.replace(/'/g, "\\'")}')" class="mt-auto w-full bg-red-50 hover:bg-red-500 text-red-600 hover:text-white font-bold py-2.5 rounded-lg transition text-xs">SINAVA BAŞLA</button>
+                <button onclick="startQuiz('${quiz.id}', '${quiz.title.replace(/'/g, "\\'")}')" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-red-500 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-red-500 transition font-black py-3 rounded-xl text-xs uppercase tracking-widest shadow-sm">SINAVA BAŞLA</button>
             </div>`;
     });
 }
@@ -311,24 +373,24 @@ window.startQuiz = async function(quizId, quizTitle) {
     
     questions.forEach((q, index) => {
         container.innerHTML += `
-            <div class="bg-white p-5 md:p-6 rounded-2xl border border-gray-100 shadow-sm question-block" data-question-id="${q.id}" data-correct="${q.correct_option}">
-                <h4 class="text-sm font-bold text-gray-800 mb-4 leading-relaxed"><span class="text-indigo-500 mr-1">${index + 1}.</span> ${q.question_text}</h4>
-                <div class="space-y-2">
-                    <label class="flex items-center p-3 bg-gray-50 border border-transparent rounded-lg cursor-pointer hover:border-indigo-200 transition">
-                        <input type="radio" name="q_${q.id}" value="A" class="w-4 h-4 text-indigo-600 mr-3" required>
-                        <span class="text-sm text-gray-700">A) ${q.option_a}</span>
+            <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[30px] border border-gray-100 dark:border-slate-700 shadow-sm question-block" data-question-id="${q.id}" data-correct="${q.correct_option}">
+                <h4 class="text-base md:text-lg font-black text-gray-800 dark:text-white mb-6 leading-relaxed"><span class="text-indigo-500 mr-2">${index + 1}.</span> ${q.question_text}</h4>
+                <div class="space-y-3">
+                    <label class="flex items-center p-4 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition group">
+                        <input type="radio" name="q_${q.id}" value="A" class="w-5 h-5 text-indigo-600 mr-4" required>
+                        <span class="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">A) ${q.option_a}</span>
                     </label>
-                    <label class="flex items-center p-3 bg-gray-50 border border-transparent rounded-lg cursor-pointer hover:border-indigo-200 transition">
-                        <input type="radio" name="q_${q.id}" value="B" class="w-4 h-4 text-indigo-600 mr-3" required>
-                        <span class="text-sm text-gray-700">B) ${q.option_b}</span>
+                    <label class="flex items-center p-4 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition group">
+                        <input type="radio" name="q_${q.id}" value="B" class="w-5 h-5 text-indigo-600 mr-4" required>
+                        <span class="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">B) ${q.option_b}</span>
                     </label>
-                    <label class="flex items-center p-3 bg-gray-50 border border-transparent rounded-lg cursor-pointer hover:border-indigo-200 transition">
-                        <input type="radio" name="q_${q.id}" value="C" class="w-4 h-4 text-indigo-600 mr-3" required>
-                        <span class="text-sm text-gray-700">C) ${q.option_c}</span>
+                    <label class="flex items-center p-4 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition group">
+                        <input type="radio" name="q_${q.id}" value="C" class="w-5 h-5 text-indigo-600 mr-4" required>
+                        <span class="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">C) ${q.option_c}</span>
                     </label>
-                    <label class="flex items-center p-3 bg-gray-50 border border-transparent rounded-lg cursor-pointer hover:border-indigo-200 transition">
-                        <input type="radio" name="q_${q.id}" value="D" class="w-4 h-4 text-indigo-600 mr-3" required>
-                        <span class="text-sm text-gray-700">D) ${q.option_d}</span>
+                    <label class="flex items-center p-4 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition group">
+                        <input type="radio" name="q_${q.id}" value="D" class="w-5 h-5 text-indigo-600 mr-4" required>
+                        <span class="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">D) ${q.option_d}</span>
                     </label>
                 </div>
             </div>`;
@@ -354,7 +416,7 @@ window.startQuiz = async function(quizId, quizTitle) {
 };
 
 window.closeQuizModal = async function() {
-    const onay = await customConfirm("Sınavdan çıkarsan verilerin kaydedilmez. Emin misin?", "Evet, Sınavı Kapat");
+    const onay = await customConfirm("Sınavdan çıkarsan verilerin kaydedilmez. Emin misin?", "Evet, Çık");
     if(onay) { 
         if(quizTimerInterval) clearInterval(quizTimerInterval); 
         document.getElementById('quizTakingModal').classList.add('hidden'); 
@@ -365,7 +427,7 @@ const quizFormEl = document.getElementById('quizForm');
 if(quizFormEl) {
     quizFormEl.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if(quizTimerInterval) clearInterval(quizTimerInterval); // Sınav bitince sayacı durdur
+        if(quizTimerInterval) clearInterval(quizTimerInterval); 
 
         let correctAnswers = 0;
         let examDetails = [];
@@ -396,7 +458,6 @@ if(quizFormEl) {
             return; 
         }
 
-        // YENİ: Sınav puanı kadar XP ekle
         const { data: prof } = await supabaseClient.from('profiles').select('xp').eq('id', currentStudentId).single();
         const newXp = (prof.xp || 0) + score;
         await supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentStudentId);
@@ -405,9 +466,9 @@ if(quizFormEl) {
         
         document.getElementById('quizTakingModal').classList.add('hidden');
         renderAnalysisScreen(examDetails, score);
-        initStudentPortal(); // XP rozetini güncelle
+        initStudentPortal(); 
     });
-} // <--- İŞTE KAYIP OLAN PARANTEZ BURADA!
+}
 
 function renderAnalysisScreen(details, score) {
     document.getElementById('analysisScoreDisplay').innerText = score;
@@ -415,21 +476,22 @@ function renderAnalysisScreen(details, score) {
     container.innerHTML = '';
 
     details.forEach(detail => {
-        const boxStyle = detail.is_correct ? 'border-green-200 bg-green-50/50' : 'border-red-200 bg-red-50/50';
-        const iconInfo = detail.is_correct ? '<span class="text-green-500 font-black">✓</span>' : '<span class="text-red-500 font-black">✗</span>';
+        const boxStyle = detail.is_correct ? 'border-green-300 bg-green-50 dark:bg-green-900/20 dark:border-green-800' : 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800';
+        const iconInfo = detail.is_correct ? '<span class="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-black shadow-sm">✓</span>' : '<span class="bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-black shadow-sm">✗</span>';
         
         container.innerHTML += `
-            <div class="p-5 rounded-2xl border mb-4 ${boxStyle}">
-                <div class="mb-3">
-                    <h4 class="text-sm font-bold text-gray-800">${iconInfo} <span class="text-gray-500 ml-1 mr-1">${detail.q_no}.</span> ${detail.q_text}</h4>
+            <div class="p-6 rounded-[20px] border-2 mb-6 ${boxStyle} shadow-sm">
+                <div class="flex items-start gap-4 mb-4">
+                    ${iconInfo}
+                    <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white pt-1"><span class="text-gray-400 mr-1">${detail.q_no}.</span> ${detail.q_text}</h4>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pl-6 text-xs font-medium">
-                    <div class="p-2 rounded-lg ${detail.correct_opt === 'A' ? 'bg-green-100 text-green-800 font-bold' : 'bg-white text-gray-500 border'}">A) ${detail.optA}</div>
-                    <div class="p-2 rounded-lg ${detail.correct_opt === 'B' ? 'bg-green-100 text-green-800 font-bold' : 'bg-white text-gray-500 border'}">B) ${detail.optB}</div>
-                    <div class="p-2 rounded-lg ${detail.correct_opt === 'C' ? 'bg-green-100 text-green-800 font-bold' : 'bg-white text-gray-500 border'}">C) ${detail.optC}</div>
-                    <div class="p-2 rounded-lg ${detail.correct_opt === 'D' ? 'bg-green-100 text-green-800 font-bold' : 'bg-white text-gray-500 border'}">D) ${detail.optD}</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pl-12 text-sm font-bold">
+                    <div class="p-3 rounded-xl ${detail.correct_opt === 'A' ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-2 border-green-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">A) ${detail.optA}</div>
+                    <div class="p-3 rounded-xl ${detail.correct_opt === 'B' ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-2 border-green-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">B) ${detail.optB}</div>
+                    <div class="p-3 rounded-xl ${detail.correct_opt === 'C' ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-2 border-green-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">C) ${detail.optC}</div>
+                    <div class="p-3 rounded-xl ${detail.correct_opt === 'D' ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-2 border-green-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">D) ${detail.optD}</div>
                 </div>
-                ${!detail.is_correct ? `<div class="mt-3 pl-6 flex flex-col sm:flex-row gap-2"><span class="inline-block bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase">Senin Cevabın: ${detail.selected_opt}</span><span class="inline-block bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase">Doğru Cevap: ${detail.correct_opt}</span></div>` : ''}
+                ${!detail.is_correct ? `<div class="mt-4 pl-12 flex flex-col sm:flex-row gap-3"><span class="inline-block bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Senin Cevabın: ${detail.selected_opt}</span><span class="inline-block bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Doğru Cevap: ${detail.correct_opt}</span></div>` : ''}
             </div>`;
     });
     document.getElementById('analysisModal').classList.remove('hidden');
