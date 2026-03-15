@@ -12,28 +12,29 @@ const loginSection = document.getElementById('loginSection');
 const registerSection = document.getElementById('registerSection');
 
 document.getElementById('showRegisterBtn').addEventListener('click', () => {
-    loginSection.classList.add('-translate-x-full', 'opacity-0');
+    loginSection.classList.add('opacity-0');
     setTimeout(() => {
         loginSection.classList.add('hidden');
         registerSection.classList.remove('hidden');
+        // Kutu yüksekliğinin adapte olması için çok kısa bir bekleme
         setTimeout(() => {
-            registerSection.classList.remove('translate-x-full', 'opacity-0');
-            registerSection.classList.add('translate-x-0', 'opacity-100');
+            registerSection.classList.remove('opacity-0');
+            registerSection.classList.add('opacity-100');
         }, 50);
-    }, 500);
+    }, 300); // Fade-out süresi
 });
 
 document.getElementById('showLoginBtn').addEventListener('click', () => {
-    registerSection.classList.remove('translate-x-0', 'opacity-100');
-    registerSection.classList.add('translate-x-full', 'opacity-0');
+    registerSection.classList.remove('opacity-100');
+    registerSection.classList.add('opacity-0');
     setTimeout(() => {
         registerSection.classList.add('hidden');
         loginSection.classList.remove('hidden');
         setTimeout(() => {
-            loginSection.classList.remove('-translate-x-full', 'opacity-0');
-            loginSection.classList.add('translate-x-0', 'opacity-100');
+            loginSection.classList.remove('opacity-0');
+            loginSection.classList.add('opacity-100');
         }, 50);
-    }, 500);
+    }, 300);
 });
 
 // ==========================================
