@@ -73,14 +73,14 @@ function customConfirm(message, btnText = "Evet, İşlemi Yap") {
 }
 
 // ==========================================
-// GÜVENLİK (FEDAİ) MOTORU VE SPLASH KAPATMA
+// GÜVENLİK (FEDAİ) MOTORU VE SÜRE KONTROLÜ
 // ==========================================
 async function checkTeacherSecurity() {
     try {
         const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
         if (authError || !user) { window.location.href = 'index.html'; return; } 
         
-        // 🌟 is_premium verisini de çekiyoruz
+        // 🌟 is_premium ve premium_until verisini çekiyoruz
         const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until').eq('id', user.id).single();
         if (profileError || !profile || profile.role !== 'teacher') {
             showToast("Erişim Engellendi! Yönetici yetkiniz yok.", "error");
@@ -102,6 +102,19 @@ async function checkTeacherSecurity() {
             }
         } else {
             isPremiumTeacher = profile.is_premium; 
+        }
+
+        // 🌟 KİLİT VE ROZET GÖRÜNÜMÜ KONTROLÜ 🌟
+        if (isPremiumTeacher) {
+            document.getElementById('premiumBadge')?.classList.remove('hidden');
+            document.getElementById('lockIconVeli')?.classList.add('hidden');
+            document.getElementById('lockIconKarne')?.classList.add('hidden');
+            document.getElementById('lockIconSertifika')?.classList.add('hidden');
+        } else {
+            document.getElementById('premiumBadge')?.classList.add('hidden');
+            document.getElementById('lockIconVeli')?.classList.remove('hidden');
+            document.getElementById('lockIconKarne')?.classList.remove('hidden');
+            document.getElementById('lockIconSertifika')?.classList.remove('hidden');
         }
 
         const welcomeNameEl = document.getElementById('welcomeTeacherName');
@@ -153,6 +166,7 @@ window.closePremiumCelebration = function() {
         setTimeout(() => modal.classList.add('hidden'), 500);
     }
 }
+
 
 
 // ==========================================
