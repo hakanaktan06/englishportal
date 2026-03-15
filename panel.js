@@ -6,7 +6,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 // ==========================================
-// UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU (SPAM KORUMALI)
+// UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
 // ==========================================
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
@@ -20,7 +20,6 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     const bgColor = type === 'success' ? 'bg-emerald-500' : (type === 'error' ? 'bg-rose-500' : 'bg-indigo-500');
     
-    // YENİ NESİL SVG İKONLAR
     const iconSvg = type === 'success' 
         ? `<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>` 
         : (type === 'error' 
@@ -288,7 +287,7 @@ async function fetchAgenda() {
         
         const isToday = d.toDateString() === new Date().toDateString();
         const dateBadge = isToday 
-            ? `<span class="bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800 text-red-600 dark:text-red-400 px-2.5 py-1 rounded-md text-[10px] font-black uppercase shadow-sm">BUGÜN</span>`
+            ? `<span class="bg-rose-50 dark:bg-rose-900/30 border border-rose-100 dark:border-rose-800 text-rose-600 dark:text-rose-400 px-2.5 py-1 rounded-md text-[10px] font-black uppercase shadow-sm">BUGÜN</span>`
             : `<span class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-md text-[10px] font-black uppercase">${shortDate} ${dayName}</span>`;
 
         const icon = item.type === 'lesson' 
@@ -429,24 +428,28 @@ async function fetchStudents() {
         let badgeHtml = '';
 
         if(studAvg >= 85) {
-            avgColor = 'bg-green-500';
-            badgeHtml = '<span class="bg-gradient-to-r from-amber-400 to-yellow-500 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm shadow-md border-2 border-white dark:border-slate-800" title="Parlayan Yıldız"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg></span>';
+            avgColor = 'bg-emerald-500';
+            badgeHtml = `<span class="bg-gradient-to-r from-amber-400 to-yellow-500 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-md border-2 border-white dark:border-slate-800" title="Parlayan Yıldız">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </span>`;
         } else if(studAvg >= 50) {
             avgColor = 'bg-yellow-500';
         } else if(studAvg > 0) {
-            avgColor = 'bg-red-500';
-            badgeHtml = '<span class="bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm shadow-md border-2 border-white dark:border-slate-800 animate-pulse" title="Dikkat Gerekli"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></span>';
+            avgColor = 'bg-rose-500';
+            badgeHtml = `<span class="bg-rose-500 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-md border-2 border-white dark:border-slate-800 animate-pulse" title="Dikkat Gerekli">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </span>`;
         }
 
         const debtHtml = studDebt > 0 
-            ? `<div class="flex items-center gap-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-800 shadow-sm">
+            ? `<div class="flex items-center gap-2 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800 shadow-sm">
                  <div class="relative flex h-2.5 w-2.5">
-                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                   <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
+                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span>
+                   <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600"></span>
                  </div>
                  <span class="text-[10px] font-black tracking-widest">BORÇ: ₺${studDebt}</span>
                </div>`
-            : `<div class="flex items-center gap-1.5 text-[10px] font-black text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-800 shadow-sm">HESAP TEMİZ</div>`;
+            : `<div class="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 shadow-sm">HESAP TEMİZ</div>`;
 
         const dateStr = new Date(student.created_at).toLocaleDateString('tr-TR', { month: 'short', year: 'numeric' });
 
@@ -466,7 +469,7 @@ async function fetchStudents() {
                 </div>
                 <div class="flex items-center gap-3">
                     ${badgeHtml}
-                    <button onclick="deleteStudent('${student.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition" title="Öğrenciyi Sil">
+                    <button onclick="deleteStudent('${student.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 dark:hover:text-rose-400 transition" title="Öğrenciyi Sil">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 </div>
@@ -560,8 +563,8 @@ async function fetchHomeworks() {
         const status = hw.status || 'bekliyor';
         
         let statusHtml = status === 'Tamamlandı' 
-            ? `<span class="px-3 py-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-800 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Tamamlandı</span>` 
-            : `<span class="px-3 py-1 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 border border-yellow-100 dark:border-yellow-800 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Bekliyor</span>`;
+            ? `<span class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Tamamlandı</span>` 
+            : `<span class="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800 rounded-lg text-[10px] font-black uppercase tracking-widest block w-fit mx-auto flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Bekliyor</span>`;
 
         let noteHtml = hw.student_note 
             ? `<button onclick="openStudentNoteModal('${hw.student_note.replace(/'/g, "&#39;").replace(/"/g, "&quot;").replace(/\n/g, "\\n")}')" class="mt-2 w-full bg-indigo-50 dark:bg-indigo-900/50 hover:bg-indigo-500 text-indigo-700 dark:text-indigo-300 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition shadow-sm border border-indigo-200 dark:border-indigo-700 flex items-center justify-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> NOTU GÖR</button>` 
@@ -573,7 +576,7 @@ async function fetchHomeworks() {
                 <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title}">${hw.title}</td>
                 <td class="p-4 text-indigo-600 dark:text-indigo-400 font-bold text-xs">${date}</td>
                 <td class="p-4 text-center">${statusHtml}${noteHtml}</td>
-                <td class="p-4 text-right"><button onclick="deleteHomework('${hw.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 p-2 transition" title="Ödevi Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></td>
+                <td class="p-4 text-right"><button onclick="deleteHomework('${hw.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 dark:hover:text-rose-400 p-2 transition" title="Ödevi Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></td>
             </tr>`;
     });
 }
@@ -650,7 +653,7 @@ async function fetchActivities() {
                 </div>
                 <div class="mt-5 flex justify-between items-center border-t border-gray-100 dark:border-slate-700 pt-3">
                     <a href="${act.link}" target="_blank" class="text-indigo-600 dark:text-indigo-400 font-black text-[10px] hover:underline uppercase tracking-tighter flex items-center gap-1">AÇ <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>
-                    <button onclick="deleteActivity('${act.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition" title="Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    <button onclick="deleteActivity('${act.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 dark:hover:text-rose-400 transition" title="Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                 </div>
             </div>`;
     });
@@ -771,7 +774,7 @@ async function fetchQuestionsForQuiz(quizId) {
                     </div>
 
                 </div>
-                <button onclick="deleteQuestion('${q.id}')" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition text-red-300 hover:text-red-500 text-2xl font-black">&times;</button>
+                <button onclick="deleteQuestion('${q.id}')" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition text-rose-300 hover:text-rose-500 text-2xl font-black">&times;</button>
             </div>`;
     });
 }
@@ -840,13 +843,14 @@ async function fetchQuizzes() {
                     <button onclick="openQuestionEditor('${quiz.id}', '${quiz.title.replace(/'/g, "\\'")}')" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white px-4 py-2.5 rounded-xl text-[10px] md:text-xs font-black transition-all shadow-sm border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> YÖNET
                     </button>
-                    <button onclick="deleteQuiz('${quiz.id}')" class="bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-2.5 rounded-xl transition border border-gray-100 dark:border-slate-600" title="Sınavı Sil">
+                    <button onclick="deleteQuiz('${quiz.id}')" class="bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2.5 rounded-xl transition border border-gray-100 dark:border-slate-600" title="Sınavı Sil">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 </div>
             </div>`;
     });
 }
+
 
 window.deleteQuiz = async (id) => {
     const onay = await customConfirm("Bu sınavı ve içindeki TÜM soruları siliyorum, emin misin?", "Evet, Sil");
@@ -879,19 +883,19 @@ async function fetchResults() {
         const dateObj = new Date(res.created_at);
         const date = dateObj.toLocaleDateString('tr-TR') + ' ' + dateObj.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
         
-        let scoreColor = 'text-green-600 bg-green-50 border-green-100 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
-        if (res.score < 50) scoreColor = 'text-red-600 bg-red-50 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
+        let scoreColor = 'text-emerald-600 bg-emerald-50 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800';
+        if (res.score < 50) scoreColor = 'text-rose-600 bg-rose-50 border-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800';
         else if (res.score < 80) scoreColor = 'text-yellow-600 bg-yellow-50 border-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800';
 
         tbody.innerHTML += `
-            <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-blue-50/30 dark:hover:bg-slate-800 transition text-sm">
+            <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-indigo-50/30 dark:hover:bg-slate-800 transition text-sm">
                 <td class="p-4 font-black text-gray-800 dark:text-white">${res.profiles ? res.profiles.full_name : 'Bilinmeyen Öğrenci'}</td>
                 <td class="p-4 text-gray-600 dark:text-gray-300 font-bold">${res.quizzes ? res.quizzes.title : 'Silinmiş Sınav'}</td>
                 <td class="p-4 text-center"><span class="px-3 py-1 rounded-xl font-black text-xs uppercase tracking-wider border ${scoreColor}">${res.score} PUAN</span></td>
                 <td class="p-4 text-gray-400 dark:text-gray-500 text-xs font-bold">${date}</td>
                 <td class="p-4 text-right flex items-center justify-end space-x-2">
-                    <button onclick="openTeacherAnalysis('${res.id}')" class="bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-600 text-blue-600 dark:text-blue-400 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition">GÖZ AT</button>
-                    <button onclick="deleteResult('${res.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 p-2 rounded-xl transition" title="Sonucu Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    <button onclick="openTeacherAnalysis('${res.id}')" class="bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-600 text-indigo-600 dark:text-indigo-400 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-1">GÖZ AT <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></button>
+                    <button onclick="deleteResult('${res.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 dark:hover:text-rose-400 p-2 rounded-xl transition" title="Sonucu Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                 </td>
             </tr>`;
     });
@@ -920,10 +924,10 @@ window.openTeacherAnalysis = function(resultId) {
             taCont.innerHTML = '<p class="text-center text-gray-400 font-bold mt-10">Bu sınav için detaylı analiz bulunmuyor.</p>';
         } else {
             details.forEach(detail => {
-                const boxStyle = detail.is_correct ? 'border-green-300 bg-green-50 dark:bg-green-900/10 dark:border-green-800' : 'border-red-300 bg-red-50 dark:bg-red-900/10 dark:border-red-800';
+                const boxStyle = detail.is_correct ? 'border-emerald-300 bg-emerald-50 dark:bg-emerald-900/10 dark:border-emerald-800' : 'border-rose-300 bg-rose-50 dark:bg-rose-900/10 dark:border-rose-800';
                 const iconInfo = detail.is_correct 
-                    ? '<span class="bg-green-500 text-white w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center shadow-sm"><svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>' 
-                    : '<span class="bg-red-500 text-white w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center shadow-sm"><svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg></span>';
+                    ? '<span class="bg-emerald-500 text-white w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center shadow-sm"><svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>' 
+                    : '<span class="bg-rose-500 text-white w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center shadow-sm"><svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg></span>';
                 taCont.innerHTML += `
                     <div class="p-4 md:p-6 rounded-[20px] md:rounded-[30px] border-2 mb-4 md:mb-6 ${boxStyle} shadow-sm">
                         <div class="flex items-start gap-3 md:gap-4 mb-3 md:mb-4">
@@ -947,7 +951,7 @@ window.closeTeacherAnalysisModal = () => document.getElementById('teacherAnalysi
 // ==========================================
 window.openStudentProfile = async function(id, name, phone) {
     document.getElementById('profStudentId').value = id;
-    document.getElementById('profParentPhone').value = phone || ''; // Numarayı gizli kutuya yazdık
+    document.getElementById('profParentPhone').value = phone || ''; 
     document.getElementById('profileStudentName').innerText = name;
 
     const today = new Date().toLocaleDateString('tr-TR');
@@ -1013,8 +1017,8 @@ async function fetchStudentLessons(studentId) {
             if (!l.is_paid) totalUnpaid += Number(l.price || 0);
 
             const payBadge = l.is_paid 
-                ? `<span class="text-[10px] font-black bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-2 py-1 rounded-md">ÖDENDİ</span>`
-                : `<button onclick="markAsPaid('${l.id}', '${studentId}')" class="text-[10px] font-black bg-red-50 dark:bg-red-900/30 hover:bg-red-500 hover:text-white border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-2 py-1 rounded-md transition shadow-sm">ÖDENMEDİ (Tahsil Et)</button>`;
+                ? `<span class="text-[10px] font-black bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded-md">ÖDENDİ</span>`
+                : `<button onclick="markAsPaid('${l.id}', '${studentId}')" class="text-[10px] font-black bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-500 hover:text-white border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 px-2 py-1 rounded-md transition shadow-sm">ÖDENMEDİ (Tahsil Et)</button>`;
 
             const priceText = l.price ? `<span class="text-[10px] font-black bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-gray-200 px-2 py-1 rounded-md">₺${l.price}</span>` : '';
 
@@ -1027,7 +1031,7 @@ async function fetchStudentLessons(studentId) {
                             ${duration ? `<span class="text-[10px] font-black bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800 text-orange-700 dark:text-orange-400 px-2 py-1 rounded-md flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg> ${duration}</span>` : ''}
                             ${priceText}
                         </div>
-                        <button onclick="deleteLesson('${l.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 transition ml-3" title="Kaydı Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        <button onclick="deleteLesson('${l.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 transition ml-3" title="Kaydı Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                     </div>
                     <p class="text-sm font-bold text-gray-700 dark:text-white mt-1 leading-snug">${l.topic}</p>
                     <div class="mt-3 border-t border-gray-50 dark:border-slate-700 pt-2 flex justify-between items-center">
@@ -1054,7 +1058,7 @@ async function fetchStudentLessons(studentId) {
     } else {
         results.forEach(r => {
             labels.push(r.quizzes.title); scores.push(r.score);
-            let color = r.score >= 80 ? 'text-green-600' : (r.score >= 50 ? 'text-yellow-600' : 'text-red-600');
+            let color = r.score >= 80 ? 'text-emerald-600' : (r.score >= 50 ? 'text-yellow-600' : 'text-rose-600');
             if(pdfQuizList) {
                 pdfQuizList.innerHTML = `<div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-2"><span class="text-sm font-bold text-gray-700">${r.quizzes.title}</span><span class="text-sm font-black ${color}">${r.score} Puan</span></div>` + pdfQuizList.innerHTML; 
             }
@@ -1171,6 +1175,37 @@ function setDynamicMotivations() {
 }
 
 // ==========================================
+// 11. GECE MODU (DARK MODE) MOTORU
+// ==========================================
+const dmToggleBtn = document.getElementById('darkModeToggle');
+const htmlElement = document.documentElement;
+const iconMoon = document.getElementById('icon-moon');
+const iconSun = document.getElementById('icon-sun');
+
+if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    htmlElement.classList.add('dark');
+    if (iconMoon) iconMoon.classList.add('hidden');
+    if (iconSun) iconSun.classList.remove('hidden');
+}
+
+if (dmToggleBtn) {
+    dmToggleBtn.addEventListener('click', () => {
+        htmlElement.classList.toggle('dark');
+        if (htmlElement.classList.contains('dark')) {
+            localStorage.setItem('theme', 'dark');
+            if (iconMoon) iconMoon.classList.add('hidden');
+            if (iconSun) iconSun.classList.remove('hidden');
+            showToast("Gece Modu Aktif", "success");
+        } else {
+            localStorage.setItem('theme', 'light');
+            if (iconMoon) iconMoon.classList.remove('hidden');
+            if (iconSun) iconSun.classList.add('hidden');
+            showToast("Gündüz Modu Aktif", "success");
+        }
+    });
+}
+
+// ==========================================
 // 12. GERÇEK ZAMANLI ÖĞRENCİ ARAMA MOTORU
 // ==========================================
 const searchStudentInput = document.getElementById('searchStudentInput');
@@ -1213,7 +1248,7 @@ if (searchStudentInput) {
 }
 
 // ==========================================
-// 13. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU (DİNAMİK)
+// 13. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU VE FİLTRELER
 // ==========================================
 const btnGenerateAI = document.getElementById('btnGenerateAI');
 if (btnGenerateAI) {
@@ -1307,10 +1342,26 @@ if (btnGenerateAI) {
     });
 }
 
+document.addEventListener('click', (e) => {
+    const filterBtn = e.target.closest('.filter-btn');
+    if (filterBtn) {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.className = "filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition flex items-center gap-1";
+        });
+        filterBtn.className = "filter-btn bg-purple-600 text-white px-5 py-2.5 rounded-xl text-xs font-black whitespace-nowrap shadow-[0_0_15px_rgba(147,51,234,0.4)] transition flex items-center gap-1";
+        
+        const filter = filterBtn.getAttribute('data-filter');
+        document.querySelectorAll('.activity-card').forEach(card => {
+            card.style.display = (filter === 'all' || card.getAttribute('data-category') === filter) ? 'flex' : 'none';
+        });
+    }
+});
+
 document.addEventListener("DOMContentLoaded", () => {
     const hwDueDateInput = document.getElementById('hwDueDate');
     if (hwDueDateInput) hwDueDateInput.value = new Date().toISOString().split('T')[0];
 });
 
-setDynamicMotivations();
-switchTab('dashboard');
+// MOTORLARI ATEŞLE
+if (typeof setDynamicMotivations === 'function') setDynamicMotivations();
+if (typeof switchTab === 'function') switchTab('dashboard');
