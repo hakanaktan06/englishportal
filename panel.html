@@ -568,6 +568,25 @@
         </div>
     </div>
 
+    <div id="premiumCelebrationModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[99999] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-500">
+        <div class="bg-gradient-to-br from-slate-900 to-black border-2 border-amber-500 rounded-[40px] w-full max-w-lg p-10 text-center shadow-[0_0_50px_rgba(245,158,11,0.3)] relative overflow-hidden transform scale-95 transition-all duration-500" id="premiumCelebrationBox">
+            <div class="absolute -top-20 -right-20 w-40 h-40 bg-amber-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-pulse"></div>
+            <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-yellow-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-pulse"></div>
+            
+            <div class="w-24 h-24 bg-gradient-to-br from-amber-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border-4 border-amber-200">
+                <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+            <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-500 mb-2">Tebrikler!</h2>
+            <p class="text-xs font-bold text-amber-500/50 uppercase tracking-widest mb-6">VIP Premium Hesabınız Aktif</p>
+            <p class="text-slate-300 font-medium mb-8 leading-relaxed">Sistemdeki tüm sınırlandırmalar kaldırıldı. Artık sınırsız öğrenci ekleyebilir ve otomasyon özelliklerini özgürce kullanabilirsiniz. Patron çıldırdı, keyfini çıkarın!</p>
+            
+            <button onclick="closePremiumCelebration()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black font-black py-4 rounded-2xl shadow-[0_0_15px_rgba(245,158,11,0.4)] transition transform active:scale-95 text-sm tracking-widest flex justify-center items-center gap-2">
+                GÜCÜ HİSSET <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+
     <div id="toast-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
     <div id="studentProfileModal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden flex items-center justify-center z-50 p-4 pt-20 md:pt-4">
