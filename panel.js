@@ -77,14 +77,14 @@ async function checkTeacherSecurity() {
         const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
         if (authError || !user) { window.location.href = 'index.html'; return; } 
         
-        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role').eq('id', user.id).single();
+        // 🌟 is_premium verisini de çekiyoruz
+        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium').eq('id', user.id).single();
         if (profileError || !profile || profile.role !== 'teacher') {
             showToast("Erişim Engellendi! Yönetici yetkiniz yok.", "error");
             setTimeout(() => { window.location.href = 'student.html'; }, 1500); 
             return;
         }
 
-        // 🌟 ÖĞRETMEN KİMLİĞİNİ HAFIZAYA ALIYORUZ VE EKRANA YAZIYORUZ 🌟
         currentTeacherId = user.id;
         currentTeacherName = profile.full_name;
 
@@ -94,7 +94,7 @@ async function checkTeacherSecurity() {
         const agendaNameEl = document.getElementById('agendaTeacherName');
         if(agendaNameEl) agendaNameEl.innerText = currentTeacherName + " Hocam, şimdi kafa dinleme vakti!";
 
-        switchTab('dashboard'); // Motorları öğretmene özel çalıştır
+        switchTab('dashboard'); 
 
         setTimeout(() => {
             const splash = document.getElementById('splashScreen');
@@ -102,12 +102,42 @@ async function checkTeacherSecurity() {
                 splash.classList.add('opacity-0');
                 setTimeout(() => splash.classList.add('hidden'), 700);
             }
+
+            // 🌟 TEK SEFERLİK PREMİUM KUTLAMASI 🌟
+            if (profile.is_premium) {
+                const isCelebrated = localStorage.getItem('premium_celebrated_' + user.id);
+                if (!isCelebrated) {
+                    const modal = document.getElementById('premiumCelebrationModal');
+                    const box = document.getElementById('premiumCelebrationBox');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        setTimeout(() => {
+                            modal.classList.remove('opacity-0');
+                            box.classList.remove('scale-95');
+                        }, 50);
+                        localStorage.setItem('premium_celebrated_' + user.id, 'true'); // Hafızaya yaz ki bir daha göstermesin
+                    }
+                }
+            }
+
         }, 400);
     } catch (err) {
         console.error(err);
         window.location.href = 'index.html';
     }
 }
+
+// Premium Kapatma Fonksiyonu
+window.closePremiumCelebration = function() {
+    const modal = document.getElementById('premiumCelebrationModal');
+    const box = document.getElementById('premiumCelebrationBox');
+    if (modal) {
+        modal.classList.add('opacity-0');
+        box.classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 500);
+    }
+}
+
 
 // ==========================================
 // ÇIKIŞ MOTORU VE MENÜLER
