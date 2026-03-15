@@ -276,6 +276,8 @@ async function fetchMyHomeworks() {
 // ==========================================
 // 5. ETKİNLİKLER VE SOL MENÜ FİLTRELEME
 // ==========================================
+let currentActivityFilter = 'all'; // FİLTRE HAFIZASI EKLENDİ
+
 async function fetchActivities() {
     const { data } = await supabaseClient.from('activities').select('*').order('created_at', { ascending: false });
     const container = document.getElementById('myActivitiesList');
@@ -294,8 +296,11 @@ async function fetchActivities() {
     };
 
     data.forEach(act => {
+        // Hafızadaki filtreye göre kartın en baştan gizli mi açık mı olacağına karar veriyoruz
+        const displayStyle = (currentActivityFilter === 'all' || act.category === currentActivityFilter) ? 'flex' : 'none';
+
         container.innerHTML += `
-            <div class="activity-card bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl hover:border-purple-300 dark:hover:border-purple-800 transition flex flex-col h-full group" data-category="${act.category}">
+            <div class="activity-card bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl hover:border-purple-300 dark:hover:border-purple-800 transition flex flex-col h-full group" data-category="${act.category}" style="display: ${displayStyle};">
                 <div class="flex items-center gap-4 mb-5">
                     <div class="bg-purple-50 dark:bg-purple-900/30 p-3.5 rounded-2xl text-2xl border border-purple-100 dark:border-purple-800 text-purple-600 dark:text-purple-400 shadow-inner group-hover:scale-110 transition transform">
                         ${icons[act.category] || '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>'}
@@ -309,12 +314,12 @@ async function fetchActivities() {
     });
 }
 
-// Sol menüdeki filtrelere tıklanınca çalışacak kod
+// Sol menüdeki filtrelere tıklanınca çalışacak yeni akıllı kod
 document.querySelectorAll('.sidebar-filter-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         e.preventDefault();
-        switchTab('activities'); 
         
+        // 1. Tıklanan butonun stilini aktifleştir
         document.querySelectorAll('.sidebar-filter-btn').forEach(b => {
             b.classList.remove('text-white');
             b.classList.add('text-indigo-300');
@@ -322,12 +327,27 @@ document.querySelectorAll('.sidebar-filter-btn').forEach(btn => {
         e.currentTarget.classList.remove('text-indigo-300');
         e.currentTarget.classList.add('text-white');
 
-        const filter = e.currentTarget.getAttribute('data-filter');
-        document.querySelectorAll('.activity-card').forEach(card => {
-            card.style.display = (filter === 'all' || card.getAttribute('data-category') === filter) ? 'flex' : 'none';
-        });
+        // 2. Filtre komutunu hafızaya al
+        currentActivityFilter = e.currentTarget.getAttribute('data-filter');
+
+        // 3. Etkinlikler sekmesi gizliyse aç (Bu otomatik olarak fetchActivities'i tetikler ve filtreler)
+        const actSection = document.getElementById('section-activities');
+        if (actSection && actSection.classList.contains('hidden')) {
+            switchTab('activities'); 
+        } else {
+            // Zaten etkinlikler sekmesindeysek veriyi baştan indirmeden elimizdekileri gizle/göster
+            document.querySelectorAll('.activity-card').forEach(card => {
+                card.style.display = (currentActivityFilter === 'all' || card.getAttribute('data-category') === currentActivityFilter) ? 'flex' : 'none';
+            });
+        }
+
+        // 4. Mobilde sol menüden tıkladıysak, menüyü otomatik kapat ki etkinlikleri görsün
+        if(window.innerWidth < 768 && sidebarMain && !sidebarMain.classList.contains('-translate-x-full')) {
+            toggleMobileSidebar();
+        }
     });
 });
+
 
 // ==========================================
 // 6. SINAV MOTORU VE SONUÇLAR
