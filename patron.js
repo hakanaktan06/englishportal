@@ -166,16 +166,9 @@ window.togglePremium = async function(teacherId, makePremium, teacherName = '') 
     } else {
         showToast(makePremium ? "Hoca başarıyla Premium yapıldı! Para kasada 💸" : "Premium yetkisi alındı.", "success");
         fetchSystemData(); 
-        
-        // Hoca premium yapıldıysa şık bir taslak mail açalım
-        if (makePremium && teacherName) {
-            // Not: Supabase'den maili direkt çekemediğimiz için şablonu boş mail adresiyle açıyoruz, patron kendisi WhatsApp'tan veya kopyalayarak atabilir.
-            const subject = encodeURIComponent("English Portal VIP - Premium Hesabınız Aktif!");
-            const body = encodeURIComponent(`Merhaba ${teacherName} Hocam,\n\nEnglish Portal Premium aboneliğiniz başarıyla aktifleştirilmiştir! 🥳\n\nArtık limitsiz öğrenci ekleyebilir ve sistemin tüm özelliklerini özgürce kullanabilirsiniz. Bizi tercih ettiğiniz için teşekkür ederiz.\n\nİyi çalışmalar dileriz!`);
-            window.location.href = `mailto:?subject=${subject}&body=${body}`;
-        }
     }
 }
+
 
 // ==========================================
 // HOCA SİLME MOTORU
