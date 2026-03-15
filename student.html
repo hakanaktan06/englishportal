@@ -40,20 +40,54 @@
             <button id="closeSidebarBtn" class="md:hidden text-indigo-300 hover:text-white text-3xl leading-none">&times;</button>
         </div>
         <nav class="flex-1 overflow-y-auto p-2 md:p-4 space-y-2 mt-4" id="sidebarMenu" style="-webkit-overflow-scrolling: touch;">
+            
             <a href="#" id="btn-homeworks" class="menu-btn active-menu flex items-center p-3 bg-indigo-800 rounded-xl transition shadow-inner">
-                <svg class="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                <svg class="w-6 h-6 opacity-80 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                 <span class="ml-3 font-medium text-sm">Ödevlerim</span>
             </a>
 
-            <a href="#" id="btn-activities" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
-                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Etkinlikler</span>
-            </a>
+            <div>
+                <a href="#" class="flex items-center justify-between p-3 hover:bg-indigo-800 rounded-xl transition group w-full" onclick="toggleSubMenu('submenu-activities', 'icon-act')">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition text-sm">Etkinlikler</span>
+                    </div>
+                    <svg id="icon-act" class="w-4 h-4 text-indigo-300 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </a>
+                <div id="submenu-activities" class="hidden flex-col pl-12 pr-3 py-2 space-y-3">
+                    <a href="#" class="sidebar-filter-btn text-xs text-indigo-300 hover:text-white font-medium transition flex items-center gap-2" data-filter="all">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg> Tümünü Gör
+                    </a>
+                    <a href="#" class="sidebar-filter-btn text-xs text-indigo-300 hover:text-white font-medium transition flex items-center gap-2" data-filter="video">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> Sadece Videolar
+                    </a>
+                    <a href="#" class="sidebar-filter-btn text-xs text-indigo-300 hover:text-white font-medium transition flex items-center gap-2" data-filter="game">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> İnteraktif Oyunlar
+                    </a>
+                    <a href="#" class="sidebar-filter-btn text-xs text-indigo-300 hover:text-white font-medium transition flex items-center gap-2" data-filter="pdf">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg> PDF Dokümanlar
+                    </a>
+                </div>
+            </div>
 
-            <a href="#" id="btn-quizzes" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
-                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Sınavlarım</span>
-            </a>
+            <div>
+                <a href="#" class="flex items-center justify-between p-3 hover:bg-indigo-800 rounded-xl transition group w-full" onclick="toggleSubMenu('submenu-quizzes', 'icon-quiz')">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                        <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition text-sm">Sınav Merkezi</span>
+                    </div>
+                    <svg id="icon-quiz" class="w-4 h-4 text-indigo-300 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </a>
+                <div id="submenu-quizzes" class="hidden flex-col pl-12 pr-3 py-2 space-y-3">
+                    <a href="#" id="btn-quizzes" class="menu-btn text-xs text-indigo-300 hover:text-white font-medium transition flex items-center gap-2">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Bekleyen Sınavlar
+                    </a>
+                    <a href="#" id="btn-results" class="menu-btn text-xs text-indigo-300 hover:text-white font-medium transition flex items-center gap-2">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg> Sınav Sonuçlarım
+                    </a>
+                </div>
+            </div>
+
         </nav>
     </aside>
 
@@ -70,6 +104,11 @@
             <div class="flex items-center gap-3">
                 <span id="studentNameDisplay" class="hidden sm:block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Yükleniyor...</span>
                 
+                <button id="darkModeToggle" class="p-2.5 bg-white dark:bg-slate-800 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-amber-400 rounded-xl transition-all duration-300 shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md focus:outline-none group" title="Tema Değiştir">
+                    <svg id="icon-moon" class="w-5 h-5 block transition-transform duration-300 group-hover:-rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <svg id="icon-sun" class="w-5 h-5 hidden transition-transform duration-300 group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </button>
+
                 <button id="studentLogoutBtn" class="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white px-4 py-2.5 rounded-xl text-xs font-black transition-all shadow-sm border border-red-100 dark:border-red-500/20 transform active:scale-95 group">
                     <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span class="hidden xs:inline">ÇIKIŞ</span>
@@ -81,7 +120,7 @@
             <div>
                 <h2 class="text-2xl md:text-3xl font-black text-gray-800 dark:text-white tracking-tight flex items-center gap-2">
                     Merhaba, <span id="welcomeStudentName" class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">Öğrenci</span>!
-                    <svg class="w-7 h-7 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    <svg class="w-7 h-7 text-amber-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 font-medium">Bugün yeni başarılar kazanmak için harika bir gün.</p>
             </div>
@@ -107,35 +146,28 @@
 
         <div id="section-activities" class="page-section w-full p-4 md:p-6 lg:p-8 max-w-7xl mx-auto hidden pb-20">
             <h3 class="text-xl font-black text-gray-800 dark:text-white mb-6 flex items-center gap-2 border-b border-gray-100 dark:border-slate-700 pb-4">
-                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 Eğlence ve Kütüphane
             </h3>
-            
-            <div class="flex gap-2 overflow-x-auto pb-4 scrollbar-hide mb-2" id="studentActivityFilters">
-                <button class="filter-btn bg-purple-600 text-white px-5 py-2.5 rounded-xl text-xs font-black whitespace-nowrap shadow-[0_0_15px_rgba(147,51,234,0.4)] transition flex items-center gap-1.5" data-filter="all">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg> Tümü
-                </button>
-                <button class="filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition flex items-center gap-1.5" data-filter="video">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> Video
-                </button>
-                <button class="filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition flex items-center gap-1.5" data-filter="game">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Oyun
-                </button>
-                <button class="filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition flex items-center gap-1.5" data-filter="pdf">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg> PDF
-                </button>
-            </div>
-            
             <div id="myActivitiesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
         <div id="section-quizzes" class="page-section w-full p-4 md:p-6 lg:p-8 max-w-7xl mx-auto hidden pb-20">
             <h3 class="text-xl font-black text-gray-800 dark:text-white mb-6 flex items-center gap-2 border-b border-gray-100 dark:border-slate-700 pb-4">
                 <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                Sınav Merkezi
+                Bekleyen Sınavlar
             </h3>
             <div id="myQuizzesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
+
+        <div id="section-results" class="page-section w-full p-4 md:p-6 lg:p-8 max-w-7xl mx-auto hidden pb-20">
+            <h3 class="text-xl font-black text-gray-800 dark:text-white mb-6 flex items-center gap-2 border-b border-gray-100 dark:border-slate-700 pb-4">
+                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                Sınav Sonuçlarım
+            </h3>
+            <div id="myResultsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+
     </main>
 
     <div id="quizTakingModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex flex-col overflow-hidden backdrop-blur-sm">
@@ -183,33 +215,8 @@
             <div class="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50 dark:bg-slate-900" id="analysisDetailsContainer" style="-webkit-overflow-scrolling: touch;"></div>
             <div class="p-5 md:p-6 bg-white dark:bg-slate-800 border-t border-gray-100 dark:border-slate-700 shrink-0">
                 <button onclick="closeAnalysisModal()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
-                    ANALİZİ KAPAT VE ANA SAYFAYA DÖN
+                    ANALİZİ KAPAT
                 </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="homeworkSubmitModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden relative flex flex-col border border-transparent dark:border-slate-700">
-            <header class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900 shrink-0">
-                <div>
-                    <h3 class="text-lg font-black text-gray-800 dark:text-white">Ödevi Teslim Et</h3>
-                    <p class="text-[10px] text-indigo-500 font-bold uppercase mt-1 tracking-widest truncate max-w-[200px]" id="submitHwTitle">Ödev Adı</p>
-                </div>
-                <button onclick="closeHomeworkModal()" class="text-3xl text-gray-400 hover:text-red-500 transition leading-none">&times;</button>
-            </header>
-            <div class="p-6">
-                <form id="homeworkSubmitForm" class="space-y-5">
-                    <input type="hidden" id="submitHwId">
-                    <div>
-                        <label class="block text-xs font-black text-gray-400 mb-2 uppercase tracking-widest ml-1">Öğretmenine Not Bırak (İsteğe Bağlı)</label>
-                        <textarea id="submitHwNote" rows="3" class="w-full p-4 rounded-2xl border-2 border-gray-100 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white focus:border-indigo-400 outline-none text-sm font-bold transition shadow-sm resize-none" placeholder="Örn: Soruları çok kolay buldum..."></textarea>
-                    </div>
-                    <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black py-4 rounded-2xl shadow-lg transition transform active:scale-95 text-sm tracking-widest flex items-center justify-center gap-2">
-                        BİTİRDİM, GÖNDER 
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    </button>
-                </form>
             </div>
         </div>
     </div>
