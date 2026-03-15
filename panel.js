@@ -5,7 +5,7 @@ const supabaseUrl = 'https://vucpxabicxqfmmmqvkpv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1Y3B4YWJpY3hxZm1tbXF2a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDIwMDYsImV4cCI6MjA4ODkxODAwNn0.wYXmIDO4H7ml8nC9pQzRmW8tPK_ihtqFy3r4SqN3cTk';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-// 🌟 YENİ: SİSTEMDEKİ AKTİF ÖĞRETMENİN HAFIZASI 🌟
+// 🌟 YENİ: SİSTEMDEKİ AKTİF ÖĞRETMENİN HAFIZASI VE LİMİT BEKÇİLERİ 🌟
 let currentTeacherId = null;
 let currentTeacherName = '';
 let isPremiumTeacher = false;
@@ -90,6 +90,7 @@ async function checkTeacherSecurity() {
 
         currentTeacherId = user.id;
         currentTeacherName = profile.full_name;
+        isPremiumTeacher = profile.is_premium; // ÖĞRETMENİN VIP DURUMUNU HAFIZAYA AL
 
         const welcomeNameEl = document.getElementById('welcomeTeacherName');
         if(welcomeNameEl) welcomeNameEl.innerText = currentTeacherName + " Hocam";
@@ -248,11 +249,13 @@ async function fetchDashboardStats() {
 
     // SADECE BU ÖĞRETMENİN ÖĞRENCİLERİ
     const { count: studentCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student').eq('teacher_id', currentTeacherId);
+    currentStudentCount = studentCount || 0; // SINIR KONTROLÜ İÇİN HAFIZAYA AL
     const dStud = document.getElementById('dashStudentCount');
     if (dStud) dStud.innerText = studentCount || 0;
 
     // SADECE BU ÖĞRETMENİN SINAVLARI
     const { count: quizCount } = await supabaseClient.from('quizzes').select('*', { count: 'exact', head: true }).eq('teacher_id', currentTeacherId);
+    currentQuizCount = quizCount || 0; // SINIR KONTROLÜ İÇİN HAFIZAYA AL
     const dQuiz = document.getElementById('dashQuizCount');
     if (dQuiz) dQuiz.innerText = quizCount || 0;
 
@@ -374,7 +377,15 @@ const openStudBtn = document.getElementById('addStudentBtn');
 const closeStudBtn = document.getElementById('closeModalBtn');
 const studentFormEl = document.getElementById('newStudentForm');
 
-if(openStudBtn) openStudBtn.addEventListener('click', () => { if(studentModalEl) studentModalEl.classList.remove('hidden'); });
+if(openStudBtn) {
+    openStudBtn.addEventListener('click', () => { 
+        if (!isPremiumTeacher && currentStudentCount >= 3) {
+            openPaywall("Maksimum Öğrenci Limitine Ulaştınız (3/3)");
+            return;
+        }
+        if(studentModalEl) studentModalEl.classList.remove('hidden'); 
+    });
+}
 if(closeStudBtn) closeStudBtn.addEventListener('click', () => { if(studentModalEl) studentModalEl.classList.add('hidden'); });
 
 if(studentFormEl) {
@@ -411,6 +422,7 @@ if(studentFormEl) {
                 if(studentModalEl) studentModalEl.classList.add('hidden'); 
                 studentFormEl.reset(); 
                 fetchStudents();
+                fetchDashboardStats(); // Sayacı güncelle
             }
         }
         submitBtn.innerText = originalText;
@@ -423,7 +435,7 @@ window.deleteStudent = async function(id) {
     if (!onay) return; 
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
     if (error) showToast("Silerken hata oldu: " + error.message, "error"); 
-    else { showToast("Öğrenci silindi.", "success"); fetchStudents(); }
+    else { showToast("Öğrenci silindi.", "success"); fetchStudents(); fetchDashboardStats(); }
 };
 
 // ===============================================
@@ -768,6 +780,10 @@ async function fetchActivities() {
 let currentActiveQuizId = null;
 
 document.getElementById('addQuizBtn')?.addEventListener('click', () => {
+    if (!isPremiumTeacher && currentQuizCount >= 2) {
+        openPaywall("Maksimum Sınav Limitine Ulaştınız (2/2)");
+        return;
+    }
     const modalQuiz = document.getElementById('quizNameModal');
     if (modalQuiz) modalQuiz.classList.remove('hidden');
 });
@@ -829,6 +845,7 @@ if (saveQuizTitleBtn) {
             if (titleInput) titleInput.value = '';
             if (customTimeInput) customTimeInput.value = '';
             fetchQuizzes(); 
+            fetchDashboardStats(); // Sınav sayısını güncelle
             openQuestionEditor(data[0].id, data[0].title);
         }
         saveQuizTitleBtn.innerHTML = `Oluştur <svg class="w-4 h-4 ml-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>`;
@@ -963,6 +980,7 @@ window.deleteQuiz = async (id) => {
     await supabaseClient.from('quizzes').delete().eq('id', id);
     showToast("Sınav tamamen silindi.", "success");
     fetchQuizzes();
+    fetchDashboardStats();
 };
 
 // ==========================================
@@ -1213,6 +1231,7 @@ window.markAsPaid = async function(lessonId, studentId) {
 // YENİ DÜZELTİLMİŞ PDF VE SERTİFİKA MOTORU
 // ==========================================
 window.generatePDF = function() {
+    if (!isPremiumTeacher) { openPaywall("PDF Gelişim Raporu VIP Bir Özelliktir"); return; }
     showToast("PDF hazırlanıyor, lütfen bekleyin...", "info");
     const element = document.getElementById('pdfTemplate');
     const sName = document.getElementById('profileStudentName').innerText;
@@ -1224,11 +1243,11 @@ window.generatePDF = function() {
 }
 
 window.generateCertificate = function() {
+    if (!isPremiumTeacher) { openPaywall("Altın Sertifika VIP Bir Özelliktir"); return; }
     showToast("Altın Sertifika Hazırlanıyor...", "info");
     const element = document.getElementById('certificateTemplate');
     const sName = document.getElementById('profileStudentName').innerText;
     
-    // 🌟 Sertifika İmzasına Öğretmenin Kendi İsmi Yazılacak 🌟
     const certNameEl = document.getElementById('certStudentName');
     if (certNameEl) certNameEl.innerText = sName;
     
@@ -1246,6 +1265,7 @@ window.generateCertificate = function() {
 // YENİ NESİL WHATSAPP VELİ RAPORU MOTORU
 // ==========================================
 window.sendWhatsAppReport = function() {
+    if (!isPremiumTeacher) { openPaywall("Canlı Veli Linki VIP Bir Özelliktir"); return; }
     const studentName = document.getElementById('profileStudentName').innerText;
     const studentId = document.getElementById('profStudentId').value;
     let rawPhone = document.getElementById('profParentPhone').value; 
@@ -1365,7 +1385,7 @@ if (searchStudentInput) {
 }
 
 // ==========================================
-// 13. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU VE FİLTRELER
+// 13. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU
 // ==========================================
 const btnGenerateAI = document.getElementById('btnGenerateAI');
 if (btnGenerateAI) {
@@ -1479,9 +1499,30 @@ document.addEventListener("DOMContentLoaded", () => {
     if (hwDueDateInput) hwDueDateInput.value = new Date().toISOString().split('T')[0];
 });
 
+// ==========================================
+// 14. PAYWALL (ÖDEME DUVARI) MOTORU
+// ==========================================
+window.openPaywall = function(reasonText) {
+    const reasonEl = document.getElementById('paywallReason');
+    if (reasonEl) reasonEl.innerText = reasonText;
+    const modal = document.getElementById('paywallModal');
+    const box = document.getElementById('paywallBox');
+    if(modal) {
+        modal.classList.remove('hidden');
+        setTimeout(() => { modal.classList.remove('opacity-0'); if(box) box.classList.remove('scale-95'); }, 10);
+    }
+}
+
+window.closePaywall = function() {
+    const modal = document.getElementById('paywallModal');
+    const box = document.getElementById('paywallBox');
+    if(modal) {
+        modal.classList.add('opacity-0'); 
+        if(box) box.classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+}
+
 // MOTORLARI ATEŞLE
 if (typeof setDynamicMotivations === 'function') setDynamicMotivations();
-
-// MOTORLARI ATEŞLE
 checkTeacherSecurity();
-
