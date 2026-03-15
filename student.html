@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>English Portal - Öğrenci Paneli</title>
-            <link rel="icon" type="image/png" href="https://ui-avatars.com/api/?name=EP&background=4f46e5&color=fff&rounded=true&bold=true&size=128">
+    
+    <link rel="icon" type="image/png" href="https://ui-avatars.com/api/?name=EP&background=4f46e5&color=fff&rounded=true&bold=true&size=128">
     <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=EP&background=4f46e5&color=fff&rounded=true&bold=true&size=128">
 
     <meta property="og:title" content="English Portal - VIP Eğitim">
@@ -13,119 +14,147 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:type" content="website">
-        <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#4f46e5">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="style.css">
-   </head>
-<body class="flex h-[100dvh] overflow-hidden bg-slate-50 text-gray-800 font-sans">
-       <div id="splashScreen" class="fixed inset-0 bg-slate-50 z-[99999] flex flex-col items-center justify-center transition-opacity duration-700">
+</head>
+<body class="bg-gray-50 dark:bg-slate-900 transition-colors duration-300 flex h-[100dvh] overflow-hidden text-gray-800 dark:text-gray-100 relative">
+    
+    <div id="splashScreen" class="fixed inset-0 bg-slate-50 dark:bg-slate-900 z-[99999] flex flex-col items-center justify-center transition-opacity duration-700">
         <div class="relative flex items-center justify-center mb-4">
-            <div class="w-20 h-20 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
-            <span class="absolute text-xl font-black text-indigo-900 tracking-tighter">EP</span>
+            <div class="w-20 h-20 border-4 border-indigo-100 dark:border-indigo-900 border-t-indigo-600 rounded-full animate-spin"></div>
+            <span class="absolute text-xl font-black text-indigo-900 dark:text-indigo-400 tracking-tighter">EP</span>
         </div>
         <p class="text-xs font-black text-indigo-400 uppercase tracking-widest animate-pulse">Sistem Yükleniyor</p>
     </div>
 
-    <aside class="w-20 md:w-64 flex-shrink-0 bg-gradient-to-b from-blue-700 to-indigo-800 text-white flex flex-col shadow-2xl z-20 h-[100dvh]">
-        <div class="h-[73px] flex items-center justify-center md:justify-start md:p-6 border-b border-white/10">
-            <span class="text-xl font-bold tracking-wide hidden md:block">English Portal</span>
-            <span class="text-2xl font-black md:hidden">EP</span>
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <aside id="mainSidebar" class="w-64 bg-indigo-900 text-white flex flex-col transition-transform duration-300 shadow-2xl z-40 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 h-[100dvh]">
+        <div class="p-4 md:p-6 flex justify-between items-center border-b border-indigo-800">
+            <span class="text-xl md:text-2xl font-bold tracking-wider">English Portal</span>
+            <button id="closeSidebarBtn" class="md:hidden text-indigo-300 hover:text-white text-3xl leading-none">&times;</button>
         </div>
-        <nav class="flex-1 overflow-y-auto p-2 md:p-4 space-y-3 mt-2" style="-webkit-overflow-scrolling: touch;">
-            
-            <a href="#" id="btn-homeworks" class="menu-btn flex items-center justify-center md:justify-start p-3 bg-white/20 rounded-xl transition shadow-sm" title="Ödevlerim">
-                <svg class="w-7 h-7 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                <span class="ml-3 font-medium text-sm hidden md:block">Ödevlerim</span>
+        <nav class="flex-1 overflow-y-auto p-2 md:p-4 space-y-2 mt-4" id="sidebarMenu" style="-webkit-overflow-scrolling: touch;">
+            <a href="#" id="btn-homeworks" class="menu-btn active-menu flex items-center p-3 bg-indigo-800 rounded-xl transition shadow-inner">
+                <svg class="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                <span class="ml-3 font-medium text-sm">Ödevlerim</span>
             </a>
 
-            <a href="#" id="btn-activities" class="menu-btn flex items-center justify-center md:justify-start p-3 hover:bg-white/10 rounded-xl transition" title="Etkinlikler">
-                <svg class="w-7 h-7 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span class="ml-3 font-medium text-sm hidden md:block">Etkinlikler</span>
+            <a href="#" id="btn-activities" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
+                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Etkinlikler</span>
             </a>
 
-            <a href="#" id="btn-quizzes" class="menu-btn flex items-center justify-center md:justify-start p-3 hover:bg-white/10 rounded-xl transition" title="Sınavlarım">
-                <svg class="w-7 h-7 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                <span class="ml-3 font-medium text-sm hidden md:block">Sınavlarım</span>
+            <a href="#" id="btn-quizzes" class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
+                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Sınavlarım</span>
             </a>
-
         </nav>
     </aside>
 
-    <main class="flex-1 h-[100dvh] overflow-y-auto relative w-full" style="-webkit-overflow-scrolling: touch;">
+    <main class="flex-1 flex flex-col h-[100dvh] overflow-y-auto overflow-x-hidden relative w-full" style="-webkit-overflow-scrolling: touch;">
         
-        <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 p-4 flex justify-between items-center sticky top-0 z-30 h-[73px]">
+        <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 p-4 flex justify-between items-center sticky top-0 z-20 transition-colors duration-300 h-[73px]">
             <div class="flex items-center">
-                <h2 class="text-sm md:text-base font-black text-gray-800 uppercase tracking-tighter">Öğrenci Portalı</h2>
+                <button id="openSidebarBtn" class="md:hidden text-indigo-900 dark:text-indigo-400 mr-4 focus:outline-none">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h2 class="text-sm md:text-base font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-widest hidden md:block">Öğrenci Portalı</h2>
             </div>
+
             <div class="flex items-center gap-3">
-                <span id="studentNameDisplay" class="hidden sm:block text-xs font-bold text-gray-500 uppercase tracking-widest">Yükleniyor...</span>
+                <span id="studentNameDisplay" class="hidden sm:block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Yükleniyor...</span>
                 
-                <button id="studentLogoutBtn" class="flex items-center gap-2 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white px-4 py-2.5 rounded-xl text-xs font-black transition-all border border-red-100 shadow-sm active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <button id="darkModeToggle" class="p-2.5 bg-white dark:bg-slate-800 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-amber-400 rounded-xl transition-all duration-300 shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md focus:outline-none group" title="Tema Değiştir">
+                    <svg id="icon-moon" class="w-5 h-5 block transition-transform duration-300 group-hover:-rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <svg id="icon-sun" class="w-5 h-5 hidden transition-transform duration-300 group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </button>
+
+                <button id="studentLogoutBtn" class="flex items-center gap-2 bg-red-50 dark:bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white px-4 py-2.5 rounded-xl text-xs font-black transition-all shadow-sm border border-red-100 dark:border-red-500/20 transform active:scale-95 group">
+                    <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span class="hidden xs:inline">ÇIKIŞ</span>
                 </button>
             </div>
         </header>
 
-         <div class="w-full px-5 lg:px-8 pt-8 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+         <div class="w-full p-6 md:p-8 max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-                <h2 class="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">Merhaba, <span id="welcomeStudentName" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Öğrenci</span>! 👋</h2>
-                <p class="text-sm text-gray-500 mt-1.5 font-medium">Bugün yeni şeyler öğrenmek için harika bir gün.</p>
+                <h2 class="text-2xl md:text-3xl font-black text-gray-800 dark:text-white tracking-tight">Merhaba, <span id="welcomeStudentName" class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">Öğrenci</span>! 👋</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 font-medium">Bugün yeni başarılar kazanmak için harika bir gün.</p>
             </div>
             
-            <div class="bg-white px-5 py-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 w-fit">
-                <div class="bg-gradient-to-br from-yellow-400 to-orange-500 text-white w-12 h-12 rounded-full flex items-center justify-center font-black text-xl shadow-inner border-2 border-yellow-200">
+            <div class="bg-white dark:bg-slate-800 px-6 py-4 rounded-[20px] shadow-sm border border-gray-100 dark:border-slate-700 flex items-center gap-4 w-fit hover:shadow-md transition">
+                <div class="bg-gradient-to-br from-amber-400 to-yellow-500 text-white w-14 h-14 rounded-full flex items-center justify-center font-black text-2xl shadow-[0_0_15px_rgba(251,191,36,0.5)] border-2 border-[#ffe55c]">
                     <span id="studentLevelText">1</span>
                 </div>
                 <div>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mevcut Seviye</p>
-                    <p class="text-lg font-black text-indigo-900 leading-tight"><span id="studentXpText">0</span> <span class="text-sm text-indigo-400">XP</span></p>
+                    <p class="text-xl font-black text-indigo-900 dark:text-indigo-400 leading-tight"><span id="studentXpText">0</span> <span class="text-sm text-indigo-500 dark:text-indigo-500">XP Puanı</span></p>
                 </div>
             </div>
         </div>
 
-
-        <div id="section-homeworks" class="page-section w-full p-5 lg:p-8 pb-20">
-            <h3 class="text-lg font-bold text-gray-800 mb-6 border-b-2 border-blue-500 inline-block pb-1">Bana Verilen Ödevler</h3>
-            <div id="myHomeworksList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+        <div id="section-homeworks" class="page-section w-full p-4 md:p-6 lg:p-8 max-w-7xl mx-auto pb-20">
+            <h3 class="text-xl font-black text-gray-800 dark:text-white mb-6 flex items-center gap-2 border-b border-gray-100 dark:border-slate-700 pb-4">
+                <span class="text-indigo-500">📚</span> Bana Verilen Ödevler
+            </h3>
+            <div id="myHomeworksList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
-        <div id="section-activities" class="page-section w-full p-5 lg:p-8 hidden pb-20">
-            <h3 class="text-lg font-bold text-gray-800 mb-6 border-b-2 border-purple-500 inline-block pb-1">Eğlence ve Kütüphane</h3>
-            <div id="myActivitiesList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+        <div id="section-activities" class="page-section w-full p-4 md:p-6 lg:p-8 max-w-7xl mx-auto hidden pb-20">
+            <h3 class="text-xl font-black text-gray-800 dark:text-white mb-6 flex items-center gap-2 border-b border-gray-100 dark:border-slate-700 pb-4">
+                <span class="text-purple-500">🎮</span> Eğlence ve Kütüphane
+            </h3>
+            
+            <div class="flex gap-2 overflow-x-auto pb-4 scrollbar-hide mb-2" id="studentActivityFilters">
+                <button class="filter-btn bg-purple-600 text-white px-5 py-2.5 rounded-xl text-xs font-black whitespace-nowrap shadow-[0_0_15px_rgba(147,51,234,0.4)] transition" data-filter="all">🌟 Tümü</button>
+                <button class="filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition" data-filter="video">📺 Video</button>
+                <button class="filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition" data-filter="game">🎮 Oyun</button>
+                <button class="filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition" data-filter="pdf">📄 PDF</button>
+            </div>
+            
+            <div id="myActivitiesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
-        <div id="section-quizzes" class="page-section w-full p-5 lg:p-8 hidden pb-20">
-            <h3 class="text-lg font-bold text-gray-800 mb-6 border-b-2 border-red-500 inline-block pb-1">Çözülecek Sınavlar</h3>
-            <div id="myQuizzesList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+        <div id="section-quizzes" class="page-section w-full p-4 md:p-6 lg:p-8 max-w-7xl mx-auto hidden pb-20">
+            <h3 class="text-xl font-black text-gray-800 dark:text-white mb-6 flex items-center gap-2 border-b border-gray-100 dark:border-slate-700 pb-4">
+                <span class="text-red-500">📝</span> Sınav Merkezi
+            </h3>
+            <div id="myQuizzesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
     </main>
 
     <div id="quizTakingModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex flex-col overflow-hidden backdrop-blur-sm">
-                <header class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md shrink-0">
+        <header class="bg-slate-900 text-white p-5 md:p-6 flex justify-between items-center shadow-lg border-b border-slate-800 shrink-0">
             <div>
-                <h3 id="takingQuizTitle" class="text-lg font-bold text-cyan-400">Sınav</h3>
-                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Dikkatlice okuyun.</p>
+                <h3 id="takingQuizTitle" class="text-lg md:text-xl font-black text-cyan-400 tracking-tight">Sınav Adı</h3>
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Soruları dikkatlice okuyun.</p>
             </div>
             <div class="flex items-center gap-4">
-                <div id="quizTimerContainer" class="hidden bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-2">
-                    <span class="text-red-400 animate-pulse text-lg leading-none">⏱</span>
-                    <span id="quizTimerDisplay" class="font-mono font-black text-red-400 text-lg tracking-widest">00:00</span>
+                <div id="quizTimerContainer" class="hidden bg-slate-800 border border-slate-700 px-4 py-2 rounded-xl flex items-center gap-2 shadow-inner">
+                    <span class="text-red-400 animate-pulse text-xl leading-none">⏱</span>
+                    <span id="quizTimerDisplay" class="font-mono font-black text-red-400 text-xl tracking-widest">00:00</span>
                 </div>
-                <button onclick="closeQuizModal()" class="text-gray-300 hover:text-white hover:bg-red-500 px-4 py-2 rounded-lg text-sm font-bold transition">Sınavdan Çık</button>
+                <button onclick="closeQuizModal()" class="text-gray-400 hover:text-white hover:bg-red-500 px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-sm border border-slate-700 hover:border-red-500">Sınavdan Çık</button>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-4 bg-slate-100/50 flex justify-center" style="-webkit-overflow-scrolling: touch;">
-            <div class="w-full max-w-3xl bg-white p-6 md:p-8 rounded-2xl shadow-xl h-fit my-4">
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50 dark:bg-slate-900 flex justify-center" style="-webkit-overflow-scrolling: touch;">
+            <div class="w-full max-w-3xl bg-white dark:bg-slate-800 p-6 md:p-10 rounded-[30px] shadow-xl border border-gray-100 dark:border-slate-700 h-fit my-4">
                 <form id="quizForm" class="space-y-8">
-                    <div id="questionsContainer" class="space-y-6"></div>
-                    <div class="pt-6 border-t border-gray-100">
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-4 rounded-xl shadow-md transition">SINAVI BİTİR VE GÖNDER</button>
+                    <div id="questionsContainer" class="space-y-8"></div>
+                    <div class="pt-8 border-t border-gray-100 dark:border-slate-700">
+                        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-lg py-5 rounded-2xl shadow-[0_4px_20px_rgba(79,70,229,0.3)] transition transform active:scale-95 flex justify-center items-center gap-2">
+                            <span>SINAVI BİTİR VE GÖNDER</span> 🚀
+                        </button>
                     </div>
                 </form>
             </div>
@@ -133,70 +162,65 @@
     </div>
 
     <div id="analysisModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="max-w-4xl w-full bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-            <header class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+        <div class="max-w-4xl w-full bg-white dark:bg-slate-800 rounded-[30px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-transparent dark:border-slate-700">
+            <header class="p-6 md:p-8 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900 shrink-0">
                 <div>
-                    <h3 class="text-xl font-bold text-gray-800">Sınav Analizi</h3>
-                    <p class="text-xs text-gray-500 mt-1">Doğru ve yanlışlarını incele.</p>
+                    <h3 class="text-2xl font-black text-gray-800 dark:text-white">Sınav Analizi</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-widest font-bold">Doğru ve yanlışlarını incele.</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="text-right">
-                        <div class="text-[10px] font-bold text-gray-400 uppercase">PUANIN</div>
-                        <div class="text-3xl font-black text-blue-600" id="analysisScoreDisplay">100</div>
-                    </div>
+                <div class="text-right bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                    <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ALINAN PUAN</div>
+                    <div class="text-4xl font-black text-indigo-600 dark:text-indigo-400" id="analysisScoreDisplay">100</div>
                 </div>
             </header>
-            <div class="flex-1 overflow-y-auto p-6" id="analysisDetailsContainer" style="-webkit-overflow-scrolling: touch;"></div>
-            <div class="p-5 md:p-6 bg-white border-t border-gray-100 shrink-0">
-    <button onclick="closeAnalysisModal()" class="w-full bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 text-white font-black text-sm py-4 rounded-2xl shadow-xl shadow-indigo-200 transition-all active:scale-95 flex justify-center items-center gap-2">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-        <span>ANALİZİ KAPAT VE ANA SAYFAYA DÖN</span>
-    </button>
-</div>
-
+            <div class="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50 dark:bg-slate-900" id="analysisDetailsContainer" style="-webkit-overflow-scrolling: touch;"></div>
+            <div class="p-5 md:p-6 bg-white dark:bg-slate-800 border-t border-gray-100 dark:border-slate-700 shrink-0">
+                <button onclick="closeAnalysisModal()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    ANALİZİ KAPAT VE ANA SAYFAYA DÖN
+                </button>
+            </div>
         </div>
     </div>
 
-    <div id="homeworkSubmitModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden relative flex flex-col max-h-[90vh]">
-            <header class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+    <div id="homeworkSubmitModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden relative flex flex-col border border-transparent dark:border-slate-700">
+            <header class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900 shrink-0">
                 <div>
-                    <h3 class="text-base font-bold text-gray-800">Ödevi Teslim Et</h3>
-                    <p class="text-[10px] text-blue-500 font-bold uppercase mt-0.5 tracking-wider truncate max-w-[200px]" id="submitHwTitle">Ödev Adı</p>
+                    <h3 class="text-lg font-black text-gray-800 dark:text-white">Ödevi Teslim Et</h3>
+                    <p class="text-[10px] text-indigo-500 font-bold uppercase mt-1 tracking-widest truncate max-w-[200px]" id="submitHwTitle">Ödev Adı</p>
                 </div>
-                <button onclick="closeHomeworkModal()" class="text-2xl text-gray-400 hover:text-red-500">&times;</button>
+                <button onclick="closeHomeworkModal()" class="text-3xl text-gray-400 hover:text-red-500 transition leading-none">&times;</button>
             </header>
-            <div class="p-5 overflow-y-auto flex-1" style="-webkit-overflow-scrolling: touch;">
-                <form id="homeworkSubmitForm" class="space-y-4">
+            <div class="p-6">
+                <form id="homeworkSubmitForm" class="space-y-5">
                     <input type="hidden" id="submitHwId">
                     <div>
-                        <label class="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wider">Öğretmenine Not Bırak (İsteğe Bağlı)</label>
-                        <textarea id="submitHwNote" rows="3" class="w-full p-3 rounded-xl border border-gray-200 focus:border-blue-500 outline-none text-sm resize-none" placeholder="Örn: 2. sayfayı çok kolay buldum..."></textarea>
+                        <label class="block text-xs font-black text-gray-400 mb-2 uppercase tracking-widest ml-1">Öğretmenine Not Bırak (İsteğe Bağlı)</label>
+                        <textarea id="submitHwNote" rows="3" class="w-full p-4 rounded-2xl border-2 border-gray-100 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white focus:border-indigo-400 outline-none text-sm font-bold transition shadow-sm resize-none" placeholder="Örn: Soruları çok kolay buldum..."></textarea>
                     </div>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm transition">BİTİRDİM, GÖNDER</button>
+                    <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black py-4 rounded-2xl shadow-lg transition transform active:scale-95 text-sm tracking-widest">
+                        BİTİRDİM, GÖNDER ✅
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 
-    <div id="toast-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
-
     <div id="customConfirmModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[9999] p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="customConfirmBox">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 border border-transparent dark:border-slate-700" id="customConfirmBox">
             <div class="p-6 text-center">
-                <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">⚠️</div>
-                <h3 class="text-xl font-black text-gray-800 mb-2">Emin misin?</h3>
-                <p class="text-sm text-gray-500 font-medium" id="customConfirmMessage">Bu işlemi yapmak istediğine emin misin?</p>
+                <div class="w-16 h-16 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">⚠️</div>
+                <h3 class="text-xl font-black text-gray-800 dark:text-white mb-2">Emin misin?</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium" id="customConfirmMessage">Bu işlemi yapmak istediğine emin misin?</p>
             </div>
-            <div class="flex border-t border-gray-100">
-                <button id="customConfirmCancel" class="flex-1 py-4 text-gray-500 font-bold hover:bg-gray-50 transition border-r border-gray-100">İptal</button>
-                <button id="customConfirmOk" class="flex-1 py-4 text-red-600 font-black hover:bg-red-50 transition">Evet, Sil</button>
+            <div class="flex border-t border-gray-100 dark:border-slate-700">
+                <button id="customConfirmCancel" class="flex-1 py-4 text-gray-500 dark:text-gray-400 font-bold hover:bg-gray-50 dark:hover:bg-slate-700 transition border-r border-gray-100 dark:border-slate-700">İptal</button>
+                <button id="customConfirmOk" class="flex-1 py-4 text-red-600 font-black hover:bg-red-50 dark:hover:bg-red-900/20 transition">Evet, Onayla</button>
             </div>
         </div>
     </div>
 
     <div id="toast-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
-
 
     <script src="student.js"></script>    
 </body>
