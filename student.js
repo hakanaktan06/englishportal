@@ -20,10 +20,15 @@ function showToast(message, type = 'success') {
     if(!container) return;
     const toast = document.createElement('div');
     const bgColor = type === 'success' ? 'bg-emerald-500' : (type === 'error' ? 'bg-rose-500' : 'bg-indigo-500');
-    const icon = type === 'success' ? '✅' : (type === 'error' ? '⚠️' : 'ℹ️');
+    
+    const iconSvg = type === 'success' 
+        ? `<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>` 
+        : (type === 'error' 
+            ? `<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>` 
+            : `<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`);
 
     toast.className = `${bgColor} text-white px-5 py-3.5 rounded-2xl shadow-xl shadow-${bgColor}/30 font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
-    toast.innerHTML = `<span class="text-lg">${icon}</span> <span>${message}</span>`;
+    toast.innerHTML = `<span class="flex-shrink-0">${iconSvg}</span> <span>${message}</span>`;
     container.appendChild(toast);
     
     setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 10);
@@ -33,7 +38,7 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-function customConfirm(message, btnText = "Evet, İşlemi Yap") {
+function customConfirm(message, btnText = "Evet, Onayla") {
     return new Promise((resolve) => {
         const modal = document.getElementById('customConfirmModal');
         const box = document.getElementById('customConfirmBox');
@@ -61,38 +66,7 @@ function customConfirm(message, btnText = "Evet, İşlemi Yap") {
 }
 
 // ==========================================
-// GECE/GÜNDÜZ MODU (TEMA) MOTORU
-// ==========================================
-const dmToggleBtn = document.getElementById('darkModeToggle');
-const htmlElement = document.documentElement;
-const iconMoon = document.getElementById('icon-moon');
-const iconSun = document.getElementById('icon-sun');
-
-if (localStorage.getItem('studentTheme') === 'dark' || (!('studentTheme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    htmlElement.classList.add('dark');
-    if (iconMoon) iconMoon.classList.add('hidden');
-    if (iconSun) iconSun.classList.remove('hidden');
-}
-
-if (dmToggleBtn) {
-    dmToggleBtn.addEventListener('click', () => {
-        htmlElement.classList.toggle('dark');
-        if (htmlElement.classList.contains('dark')) {
-            localStorage.setItem('studentTheme', 'dark');
-            iconMoon.classList.add('hidden');
-            iconSun.classList.remove('hidden');
-            showToast("Gece Modu Aktif 🌙", "success");
-        } else {
-            localStorage.setItem('studentTheme', 'light');
-            iconMoon.classList.remove('hidden');
-            iconSun.classList.add('hidden');
-            showToast("Gündüz Modu Aktif ☀️", "success");
-        }
-    });
-}
-
-// ==========================================
-// ÇIKIŞ MOTORU VE MOBİL MENÜ
+// ÇIKIŞ MOTORU VE MENÜ
 // ==========================================
 document.addEventListener('click', async (e) => {
     if (e.target.closest('#studentLogoutBtn')) {
@@ -118,6 +92,36 @@ if(sideOpenBtn) sideOpenBtn.addEventListener('click', toggleMobileSidebar);
 if(sideCloseBtn) sideCloseBtn.addEventListener('click', toggleMobileSidebar);
 if(sideOverlay) sideOverlay.addEventListener('click', toggleMobileSidebar);
 
+// ==========================================
+// TEMA MOTORU
+// ==========================================
+const dmToggleBtn = document.getElementById('darkModeToggle');
+const htmlElement = document.documentElement;
+const iconMoon = document.getElementById('icon-moon');
+const iconSun = document.getElementById('icon-sun');
+
+if (localStorage.getItem('studentTheme') === 'dark' || (!('studentTheme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    htmlElement.classList.add('dark');
+    if (iconMoon) iconMoon.classList.add('hidden');
+    if (iconSun) iconSun.classList.remove('hidden');
+}
+
+if (dmToggleBtn) {
+    dmToggleBtn.addEventListener('click', () => {
+        htmlElement.classList.toggle('dark');
+        if (htmlElement.classList.contains('dark')) {
+            localStorage.setItem('studentTheme', 'dark');
+            if (iconMoon) iconMoon.classList.add('hidden');
+            if (iconSun) iconSun.classList.remove('hidden');
+            showToast("Gece Modu Aktif", "success");
+        } else {
+            localStorage.setItem('studentTheme', 'light');
+            if (iconMoon) iconMoon.classList.remove('hidden');
+            if (iconSun) iconSun.classList.add('hidden');
+            showToast("Gündüz Modu Aktif", "success");
+        }
+    });
+}
 
 // ==========================================
 // 2. OTURUM KONTROLÜ VE SPLASH EKRANI KAPATMA
@@ -209,7 +213,7 @@ async function fetchMyHomeworks() {
     if (!container) return;
 
     if (!data || data.length === 0) { 
-        container.innerHTML = '<div class="col-span-full bg-white dark:bg-slate-800 p-10 rounded-[30px] text-center text-gray-400 font-bold border-2 border-dashed border-gray-100 dark:border-slate-700">Hiç ödevin kalmamış. Harikasın! 🎉</div>'; 
+        container.innerHTML = '<div class="col-span-full bg-white dark:bg-slate-800 p-10 rounded-[30px] text-center text-gray-400 font-bold border-2 border-dashed border-gray-100 dark:border-slate-700">Hiç ödevin kalmamış. Harikasın!</div>'; 
         return; 
     }
     
@@ -219,7 +223,7 @@ async function fetchMyHomeworks() {
         const isCompleted = hw.status === 'Tamamlandı';
         
         let actionAreaHtml = isCompleted 
-            ? `<div class="w-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-black py-3 rounded-xl text-xs text-center border border-green-200 dark:border-green-800 flex items-center justify-center gap-1.5 mt-auto shadow-sm"><span>✅</span> TESLİM EDİLDİ</div>`
+            ? `<div class="w-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-black py-3 rounded-xl text-xs text-center border border-green-200 dark:border-green-800 flex items-center justify-center gap-1.5 mt-auto shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> TESLİM EDİLDİ</div>`
             : `<button onclick="openHomeworkModal('${hw.id}', '${hw.title.replace(/'/g, "\\'")}')" class="mt-auto w-full bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white font-black text-xs py-3 rounded-xl transition transform active:scale-95 shadow-md">ÖDEVİ TAMAMLA</button>`;
 
         container.innerHTML += `
@@ -229,7 +233,7 @@ async function fetchMyHomeworks() {
                 <h4 class="text-base font-black text-gray-800 dark:text-white mb-2 mt-1 line-clamp-2 leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition" title="${hw.title}">${hw.title}</h4>
                 <p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl leading-relaxed font-medium border border-gray-100 dark:border-slate-700/50" title="${hw.description}">${hw.description}</p>
                 <div class="flex justify-between items-center mb-4">
-                    <span class="text-[10px] font-black uppercase text-gray-400 flex items-center gap-1.5 bg-gray-50 dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-slate-600">📅 Teslim: ${dueDate}</span>
+                    <span class="text-[10px] font-black uppercase text-gray-400 flex items-center gap-1.5 bg-gray-50 dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-slate-600"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Teslim: ${dueDate}</span>
                 </div>
                 ${actionAreaHtml}
             </div>`;
@@ -255,7 +259,8 @@ if(hwSubmitForm) {
         const note = document.getElementById('submitHwNote').value;
         const btn = document.querySelector('#homeworkSubmitForm button[type="submit"]');
         
-        btn.innerText = "⏳ Gönderiliyor...";
+        const originalBtnHTML = btn.innerHTML;
+        btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Gönderiliyor...`;
 
         const { error } = await supabaseClient.from('homeworks').update({ status: 'Tamamlandı', student_note: note }).eq('id', hwId);
 
@@ -266,13 +271,13 @@ if(hwSubmitForm) {
             const newXp = (prof.xp || 0) + 50;
             await supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentStudentId);
 
-            showToast("🌟 Harikasın! Ödevin teslim edildi ve +50 XP kazandın!", "success");
+            showToast("Harikasın! Ödevin teslim edildi ve +50 XP kazandın!", "success");
             
             closeHomeworkModal();
             fetchMyHomeworks(); 
             initStudentPortal(); 
         }
-        btn.innerText = "BİTİRDİM, GÖNDER ✅";
+        btn.innerHTML = originalBtnHTML;
     });
 }
 
@@ -290,30 +295,37 @@ async function fetchActivities() {
     }
     
     container.innerHTML = ''; 
-    const icons = { video: '📺', game: '🎮', pdf: '📄' };
+    const icons = { 
+        video: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>', 
+        game: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>', 
+        pdf: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>' 
+    };
 
     data.forEach(act => {
         container.innerHTML += `
             <div class="activity-card bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl hover:border-purple-300 dark:hover:border-purple-800 transition flex flex-col h-full group" data-category="${act.category}">
                 <div class="flex items-center gap-4 mb-5">
                     <div class="bg-purple-50 dark:bg-purple-900/30 p-3.5 rounded-2xl text-2xl border border-purple-100 dark:border-purple-800 text-purple-600 dark:text-purple-400 shadow-inner group-hover:scale-110 transition transform">
-                        ${icons[act.category] || '🔗'}
+                        ${icons[act.category] || '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>'}
                     </div>
                     <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white flex-1 line-clamp-2 leading-tight group-hover:text-purple-600 dark:group-hover:text-purple-400 transition">${act.title}</h4>
                 </div>
-                <a href="${act.link}" target="_blank" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-purple-600 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-purple-600 transition font-black py-3 rounded-xl text-center text-xs tracking-widest uppercase shadow-sm">AÇ VE İNCELE ↗</a>
+                <a href="${act.link}" target="_blank" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-purple-600 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-purple-600 transition font-black py-3 rounded-xl text-center text-xs tracking-widest uppercase shadow-sm flex justify-center items-center gap-2">
+                    AÇ VE İNCELE <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                </a>
             </div>`;
     });
 }
 
 document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('filter-btn')) {
+    const filterBtn = e.target.closest('.filter-btn');
+    if (filterBtn) {
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.className = "filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition";
+            btn.className = "filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition flex items-center gap-1.5";
         });
-        e.target.className = "filter-btn bg-purple-600 text-white px-5 py-2.5 rounded-xl text-xs font-black whitespace-nowrap shadow-[0_0_15px_rgba(147,51,234,0.4)] transition";
+        filterBtn.className = "filter-btn bg-purple-600 text-white px-5 py-2.5 rounded-xl text-xs font-black whitespace-nowrap shadow-[0_0_15px_rgba(147,51,234,0.4)] transition flex items-center gap-1.5";
         
-        const filter = e.target.getAttribute('data-filter');
+        const filter = filterBtn.getAttribute('data-filter');
         document.querySelectorAll('.activity-card').forEach(card => {
             card.style.display = (filter === 'all' || card.getAttribute('data-category') === filter) ? 'flex' : 'none';
         });
@@ -339,7 +351,9 @@ async function fetchQuizzes() {
         container.innerHTML += `
             <div class="bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl hover:border-red-300 dark:hover:border-red-800 transition flex flex-col h-full group">
                 <div class="flex items-center gap-4 mb-5">
-                    <div class="bg-red-50 dark:bg-red-900/30 p-3.5 rounded-2xl text-2xl border border-red-100 dark:border-red-800 text-red-600 dark:text-red-400 shadow-inner group-hover:scale-110 transition transform">📝</div>
+                    <div class="bg-red-50 dark:bg-red-900/30 p-3.5 rounded-2xl border border-red-100 dark:border-red-800 text-red-600 dark:text-red-400 shadow-inner group-hover:scale-110 transition transform">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                    </div>
                     <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white flex-1 line-clamp-2 leading-tight group-hover:text-red-600 dark:group-hover:text-red-400 transition">${quiz.title}</h4>
                 </div>
                 <button onclick="startQuiz('${quiz.id}', '${quiz.title.replace(/'/g, "\\'")}')" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-red-500 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-red-500 transition font-black py-3 rounded-xl text-xs uppercase tracking-widest shadow-sm">SINAVA BAŞLA</button>
@@ -462,7 +476,7 @@ if(quizFormEl) {
         const newXp = (prof.xp || 0) + score;
         await supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentStudentId);
 
-        showToast(`🎉 Tebrikler! ${score} Puan ve +${score} XP kazandın!`, "success");
+        showToast(`Tebrikler! ${score} Puan ve +${score} XP kazandın!`, "success");
         
         document.getElementById('quizTakingModal').classList.add('hidden');
         renderAnalysisScreen(examDetails, score);
@@ -476,22 +490,22 @@ function renderAnalysisScreen(details, score) {
     container.innerHTML = '';
 
     details.forEach(detail => {
-        const boxStyle = detail.is_correct ? 'border-green-300 bg-green-50 dark:bg-green-900/20 dark:border-green-800' : 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800';
-        const iconInfo = detail.is_correct ? '<span class="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-black shadow-sm">✓</span>' : '<span class="bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-black shadow-sm">✗</span>';
+        const boxStyle = detail.is_correct ? 'border-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800' : 'border-rose-300 bg-rose-50 dark:bg-rose-900/20 dark:border-rose-800';
+        const iconInfo = detail.is_correct ? '<span class="bg-emerald-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-black shadow-sm"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>' : '<span class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-black shadow-sm"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg></span>';
         
         container.innerHTML += `
             <div class="p-6 rounded-[20px] border-2 mb-6 ${boxStyle} shadow-sm">
                 <div class="flex items-start gap-4 mb-4">
-                    ${iconInfo}
+                    <span class="shrink-0">${iconInfo}</span>
                     <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white pt-1"><span class="text-gray-400 mr-1">${detail.q_no}.</span> ${detail.q_text}</h4>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pl-12 text-sm font-bold">
-                    <div class="p-3 rounded-xl ${detail.correct_opt === 'A' ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-2 border-green-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">A) ${detail.optA}</div>
-                    <div class="p-3 rounded-xl ${detail.correct_opt === 'B' ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-2 border-green-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">B) ${detail.optB}</div>
-                    <div class="p-3 rounded-xl ${detail.correct_opt === 'C' ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-2 border-green-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">C) ${detail.optC}</div>
-                    <div class="p-3 rounded-xl ${detail.correct_opt === 'D' ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-2 border-green-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">D) ${detail.optD}</div>
+                    <div class="p-3 rounded-xl ${detail.correct_opt === 'A' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">A) ${detail.optA}</div>
+                    <div class="p-3 rounded-xl ${detail.correct_opt === 'B' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">B) ${detail.optB}</div>
+                    <div class="p-3 rounded-xl ${detail.correct_opt === 'C' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">C) ${detail.optC}</div>
+                    <div class="p-3 rounded-xl ${detail.correct_opt === 'D' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">D) ${detail.optD}</div>
                 </div>
-                ${!detail.is_correct ? `<div class="mt-4 pl-12 flex flex-col sm:flex-row gap-3"><span class="inline-block bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Senin Cevabın: ${detail.selected_opt}</span><span class="inline-block bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Doğru Cevap: ${detail.correct_opt}</span></div>` : ''}
+                ${!detail.is_correct ? `<div class="mt-4 pl-12 flex flex-col sm:flex-row gap-3"><span class="inline-block bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Senin Cevabın: ${detail.selected_opt}</span><span class="inline-block bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Doğru Cevap: ${detail.correct_opt}</span></div>` : ''}
             </div>`;
     });
     document.getElementById('analysisModal').classList.remove('hidden');
