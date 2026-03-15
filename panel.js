@@ -108,7 +108,8 @@ async function checkTeacherSecurity() {
 
 
         const agendaNameEl = document.getElementById('agendaTeacherName');
-        if(agendaNameEl) agendaNameEl.innerText = currentTeacherName + " Hocam, şimdi kafa dinleme vakti!";
+        if(agendaNameEl) agendaNameEl.innerText = currentTeacherName + " Öğretmenim, şimdi kafa dinleme vakti!";
+
 
         switchTab('dashboard'); 
 
