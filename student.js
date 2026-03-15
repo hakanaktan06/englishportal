@@ -124,6 +124,23 @@ if (dmToggleBtn) {
 }
 
 // ==========================================
+// AKORDEON (AÇILIR) MENÜ MOTORU
+// ==========================================
+window.toggleSubMenu = function(menuId, iconId) {
+    const el = document.getElementById(menuId);
+    const icon = document.getElementById(iconId);
+    if(el.classList.contains('hidden')) {
+        el.classList.remove('hidden');
+        el.classList.add('flex');
+        if(icon) icon.classList.add('rotate-180');
+    } else {
+        el.classList.add('hidden');
+        el.classList.remove('flex');
+        if(icon) icon.classList.remove('rotate-180');
+    }
+}
+
+// ==========================================
 // 2. OTURUM KONTROLÜ VE SPLASH EKRANI KAPATMA
 // ==========================================
 async function initStudentPortal() {
@@ -143,8 +160,9 @@ async function initStudentPortal() {
             welcomeEl.innerText = firstName;
         }
 
+        // 🌟 YENİ AMELİYAT: XP sistemi artık 500'de bir level atlatıyor! 🌟
         const currentXp = profile.xp || 0;
-        const currentLevel = Math.floor(currentXp / 100) + 1;
+        const currentLevel = Math.floor(currentXp / 500) + 1;
         
         const elXp = document.getElementById('studentXpText');
         const elLevel = document.getElementById('studentLevelText');
@@ -173,39 +191,43 @@ function switchTab(target) {
         toggleMobileSidebar();
     }
 
-    const secHw = document.getElementById('section-homeworks');
-    const secAct = document.getElementById('section-activities');
-    const secQuiz = document.getElementById('section-quizzes');
+    const sections = ['section-homeworks', 'section-activities', 'section-quizzes', 'section-results'];
+    sections.forEach(sec => {
+        const el = document.getElementById(sec);
+        if(el) el.classList.add('hidden');
+    });
 
-    if(secHw) secHw.classList.add('hidden');
-    if(secAct) secAct.classList.add('hidden');
-    if(secQuiz) secQuiz.classList.add('hidden');
-
-    const btnHw = document.getElementById('btn-homeworks');
-    const btnAct = document.getElementById('btn-activities');
-    const btnQuiz = document.getElementById('btn-quizzes');
-
-    if(btnHw) btnHw.classList.remove('bg-indigo-800', 'shadow-inner');
-    if(btnAct) btnAct.classList.remove('bg-indigo-800', 'shadow-inner');
-    if(btnQuiz) btnQuiz.classList.remove('bg-indigo-800', 'shadow-inner');
+    const activeBtns = document.querySelectorAll('.menu-btn');
+    activeBtns.forEach(btn => {
+        btn.classList.remove('bg-indigo-800', 'shadow-inner', 'text-white');
+        if(btn.id !== 'btn-homeworks') btn.classList.add('text-indigo-300'); // Alt menüler için
+    });
 
     const targetSec = document.getElementById(`section-${target}`);
     const targetBtn = document.getElementById(`btn-${target}`);
 
     if(targetSec) targetSec.classList.remove('hidden');
-    if(targetBtn) targetBtn.classList.add('bg-indigo-800', 'shadow-inner');
+    if(targetBtn) {
+        if(targetBtn.id === 'btn-homeworks') {
+            targetBtn.classList.add('bg-indigo-800', 'shadow-inner');
+        } else {
+            targetBtn.classList.remove('text-indigo-300');
+            targetBtn.classList.add('text-white');
+        }
+    }
 
     if (target === 'homeworks') fetchMyHomeworks();
     if (target === 'activities') fetchActivities();
     if (target === 'quizzes') fetchQuizzes();
+    if (target === 'results') fetchMyResults();
 }
 
 document.getElementById('btn-homeworks')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('homeworks'); });
-document.getElementById('btn-activities')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('activities'); });
 document.getElementById('btn-quizzes')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('quizzes'); });
+document.getElementById('btn-results')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('results'); });
 
 // ==========================================
-// 4. ÖDEVLER VE YENİ TESLİM MOTORU 
+// 4. ÖDEVLER (SADECE LİSTELEME, BUTON YOK)
 // ==========================================
 async function fetchMyHomeworks() {
     const { data } = await supabaseClient.from('homeworks').select('*').eq('student_id', currentStudentId).order('due_date', { ascending: true });
@@ -213,76 +235,46 @@ async function fetchMyHomeworks() {
     if (!container) return;
 
     if (!data || data.length === 0) { 
-        container.innerHTML = '<div class="col-span-full bg-white dark:bg-slate-800 p-10 rounded-[30px] text-center text-gray-400 font-bold border-2 border-dashed border-gray-100 dark:border-slate-700">Hiç ödevin kalmamış. Harikasın!</div>'; 
+        container.innerHTML = '<div class="col-span-full bg-white dark:bg-slate-800 p-10 rounded-[30px] text-center text-gray-400 font-bold border-2 border-dashed border-gray-100 dark:border-slate-700">Bekleyen veya teslim edilen ödevin yok.</div>'; 
         return; 
     }
     
-    container.innerHTML = '';
+    let newHwHtml = '';
+    let doneHwHtml = '';
+
     data.forEach(hw => {
         const dueDate = new Date(hw.due_date).toLocaleDateString('tr-TR');
         const isCompleted = hw.status === 'Tamamlandı';
         
-        let actionAreaHtml = isCompleted 
-            ? `<div class="w-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-black py-3 rounded-xl text-xs text-center border border-green-200 dark:border-green-800 flex items-center justify-center gap-1.5 mt-auto shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> TESLİM EDİLDİ</div>`
-            : `<button onclick="openHomeworkModal('${hw.id}', '${hw.title.replace(/'/g, "\\'")}')" class="mt-auto w-full bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white font-black text-xs py-3 rounded-xl transition transform active:scale-95 shadow-md">ÖDEVİ TAMAMLA</button>`;
-
-        container.innerHTML += `
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl hover:border-indigo-200 dark:hover:border-indigo-800 transition-all flex flex-col h-full relative overflow-hidden group">
-                ${isCompleted ? '<div class="absolute top-0 left-0 w-full h-1.5 bg-green-500"></div>' : '<div class="absolute top-0 left-0 w-full h-1.5 bg-amber-400"></div>'}
+        const card = `
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition-all flex flex-col h-full relative overflow-hidden group">
+                ${isCompleted ? '<div class="absolute top-0 left-0 w-full h-1.5 bg-emerald-500"></div>' : '<div class="absolute top-0 left-0 w-full h-1.5 bg-amber-400"></div>'}
                 
-                <h4 class="text-base font-black text-gray-800 dark:text-white mb-2 mt-1 line-clamp-2 leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition" title="${hw.title}">${hw.title}</h4>
-                <p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl leading-relaxed font-medium border border-gray-100 dark:border-slate-700/50" title="${hw.description}">${hw.description}</p>
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-[10px] font-black uppercase text-gray-400 flex items-center gap-1.5 bg-gray-50 dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-slate-600"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Teslim: ${dueDate}</span>
+                <h4 class="text-base font-black text-gray-800 dark:text-white mb-2 mt-1 line-clamp-2 leading-tight">${hw.title}</h4>
+                <p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl leading-relaxed font-medium border border-gray-100 dark:border-slate-700/50">${hw.description}</p>
+                <div class="flex justify-between items-center mt-auto">
+                    <span class="text-[10px] font-black uppercase text-gray-400 flex items-center gap-1 bg-gray-50 dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-slate-600"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Son: ${dueDate}</span>
+                    ${isCompleted 
+                        ? '<span class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ONAYLANDI</span>' 
+                        : '<span class="text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> BEKLİYOR</span>'}
                 </div>
-                ${actionAreaHtml}
             </div>`;
+
+        if(isCompleted) doneHwHtml += card;
+        else newHwHtml += card;
     });
-}
 
-window.openHomeworkModal = function(id, title) {
-    document.getElementById('submitHwId').value = id;
-    document.getElementById('submitHwTitle').innerText = title;
-    document.getElementById('submitHwNote').value = '';
-    document.getElementById('homeworkSubmitModal').classList.remove('hidden');
-}
-
-window.closeHomeworkModal = function() {
-    document.getElementById('homeworkSubmitModal').classList.add('hidden');
-}
-
-const hwSubmitForm = document.getElementById('homeworkSubmitForm');
-if(hwSubmitForm) {
-    hwSubmitForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const hwId = document.getElementById('submitHwId').value;
-        const note = document.getElementById('submitHwNote').value;
-        const btn = document.querySelector('#homeworkSubmitForm button[type="submit"]');
+    container.innerHTML = `
+        <div class="col-span-full mb-1"><h4 class="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Yeni / Bekleyen Ödevler</h4></div>
+        ${newHwHtml || '<div class="col-span-full text-sm text-gray-400 italic mb-6">Bekleyen ödevin yok, harikasın!</div>'}
         
-        const originalBtnHTML = btn.innerHTML;
-        btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Gönderiliyor...`;
-
-        const { error } = await supabaseClient.from('homeworks').update({ status: 'Tamamlandı', student_note: note }).eq('id', hwId);
-
-        if (error) {
-            showToast("Hata: " + error.message, "error");
-        } else {
-            const { data: prof } = await supabaseClient.from('profiles').select('xp').eq('id', currentStudentId).single();
-            const newXp = (prof.xp || 0) + 50;
-            await supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentStudentId);
-
-            showToast("Harikasın! Ödevin teslim edildi ve +50 XP kazandın!", "success");
-            
-            closeHomeworkModal();
-            fetchMyHomeworks(); 
-            initStudentPortal(); 
-        }
-        btn.innerHTML = originalBtnHTML;
-    });
+        <div class="col-span-full mt-8 mb-1"><h4 class="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Öğretmen Tarafından Onaylananlar</h4></div>
+        ${doneHwHtml || '<div class="col-span-full text-sm text-gray-400 italic">Henüz onaylanan ödevin yok.</div>'}
+    `;
 }
 
 // ==========================================
-// 5. ETKİNLİKLER VE FİLTRELEME
+// 5. ETKİNLİKLER VE SOL MENÜ FİLTRELEME
 // ==========================================
 async function fetchActivities() {
     const { data } = await supabaseClient.from('activities').select('*').order('created_at', { ascending: false });
@@ -296,7 +288,7 @@ async function fetchActivities() {
     
     container.innerHTML = ''; 
     const icons = { 
-        video: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>', 
+        video: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>', 
         game: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>', 
         pdf: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>' 
     };
@@ -317,23 +309,28 @@ async function fetchActivities() {
     });
 }
 
-document.addEventListener('click', (e) => {
-    const filterBtn = e.target.closest('.filter-btn');
-    if (filterBtn) {
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.className = "filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition flex items-center gap-1.5";
-        });
-        filterBtn.className = "filter-btn bg-purple-600 text-white px-5 py-2.5 rounded-xl text-xs font-black whitespace-nowrap shadow-[0_0_15px_rgba(147,51,234,0.4)] transition flex items-center gap-1.5";
+// Sol menüdeki filtrelere tıklanınca çalışacak kod
+document.querySelectorAll('.sidebar-filter-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('activities'); 
         
-        const filter = filterBtn.getAttribute('data-filter');
+        document.querySelectorAll('.sidebar-filter-btn').forEach(b => {
+            b.classList.remove('text-white');
+            b.classList.add('text-indigo-300');
+        });
+        e.currentTarget.classList.remove('text-indigo-300');
+        e.currentTarget.classList.add('text-white');
+
+        const filter = e.currentTarget.getAttribute('data-filter');
         document.querySelectorAll('.activity-card').forEach(card => {
             card.style.display = (filter === 'all' || card.getAttribute('data-category') === filter) ? 'flex' : 'none';
         });
-    }
+    });
 });
 
 // ==========================================
-// 6. SINAV VE ANALİZ MOTORU 
+// 6. SINAV MOTORU VE SONUÇLAR
 // ==========================================
 async function fetchQuizzes() {
     const { data } = await supabaseClient.from('quizzes').select('*').order('created_at', { ascending: false });
@@ -346,7 +343,6 @@ async function fetchQuizzes() {
     }
     
     container.innerHTML = '';
-    
     data.forEach(quiz => {
         container.innerHTML += `
             <div class="bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl hover:border-red-300 dark:hover:border-red-800 transition flex flex-col h-full group">
@@ -357,6 +353,43 @@ async function fetchQuizzes() {
                     <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white flex-1 line-clamp-2 leading-tight group-hover:text-red-600 dark:group-hover:text-red-400 transition">${quiz.title}</h4>
                 </div>
                 <button onclick="startQuiz('${quiz.id}', '${quiz.title.replace(/'/g, "\\'")}')" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-red-500 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-red-500 transition font-black py-3 rounded-xl text-xs uppercase tracking-widest shadow-sm">SINAVA BAŞLA</button>
+            </div>`;
+    });
+}
+
+// 🌟 YENİ AMELİYAT: Öğrencinin geçmiş sonuçlarını çeken fonksiyon 🌟
+async function fetchMyResults() {
+    const { data } = await supabaseClient.from('quiz_results').select('*, quizzes(title)').eq('student_id', currentStudentId).order('created_at', { ascending: false });
+    const container = document.getElementById('myResultsList');
+    if(!container) return;
+
+    if(!data || data.length === 0){
+        container.innerHTML = '<div class="col-span-full bg-white dark:bg-slate-800 p-10 rounded-[30px] text-center text-gray-400 font-bold border-2 border-dashed border-gray-100 dark:border-slate-700">Henüz çözdüğün bir sınav yok.</div>'; 
+        return;
+    }
+    
+    container.innerHTML = '';
+    data.forEach(res => {
+        const dateObj = new Date(res.created_at);
+        const dateStr = dateObj.toLocaleDateString('tr-TR');
+        
+        let scoreColor = 'text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800';
+        if (res.score < 50) scoreColor = 'text-rose-600 bg-rose-50 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800';
+        else if (res.score < 80) scoreColor = 'text-yellow-600 bg-yellow-50 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800';
+
+        container.innerHTML += `
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-4">
+                    <h4 class="text-sm font-black text-gray-800 dark:text-white line-clamp-2 pr-2">${res.quizzes ? res.quizzes.title : 'Silinmiş Sınav'}</h4>
+                    <span class="px-3 py-1 rounded-xl font-black text-lg border ${scoreColor} shrink-0">${res.score}</span>
+                </div>
+                <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
+                    <span class="text-[10px] font-bold uppercase text-gray-400 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        ${dateStr}
+                    </span>
+                    <button onclick='renderAnalysisScreen(${JSON.stringify(res.details).replace(/'/g, "&#39;")}, ${res.score})' class="text-[10px] font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 transition">İncele ↗</button>
+                </div>
             </div>`;
     });
 }
@@ -479,12 +512,12 @@ if(quizFormEl) {
         showToast(`Tebrikler! ${score} Puan ve +${score} XP kazandın!`, "success");
         
         document.getElementById('quizTakingModal').classList.add('hidden');
-        renderAnalysisScreen(examDetails, score);
+        window.renderAnalysisScreen(examDetails, score);
         initStudentPortal(); 
     });
 }
 
-function renderAnalysisScreen(details, score) {
+window.renderAnalysisScreen = function(details, score) {
     document.getElementById('analysisScoreDisplay').innerText = score;
     const container = document.getElementById('analysisDetailsContainer');
     container.innerHTML = '';
@@ -512,7 +545,8 @@ function renderAnalysisScreen(details, score) {
 }
 
 window.closeAnalysisModal = function() {
-    document.getElementById('analysisModal').classList.add('hidden'); switchTab('quizzes');
+    document.getElementById('analysisModal').classList.add('hidden'); 
+    switchTab('quizzes');
 }
 
 // Sistemi Başlat
