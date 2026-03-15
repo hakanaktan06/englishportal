@@ -1448,3 +1448,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // MOTORLARI ATEŞLE
 if (typeof setDynamicMotivations === 'function') setDynamicMotivations();
+
+// MOTORLARI ATEŞLE
+checkTeacherSecurity();
+
