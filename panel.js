@@ -8,6 +8,9 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 // 🌟 YENİ: SİSTEMDEKİ AKTİF ÖĞRETMENİN HAFIZASI 🌟
 let currentTeacherId = null;
 let currentTeacherName = '';
+let isPremiumTeacher = false;
+let currentStudentCount = 0;
+let currentQuizCount = 0;
 
 // ==========================================
 // UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
