@@ -73,13 +73,14 @@ function customConfirm(message, btnText = "Evet, İşlemi Yap") {
 }
 
 // ==========================================
-// GÜVENLİK (FEDAİ) MOTORU VE SÜRE KONTROLÜ
+// GÜVENLİK (FEDAİ) MOTORU VE SPLASH KAPATMA
 // ==========================================
 async function checkTeacherSecurity() {
     try {
         const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
         if (authError || !user) { window.location.href = 'index.html'; return; } 
         
+        // 🌟 is_premium verisini de çekiyoruz
         const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until').eq('id', user.id).single();
         if (profileError || !profile || profile.role !== 'teacher') {
             showToast("Erişim Engellendi! Yönetici yetkiniz yok.", "error");
@@ -106,10 +107,8 @@ async function checkTeacherSecurity() {
         const welcomeNameEl = document.getElementById('welcomeTeacherName');
         if(welcomeNameEl) welcomeNameEl.innerText = currentTeacherName + " Öğretmenim";
 
-
         const agendaNameEl = document.getElementById('agendaTeacherName');
         if(agendaNameEl) agendaNameEl.innerText = currentTeacherName + " Öğretmenim, şimdi kafa dinleme vakti!";
-
 
         switchTab('dashboard'); 
 
@@ -132,7 +131,7 @@ async function checkTeacherSecurity() {
                             modal.classList.remove('opacity-0');
                             box.classList.remove('scale-95');
                         }, 50);
-                        localStorage.setItem('premium_celebrated_' + user.id, 'true'); // Hafızaya yaz
+                        localStorage.setItem('premium_celebrated_' + user.id, 'true'); // Hafızaya yaz ki bir daha göstermesin
                     }
                 }
             }
@@ -154,6 +153,7 @@ window.closePremiumCelebration = function() {
         setTimeout(() => modal.classList.add('hidden'), 500);
     }
 }
+
 
 // ==========================================
 // ÇIKIŞ MOTORU VE MENÜLER
@@ -341,7 +341,6 @@ async function fetchAgenda() {
                 <svg class="w-16 h-16 mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                 <p class="text-sm font-bold text-gray-500">Yaklaşan bir programınız yok.</p>
                 <p id="agendaTeacherName" class="text-xs mt-1">${currentTeacherName} Öğretmenim, şimdi kafa dinleme vakti!</p>
-
             </div>`;
         return;
     }
@@ -775,7 +774,7 @@ async function fetchActivities() {
 }
 
 // ==========================================
-// 6. SINAV MOTORU VE AKILLI SÜRE SEÇİCİ (LİMİTLİ)
+// 6. SINAV MOTORU VE AKILLI SÜRE SEÇİCİ
 // ==========================================
 let currentActiveQuizId = null;
 
@@ -1071,7 +1070,7 @@ window.openTeacherAnalysis = function(resultId) {
 window.closeTeacherAnalysisModal = () => document.getElementById('teacherAnalysisModal').classList.add('hidden');
 
 // ==========================================
-// 9. VIP ÖĞRENCİ PROFİLİ VE PDF KARNE MOTORU (LİMİTLİ)
+// 9. VIP ÖĞRENCİ PROFİLİ VE PDF KARNE MOTORU
 // ==========================================
 window.openStudentProfile = async function(id, name, phone) {
     document.getElementById('profStudentId').value = id;
