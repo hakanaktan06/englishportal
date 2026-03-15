@@ -104,7 +104,8 @@ async function checkTeacherSecurity() {
         }
 
         const welcomeNameEl = document.getElementById('welcomeTeacherName');
-        if(welcomeNameEl) welcomeNameEl.innerText = currentTeacherName + " Hocam";
+        if(welcomeNameEl) welcomeNameEl.innerText = currentTeacherName + " Öğretmenim";
+
 
         const agendaNameEl = document.getElementById('agendaTeacherName');
         if(agendaNameEl) agendaNameEl.innerText = currentTeacherName + " Hocam, şimdi kafa dinleme vakti!";
