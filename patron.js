@@ -6,6 +6,23 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 // ==========================================
+// MOBİL MENÜ KONTROLÜ
+// ==========================================
+const sidebarMain = document.getElementById('mainSidebar');
+const sideOverlay = document.getElementById('sidebarOverlay');
+const sideOpenBtn = document.getElementById('openSidebarBtn');
+const sideCloseBtn = document.getElementById('closeSidebarBtn');
+
+function toggleMobileSidebar() {
+    if(sidebarMain) sidebarMain.classList.toggle('-translate-x-full');
+    if(sideOverlay) sideOverlay.classList.toggle('hidden');
+}
+
+if(sideOpenBtn) sideOpenBtn.addEventListener('click', toggleMobileSidebar);
+if(sideCloseBtn) sideCloseBtn.addEventListener('click', toggleMobileSidebar);
+if(sideOverlay) sideOverlay.addEventListener('click', toggleMobileSidebar);
+
+// ==========================================
 // UI ULTRA: ŞIK BİLDİRİM MOTORU
 // ==========================================
 function showToast(message, type = 'success') {
@@ -84,18 +101,18 @@ async function fetchSystemData() {
             : `<span class="bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1 rounded-lg text-[10px] font-black tracking-widest uppercase">FREEMIUM</span>`;
 
         const actionBtn = isPremium
-            ? `<button onclick="togglePremium('${teacher.id}', false)" class="text-xs bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/30 px-4 py-2 rounded-xl font-bold transition">Yetkiyi Al</button>`
-            : `<button onclick="togglePremium('${teacher.id}', true)" class="text-xs bg-amber-500 hover:bg-amber-400 text-black px-4 py-2 rounded-xl font-black shadow-[0_0_15px_rgba(245,158,11,0.3)] transition transform active:scale-95 flex items-center gap-1 ml-auto">PREMİUM YAP <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></button>`;
+            ? `<button onclick="togglePremium('${teacher.id}', false)" class="text-[10px] md:text-xs bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/30 px-3 md:px-4 py-2 rounded-xl font-bold transition">Yetkiyi Al</button>`
+            : `<button onclick="togglePremium('${teacher.id}', true)" class="text-[10px] md:text-xs bg-amber-500 hover:bg-amber-400 text-black px-3 md:px-4 py-2 rounded-xl font-black shadow-[0_0_15px_rgba(245,158,11,0.3)] transition transform active:scale-95 flex items-center gap-1 ml-auto">PREMİUM YAP <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></button>`;
 
         tbody.innerHTML += `
             <tr class="hover:bg-slate-800/50 transition">
-                <td class="p-4">
-                    <p class="text-sm font-black text-white">${teacher.full_name}</p>
+                <td class="p-3 md:p-4">
+                    <p class="text-sm md:text-base font-black text-white">${teacher.full_name}</p>
                 </td>
-                <td class="p-4 text-center text-sm font-bold text-blue-400">${studentCount}</td>
-                <td class="p-4 text-xs font-medium text-slate-400">${regDate}</td>
-                <td class="p-4 text-center">${statusBadge}</td>
-                <td class="p-4 text-right">${actionBtn}</td>
+                <td class="p-3 md:p-4 text-center text-sm font-bold text-blue-400">${studentCount}</td>
+                <td class="p-3 md:p-4 text-[10px] md:text-xs font-medium text-slate-400">${regDate}</td>
+                <td class="p-3 md:p-4 text-center">${statusBadge}</td>
+                <td class="p-3 md:p-4 text-right">${actionBtn}</td>
             </tr>`;
     });
 }
