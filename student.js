@@ -9,6 +9,7 @@ let currentStudentId = null;
 let currentQuizQuestions = []; 
 let activeTakingQuizId = null;
 let quizTimerInterval = null; 
+let currentRecognition = null; // YENİ SATIR
 
 document.querySelector('main')?.addEventListener('touchstart', function() {}, {passive: true});
 
