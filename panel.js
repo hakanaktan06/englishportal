@@ -1099,8 +1099,13 @@ window.openStudentProfile = async function(id, name, phone) {
     
     document.getElementById('lessonDate').value = new Date().toISOString().split('T')[0]; 
 
+    // 🚀 PERFORMANS FİX: Modalı anında göster! (Telefonun kasmasını engeller)
     document.getElementById('studentProfileModal').classList.remove('hidden');
-    fetchStudentLessons(id);
+
+    // 🚀 PERFORMANS FİX: Ağır grafik ve veri çekme işlemlerini 100ms ertele (İşlemciye nefes aldır)
+    setTimeout(() => {
+        fetchStudentLessons(id);
+    }, 100);
 }
 
 const newLessonForm = document.getElementById('newLessonForm');
@@ -1202,19 +1207,22 @@ async function fetchStudentLessons(studentId) {
         });
     }
 
-    const chartConfig = (isPdf) => ({
-        type: 'line',
-        data: { labels: labels, datasets: [{ label: 'Sınav Puanı', data: scores, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', borderWidth: 3, tension: 0.4, fill: true, pointRadius: 5 }] },
-        options: { responsive: true, maintainAspectRatio: false, animation: isPdf ? false : { duration: 1000 }, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
-    });
+    // 🚀 PERFORMANS FİX: Grafikleri çizmeyi ayrı bir sıraya alıyoruz ki arayüz donmasın!
+    setTimeout(() => {
+        const chartConfig = (isPdf) => ({
+            type: 'line',
+            data: { labels: labels, datasets: [{ label: 'Sınav Puanı', data: scores, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', borderWidth: 3, tension: 0.4, fill: true, pointRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: false, animation: isPdf ? false : { duration: 1000 }, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
+        });
 
-    if(profileChartInstance) profileChartInstance.destroy();
-    if(pdfChartInstance) pdfChartInstance.destroy();
+        if(profileChartInstance) profileChartInstance.destroy();
+        if(pdfChartInstance) pdfChartInstance.destroy();
 
-    const ctxProf = document.getElementById('profileChart');
-    const ctxPdf = document.getElementById('pdfChart');
-    if(ctxProf) profileChartInstance = new Chart(ctxProf.getContext('2d'), chartConfig(false));
-    if(ctxPdf) pdfChartInstance = new Chart(ctxPdf.getContext('2d'), chartConfig(true));
+        const ctxProf = document.getElementById('profileChart');
+        const ctxPdf = document.getElementById('pdfChart');
+        if(ctxProf) profileChartInstance = new Chart(ctxProf.getContext('2d'), chartConfig(false));
+        if(ctxPdf) pdfChartInstance = new Chart(ctxPdf.getContext('2d'), chartConfig(true));
+    }, 50);
 }
 
 window.deleteLesson = async function(id) {
@@ -1297,6 +1305,7 @@ window.sendWhatsAppReport = function() {
     window.open(whatsappUrl, '_blank');
     showToast("Veli sohbeti açılıyor...", "success");
 }
+
 
 // ==========================================
 // 10. DİNAMİK KARŞILAMA MESAJI MOTORU
