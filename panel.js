@@ -1207,12 +1207,13 @@ async function fetchStudentLessons(studentId) {
         });
     }
 
-    // 🚀 PERFORMANS FİX: Grafikleri çizmeyi ayrı bir sıraya alıyoruz ki arayüz donmasın!
+        // 🚀 PERFORMANS FİX: Grafikleri çizmeyi ayrı bir sıraya alıyoruz ki arayüz donmasın!
     setTimeout(() => {
         const chartConfig = (isPdf) => ({
             type: 'line',
             data: { labels: labels, datasets: [{ label: 'Sınav Puanı', data: scores, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', borderWidth: 3, tension: 0.4, fill: true, pointRadius: 5 }] },
-            options: { responsive: true, maintainAspectRatio: false, animation: isPdf ? false : { duration: 1000 }, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
+            // VURUCU NOKTA BURASI: PDF grafiği görünmez olduğu için responsive: false olmak ZORUNDA!
+            options: { responsive: isPdf ? false : true, maintainAspectRatio: false, animation: isPdf ? false : { duration: 1000 }, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
         });
 
         if(profileChartInstance) profileChartInstance.destroy();
@@ -1224,6 +1225,7 @@ async function fetchStudentLessons(studentId) {
         if(ctxPdf) pdfChartInstance = new Chart(ctxPdf.getContext('2d'), chartConfig(true));
     }, 50);
 }
+
 
 window.deleteLesson = async function(id) {
     if (!await customConfirm("Ders kaydını silmek istediğine emin misin?", "Evet, Sil")) return;
