@@ -1653,7 +1653,7 @@ if (btnGenerateFlashcards) {
                     messages: [
                         { 
                             role: 'system', 
-                            content: `Sen bir İngilizce öğretmenisin. Verilen konuyla ilgili tam ${count} adet İngilizce kelime ve Türkçe çevirisini üret. Çıktıyı SADECE JSON formatında dizi olarak ver. Format: [{"en":"Apple", "tr":"Elma"}, {"en":"Run", "tr":"Koşmak"}]` 
+                            content: `Sen bir İngilizce öğretmenisin. Verilen konuyla ilgili tam ${count} adet İngilizce kelime, Türkçe çevirisi ve IPA fonetik yazılışını üret. Çıktıyı SADECE JSON formatında dizi olarak ver. IPA yazılışı kısa ve basit olsun, slash olmadan yaz. Format: [{"en":"Apple", "tr":"Elma", "ph":"ˈæp.əl"}, {"en":"Run", "tr":"Koşmak", "ph":"rʌn"}]` 
                         },
                         { role: 'user', content: `Konu: ${topic}` }
                     ], 
