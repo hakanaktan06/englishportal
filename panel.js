@@ -1207,13 +1207,18 @@ async function fetchStudentLessons(studentId) {
         });
     }
 
-        // 🚀 PERFORMANS FİX: Grafikleri çizmeyi ayrı bir sıraya alıyoruz ki arayüz donmasın!
+            // 🚀 PERFORMANS FİX: Animasyonları kapat ve PDF grafiğinde esnemeyi durdur!
     setTimeout(() => {
         const chartConfig = (isPdf) => ({
             type: 'line',
             data: { labels: labels, datasets: [{ label: 'Sınav Puanı', data: scores, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', borderWidth: 3, tension: 0.4, fill: true, pointRadius: 5 }] },
-            // VURUCU NOKTA BURASI: PDF grafiği görünmez olduğu için responsive: false olmak ZORUNDA!
-            options: { responsive: isPdf ? false : true, maintainAspectRatio: false, animation: isPdf ? false : { duration: 1000 }, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
+            options: { 
+                responsive: isPdf ? false : true, // PDF İÇİN ESNEMEYİ YASAKLADIK!
+                maintainAspectRatio: false, 
+                animation: false, // TELEFONU KASAN ANİMASYONU KOMPLE KAPATTIK!
+                scales: { y: { beginAtZero: true, max: 100 } }, 
+                plugins: { legend: { display: false } } 
+            }
         });
 
         if(profileChartInstance) profileChartInstance.destroy();
@@ -1224,6 +1229,7 @@ async function fetchStudentLessons(studentId) {
         if(ctxProf) profileChartInstance = new Chart(ctxProf.getContext('2d'), chartConfig(false));
         if(ctxPdf) pdfChartInstance = new Chart(ctxPdf.getContext('2d'), chartConfig(true));
     }, 50);
+
 }
 
 
