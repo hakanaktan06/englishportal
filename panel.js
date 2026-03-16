@@ -1,4 +1,4 @@
- // ==========================================
+  // ==========================================
 // 1. SUPABASE BAĞLANTISI (Sistem Anahtarı)
 // ==========================================
 const supabaseUrl = 'https://vucpxabicxqfmmmqvkpv.supabase.co';
