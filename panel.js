@@ -1434,11 +1434,11 @@ if (btnGenerateAI) {
         if (qCount > 20) qCount = 20; // Otomatik 20'ye sabitledik
 
 
-        let apiKey = localStorage.getItem('openai_api_key');
+        let apiKey = sessionStorage.getItem('openai_api_key');
         if (!apiKey) {
             apiKey = prompt("Lütfen OpenAI API Şifrenizi (sk-...) girin:\n\n(Sadece sizin cihazınızda kalır, güvendedir.)");
             if (!apiKey) { showToast('İşlem iptal edildi.', 'error'); return; }
-            localStorage.setItem('openai_api_key', apiKey.trim());
+            sessionStorage.setItem('openai_api_key', apiKey.trim());
         }
 
         const originalText = btnGenerateAI.innerHTML;
@@ -1470,7 +1470,7 @@ if (btnGenerateAI) {
             if (data.error) {
                 console.error("OpenAI Hatası:", data.error);
                 showToast('API Hatası! Şifreniz yanlış veya krediniz bitmiş.', 'error');
-                if(data.error.code === 'invalid_api_key') localStorage.removeItem('openai_api_key');
+                if(data.error.code === 'invalid_api_key') sessionStorage.removeItem('openai_api_key');
                 btnGenerateAI.innerHTML = originalText;
                 btnGenerateAI.disabled = false;
                 return;
