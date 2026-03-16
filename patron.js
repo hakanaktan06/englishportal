@@ -272,3 +272,50 @@ document.getElementById('savePriceBtn').addEventListener('click', async () => {
     if(error) showToast("Hata: " + error.message, "error");
     else showToast("Fiyatlar başarıyla güncellendi! 💸", "success");
 });
+
+
+// ==========================================
+// YAPAY ZEKA API KEY YÖNETİM MOTORU
+// ==========================================
+async function loadApiKey() {
+    const { data, error } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
+    if (data && data.openai_key) {
+        document.getElementById('godApiKey').value = data.openai_key;
+    }
+}
+loadApiKey();
+
+window.toggleApiKeyVisibility = function() {
+    const input = document.getElementById('godApiKey');
+    if (input.type === 'password') {
+        input.type = 'text';
+    } else {
+        input.type = 'password';
+    }
+};
+
+const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+if (saveApiKeyBtn) {
+    saveApiKeyBtn.addEventListener('click', async () => {
+        const key = document.getElementById('godApiKey').value.trim();
+        
+        if(!key || !key.startsWith('sk-')) { 
+            showToast("Lütfen 'sk-' ile başlayan geçerli bir OpenAI şifresi girin!", "error"); 
+            return; 
+        }
+        
+        showToast("Şifre sisteme gömülüyor...", "info");
+        
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+
+        const { error } = await supabaseClient.from('profiles').update({ openai_key: key }).eq('id', user.id);
+        
+        if(error) {
+            showToast("Kaydetme Hatası: " + error.message, "error");
+        } else {
+            showToast("Yapay Zeka Motoru Aktif! Şifre başarıyla kaydedildi. 🚀", "success");
+        }
+    });
+}
+
