@@ -671,15 +671,22 @@ async function fetchHomeworks() {
     const pending = validData.filter(h => h.status !== 'Tamamlandı');
     const completed = validData.filter(h => h.status === 'Tamamlandı');
 
-    if (pending.length === 0) {
+        if (pending.length === 0) {
         tbodyPending.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-400 dark:text-gray-500 italic text-sm">Bekleyen ödev bulunmuyor.</td></tr>';
     } else {
         pending.forEach(hw => {
             const date = new Date(hw.due_date).toLocaleDateString('tr-TR');
+            
+            // GİZLİ KOD TEMİZLEME VE ROZET EKLEME
+            let displayTitle = hw.title;
+            if(displayTitle.includes('[KELİME_KARTI]')) {
+                displayTitle = `<span class="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded text-[10px] font-black mr-2 uppercase tracking-widest border border-purple-200 dark:border-purple-800">TELAFFUZ</span> ` + displayTitle.replace('[KELİME_KARTI]', '').trim();
+            }
+
             tbodyPending.innerHTML += `
                 <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-gray-50/50 dark:hover:bg-slate-800 transition">
                     <td class="p-4 font-bold text-gray-800 dark:text-white text-sm">${hw.profiles ? hw.profiles.full_name : 'Bilinmeyen'}</td>
-                    <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title}">${hw.title}</td>
+                    <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title.replace('[KELİME_KARTI] ', '')}">${displayTitle}</td>
                     <td class="p-4 text-amber-600 dark:text-amber-400 font-bold text-xs">${date}</td>
                     <td class="p-4 text-right flex items-center justify-end gap-2">
                         <button onclick="approveHomework('${hw.id}', '${hw.student_id}')" class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white p-2.5 rounded-xl transition shadow-sm border border-emerald-100 dark:border-emerald-800" title="Ödevi Onayla ve +50 XP Ver">
@@ -698,10 +705,17 @@ async function fetchHomeworks() {
     } else {
         completed.forEach(hw => {
             const date = new Date(hw.due_date).toLocaleDateString('tr-TR');
+            
+            // GİZLİ KOD TEMİZLEME VE ROZET EKLEME
+            let displayTitle = hw.title;
+            if(displayTitle.includes('[KELİME_KARTI]')) {
+                displayTitle = `<span class="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded text-[10px] font-black mr-2 uppercase tracking-widest border border-purple-200 dark:border-purple-800">TELAFFUZ</span> ` + displayTitle.replace('[KELİME_KARTI]', '').trim();
+            }
+
             tbodyCompleted.innerHTML += `
                 <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-gray-50/50 dark:hover:bg-slate-800 transition">
                     <td class="p-4 font-bold text-gray-800 dark:text-white text-sm">${hw.profiles ? hw.profiles.full_name : 'Bilinmeyen'}</td>
-                    <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title}">${hw.title}</td>
+                    <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title.replace('[KELİME_KARTI] ', '')}">${displayTitle}</td>
                     <td class="p-4 text-emerald-600 dark:text-emerald-400 font-bold text-xs">${date}</td>
                     <td class="p-4 text-right flex items-center justify-end gap-2">
                         <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-200 dark:border-emerald-700">ONAYLI</span>
@@ -712,7 +726,7 @@ async function fetchHomeworks() {
                 </tr>`;
         });
     }
-}
+
 
 window.approveHomework = async function(hwId, studentId) {
     const onay = await customConfirm("Ödevi onaylayıp öğrenciye +50 XP kazandırmak istediğinize emin misiniz?", "Evet, Onayla");
