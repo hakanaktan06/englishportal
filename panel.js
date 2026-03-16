@@ -1666,6 +1666,57 @@ if (btnGenerateFlashcards) {
     });
 }
 
+const btnAssignFlashcards = document.getElementById('btnAssignFlashcards');
+if (btnAssignFlashcards) {
+    btnAssignFlashcards.addEventListener('click', async () => {
+        const studentId = document.getElementById('fcStudentSelect').value;
+        const topic = document.getElementById('fcTopic').value.trim();
+
+        if (!studentId) { showToast('Bir öğrenci seçmelisin!', 'error'); return; }
+        if (generatedFlashcards.length === 0) { showToast('Önce kelime üretmelisin!', 'error'); return; }
+
+        btnAssignFlashcards.innerText = "Gönderiliyor...";
+        
+        // Zekice taktik: Ödev başlığına gizli kod ekliyoruz. 
+        const taskTitle = `[KELİME_KARTI] ${topic}`;
+        const taskData = JSON.stringify(generatedFlashcards);
+
+        // Gelecek ayın tarihini verelim süre dolmasın
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 30); 
+        const dueDateStr = dueDate.toISOString().split('T')[0];
+
+        let inserts = [];
+        if (studentId === 'all') {
+            // Sınıftaki herkese ata
+            const { data: allStudents } = await supabaseClient.from('profiles').select('id').eq('role', 'student').eq('teacher_id', currentTeacherId);
+            inserts = allStudents.map(s => ({
+                student_id: s.id, title: taskTitle, description: taskData, due_date: dueDateStr, status: 'Bekliyor', teacher_id: currentTeacherId
+            }));
+        } else {
+            // Tek öğrenciye ata
+            inserts = [{
+                student_id: studentId, title: taskTitle, description: taskData, due_date: dueDateStr, status: 'Bekliyor', teacher_id: currentTeacherId
+            }];
+        }
+
+        const { error } = await supabaseClient.from('homeworks').insert(inserts);
+
+        if (error) { showToast("Atama hatası!", "error"); } 
+        else { 
+            showToast("Kelime Kartları öğrenciye başarıyla gönderildi! 🚀", "success"); 
+            document.getElementById('aiFlashcardModal').classList.add('hidden');
+            document.getElementById('fcPreviewContainer').classList.add('hidden');
+            document.getElementById('fcTopic').value = '';
+            fetchHomeworks(); // Tabloyu güncelle
+        }
+        btnAssignFlashcards.innerText = "GÖREVİ GÖNDER";
+    });
+}
+
+// MOTORLARI ATEŞLE
+if (typeof setDynamicMotivations === 'function') setDynamicMotivations();
+checkTeacherSecurity();
 
 
 // MOTORLARI ATEŞLE
