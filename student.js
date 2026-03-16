@@ -583,7 +583,7 @@ window.closeAnalysisModal = function() {
 
 
 // ==========================================
-// 7. 3D KELİME KARTI VE TELAFFUZ MOTORU
+// 7. 3D KELİME KARTI VE TELAFFUZ MOTORU (GÖRSEL VE GEÇİŞ FİX)
 // ==========================================
 let currentFcWords = [];
 let currentFcIndex = 0;
@@ -593,22 +593,15 @@ let currentRecognition = null;
 
 window.startFlashcardTask = function(taskId, dataStr, title) {
     currentFcTaskId = taskId;
-    
     const rawData = dataStr.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-    try {
-        currentFcWords = JSON.parse(rawData);
-    } catch(e) {
-        showToast("Kelime verisi okunamadı!", "error");
-        return;
-    }
+    try { currentFcWords = JSON.parse(rawData); } 
+    catch(e) { showToast("Kelime verisi okunamadı!", "error"); return; }
 
     if(currentFcWords.length === 0) return;
-
     currentFcIndex = 0;
     document.getElementById('fcModalTitle').innerText = title.replace('[KELİME_KARTI]', '').trim();
     document.getElementById('flashcardModal').classList.remove('hidden');
-    
-    updateFlashcardUI();
+    window.updateFlashcardUI();
 }
 
 window.closeFlashcardModal = function() {
@@ -618,72 +611,78 @@ window.closeFlashcardModal = function() {
 window.flipCard = function() {
     const card = document.getElementById('fcInner');
     isCardFlipped = !isCardFlipped;
-    if (isCardFlipped) {
-        card.classList.add('rotate-y-180');
-    } else {
-        card.classList.remove('rotate-y-180');
+    if (isCardFlipped) card.classList.add('rotate-y-180');
+    else card.classList.remove('rotate-y-180');
+}
+
+// 🌟 GÖRSEL VE ARAYÜZ GÜNCELLEME (ÇÖKMEYE KARŞI ZIRHLI) 🌟
+window.updateFlashcardUI = function() {
+    try {
+        if (currentRecognition) {
+            try { currentRecognition.abort(); } catch(e) {}
+            currentRecognition = null;
+        }
+
+        const word = currentFcWords[currentFcIndex];
+        document.getElementById('fcWordTr').innerText = word.tr;
+        document.getElementById('fcWordEn').innerText = word.en;
+
+        const phEl = document.getElementById('fcWordPh');
+        if (phEl) {
+            phEl.innerText = word.ph ? `/${word.ph}/` : '';
+            phEl.style.display = word.ph ? 'block' : 'none';
+        }
+
+        // 🌟 YAPAY ZEKA GÖRSEL MOTORU (UNSPLASH YERİNE POLLINATIONS AI) 🌟
+        const imgEl = document.getElementById('fcWordImage');
+        if (imgEl) {
+            imgEl.style.opacity = '0';
+            // Kelimeyi yapay zekaya verip anında resmini çizdiriyoruz
+            imgEl.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(word.en + ' object')}?width=600&height=800&nologo=true`;
+            imgEl.onload = () => { imgEl.style.opacity = '0.4'; };
+            imgEl.onerror = () => { imgEl.style.opacity = '0'; }; // Hata verse bile sistemi kitlemez
+        }
+
+        document.getElementById('fcProgress').innerText = `Kelime ${currentFcIndex + 1} / ${currentFcWords.length}`;
+        isCardFlipped = false;
+        document.getElementById('fcInner').classList.remove('rotate-y-180');
+
+        const micStatus = document.getElementById('micStatus');
+        const micIcon = document.getElementById('micIcon');
+        const ripple = document.getElementById('micRipple');
+        
+        if (micStatus) {
+            micStatus.innerText = "Mikrofona Dokun ve Oku";
+            micStatus.className = "text-xs text-white font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm";
+        }
+        if (micIcon) micIcon.className = "w-10 h-10 text-purple-600 transition-colors";
+        if (ripple) ripple.classList.remove('animate-ping', 'opacity-100');
+
+        if (currentFcIndex === currentFcWords.length - 1) {
+            document.getElementById('btnFinishFlashcard').classList.remove('hidden');
+        } else {
+            document.getElementById('btnFinishFlashcard').classList.add('hidden');
+        }
+    } catch (err) {
+        console.error("UI Güncelleme Hatası:", err);
     }
 }
 
-function updateFlashcardUI() {
-    if (currentRecognition) {
-        try { currentRecognition.abort(); } catch(e) {}
-        currentRecognition = null;
-    }
-
-    const word = currentFcWords[currentFcIndex];
-    document.getElementById('fcWordTr').innerText = word.tr;
-    document.getElementById('fcWordEn').innerText = word.en;
-
-    const phEl = document.getElementById('fcWordPh');
-    if (phEl) {
-        phEl.innerText = word.ph ? `/${word.ph}/` : '';
-        phEl.style.display = word.ph ? 'block' : 'none';
-    }
-
-    // 🌟 UNSPLASH GÖRSEL ÇEKME MOTORU (GÜVENLİ) 🌟
-    const imgEl = document.getElementById('fcWordImage');
-    if (imgEl) {
-        // Görsel yüklenene kadar opaklığı sıfırla, yüklenince göster
-        imgEl.style.opacity = '0';
-        imgEl.src = `https://source.unsplash.com/600x800/?${encodeURIComponent(word.en)}`;
-        imgEl.onload = () => { imgEl.style.opacity = '0.3'; };
-        imgEl.onerror = () => { imgEl.style.opacity = '0'; }; // Hata verirse görseli sakla ama sistemi çökertme
-    }
-
-    document.getElementById('fcProgress').innerText = `Kelime ${currentFcIndex + 1} / ${currentFcWords.length}`;
-    isCardFlipped = false;
-    document.getElementById('fcInner').classList.remove('rotate-y-180');
-
-    const micStatus = document.getElementById('micStatus');
-    const micIcon = document.getElementById('micIcon');
-    const ripple = document.getElementById('micRipple');
-    
-    if (micStatus) {
-        micStatus.innerText = "Mikrofona Dokun ve Oku";
-        micStatus.className = "text-xs text-white font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm";
-    }
-    if (micIcon) micIcon.className = "w-10 h-10 text-purple-600 transition-colors";
-    if (ripple) ripple.classList.remove('animate-ping', 'opacity-100');
-
-    if (currentFcIndex === currentFcWords.length - 1) {
-        document.getElementById('btnFinishFlashcard').classList.remove('hidden');
-    } else {
-        document.getElementById('btnFinishFlashcard').classList.add('hidden');
+window.nextCard = function() {
+    if (currentFcIndex < currentFcWords.length - 1) {
+        currentFcIndex++;
+        window.updateFlashcardUI();
     }
 }
 
+window.prevCard = function() {
+    if (currentFcIndex > 0) {
+        currentFcIndex--;
+        window.updateFlashcardUI();
+    }
+}
 
-
-// ==========================================
-// 🔧 TELAFFUZ MOTORU — TAM DÜZELTME
-// Ana sorun: onspeechend → stop() çağırıyordu ama onresult henüz tetiklenmemişti.
-// Çözüm: onspeechend kaldırıldı. onend + resultReceived flag sistemi kuruldu.
-// ==========================================
-// 🎙️ WHISPER TABANLI TELAFFUZ MOTORU
-// Web Speech API yerine OpenAI Whisper kullanıyor.
-// Her seferinde fresh MediaRecorder açılıyor — mobilde sorunsuz çalışır.
-// ==========================================
+// 🌟 ANDROID MİKROFON VE OTOMATİK GEÇİŞ MOTORU 🌟
 window.startListening = async function() {
     const micStatus = document.getElementById('micStatus');
     const micIcon = document.getElementById('micIcon');
@@ -695,29 +694,22 @@ window.startListening = async function() {
 
     function resetMicUI(msg, isError = true) {
         micStatus.innerText = msg;
-        micStatus.className = `text-xs font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm ${isError ? 'text-rose-300' : 'text-emerald-300'}`;
+        micStatus.className = `text-xs font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm ${isError ? 'text-rose-300' : 'text-emerald-300'}`;
         micIcon.className = "w-10 h-10 text-purple-600 transition-colors";
         ripple.classList.remove('animate-ping', 'opacity-100');
     }
 
-    // 🌟 ANDROID FIX: MİKROFON İZNİNİ EN BAŞTA İSTİYORUZ (Zaman kaybı olmadan) 🌟
     let stream;
     try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch(err) {
-        if (err.name === 'NotAllowedError') {
-            showToast("Mikrofon izni reddedildi! Lütfen tarayıcı ayarlarından izin verin.", "error");
-            resetMicUI("Mikrofon İzni Reddedildi");
-        } else {
-            resetMicUI("Mikrofon açılamadı, tekrar dene.");
-        }
+        resetMicUI("Mikrofon İzni Reddedildi Veya Açılamadı");
         return;
     }
 
     micStatus.innerText = "Sisteme Bağlanıyor...";
     micStatus.className = "text-xs text-indigo-200 font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm animate-pulse";
     
-    // 🌟 PATRON KASASINDAN GİZLİCE API KEY ÇEKME 🌟
     const { data: godProfile, error: godErr } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
     if (godErr || !godProfile || !godProfile.openai_key) {
         stream.getTracks().forEach(t => t.stop());
@@ -781,7 +773,7 @@ window.startListening = async function() {
             };
             if (homophones[targetWord]?.includes(spoken)) isMatch = true;
 
-                        if (isMatch) {
+            if (isMatch) {
                 micStatus.innerText = "HARİKA! DOĞRU TELAFFUZ! 🎉";
                 micStatus.className = "text-xs text-emerald-300 font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm";
                 micIcon.className = "w-10 h-10 text-emerald-400 transition-colors";
@@ -790,19 +782,18 @@ window.startListening = async function() {
                 audio.volume = 0.5;
                 audio.play().catch(() => {});
 
-                // 🌟 SONRAKİ KARTA GEÇİŞ FİX'İ 🌟
+                // 🌟 GEÇİŞ KİLİDİNİ ÇÖZEN YER 🌟
                 setTimeout(() => {
                     if (currentFcIndex < currentFcWords.length - 1) {
-                        nextCard(); // Sıradaki karta geç
+                        window.nextCard(); 
                     } else {
                         micStatus.innerText = "TÜM KELİMELER TAMAM! 🏆";
                         micStatus.className = "text-xs text-amber-400 font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm";
-                        document.getElementById('btnFinishFlashcard').classList.remove('hidden'); // Görevi bitir butonunu aç
+                        document.getElementById('btnFinishFlashcard').classList.remove('hidden');
                     }
                 }, 1500);
 
             } else {
-             
                 const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3');
                 audio.volume = 0.3;
                 audio.play().catch(() => {});
@@ -825,8 +816,6 @@ window.startListening = async function() {
     }, 3000);
 }
 
-
-
 window.finishFlashcardTask = async function() {
     const onay = await customConfirm("Kelime pratiğini tamamladın mı?", "Evet, Bitir");
     if (!onay) return;
@@ -843,9 +832,10 @@ window.finishFlashcardTask = async function() {
     }
 
     showToast("Tebrikler! +50 XP kazandın!", "success");
-    closeFlashcardModal();
+    window.closeFlashcardModal();
     initStudentPortal();
 }
+
 
 // Sistemi Başlat
 initStudentPortal();
