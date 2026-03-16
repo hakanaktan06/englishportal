@@ -227,7 +227,7 @@ document.getElementById('btn-quizzes')?.addEventListener('click', (e) => { e.pre
 document.getElementById('btn-results')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('results'); });
 
 // ==========================================
-// 4. ÖDEVLER (SADECE LİSTELEME, BUTON YOK)
+// 4. ÖDEVLER (SADECE LİSTELEME)
 // ==========================================
 async function fetchMyHomeworks() {
     const { data } = await supabaseClient.from('homeworks').select('*').eq('student_id', currentStudentId).order('due_date', { ascending: true });
@@ -242,7 +242,7 @@ async function fetchMyHomeworks() {
     let newHwHtml = '';
     let doneHwHtml = '';
 
-        data.forEach(hw => {
+    data.forEach(hw => {
         const dueDate = new Date(hw.due_date).toLocaleDateString('tr-TR');
         const isCompleted = hw.status === 'Tamamlandı';
         
@@ -254,7 +254,6 @@ async function fetchMyHomeworks() {
         if (hw.title.includes('[KELİME_KARTI]')) {
             isFlashcard = true;
             cardTitle = hw.title.replace('[KELİME_KARTI]', '🚀 Telaffuz Görevi:');
-            // Tırnak hatalarını önlemek için HTML entity kullanıyoruz
             flashcardDataStr = hw.description.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
         }
 
@@ -269,13 +268,13 @@ async function fetchMyHomeworks() {
                     : `<p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl leading-relaxed font-medium border border-gray-100 dark:border-slate-700/50">${hw.description}</p>`
                 }
 
-                <div class="flex justify-between items-center mt-auto">
+                <div class="flex justify-between items-center mt-auto border-t border-gray-50 dark:border-slate-700 pt-4">
                     <span class="text-[10px] font-black uppercase text-gray-400 flex items-center gap-1 bg-gray-50 dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-slate-600"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Son: ${dueDate}</span>
                     
                     ${isCompleted 
                         ? '<span class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ONAYLANDI</span>' 
                         : (isFlashcard 
-                            ? `<button onclick="startFlashcardTask('${hw.id}', '${flashcardDataStr}', '${hw.title.replace(/'/g, "\\'")}')" class="text-[10px] font-black text-white bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 px-4 py-2 rounded-lg shadow-md transform active:scale-95 transition flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> PRATİĞE BAŞLA</button>`
+                            ? `<button onclick="startFlashcardTask('${hw.id}', '${flashcardDataStr}', '${hw.title.replace(/'/g, "\\'")}')" class="text-[10px] font-black text-white bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 px-4 py-2 rounded-lg shadow-md transform active:scale-95 transition flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> BAŞLA</button>`
                             : '<span class="text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> BEKLİYOR</span>'
                         )
                     }
@@ -286,15 +285,15 @@ async function fetchMyHomeworks() {
         else newHwHtml += card;
     });
 
-
     container.innerHTML = `
         <div class="col-span-full mb-1"><h4 class="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Yeni / Bekleyen Ödevler</h4></div>
         ${newHwHtml || '<div class="col-span-full text-sm text-gray-400 italic mb-6">Bekleyen ödevin yok, harikasın!</div>'}
         
-        <div class="col-span-full mt-8 mb-1"><h4 class="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Öğretmen Tarafından Onaylananlar</h4></div>
+        <div class="col-span-full mt-8 mb-1"><h4 class="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Onaylananlar</h4></div>
         ${doneHwHtml || '<div class="col-span-full text-sm text-gray-400 italic">Henüz onaylanan ödevin yok.</div>'}
     `;
 }
+
 
 // ==========================================
 // 5. ETKİNLİKLER VE SOL MENÜ FİLTRELEME
