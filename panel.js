@@ -1555,6 +1555,19 @@ window.closePaywall = function() {
     }
 }
 
+// ==========================================
+// 17. DİNAMİK FİYAT ÇEKME MOTORU
+// ==========================================
+async function fetchGodVipPrice() {
+    const { data } = await supabaseClient.from('profiles').select('vip_price').eq('role', 'god').single();
+    const priceEl = document.getElementById('displayVipPrice');
+    if (priceEl) {
+        priceEl.innerText = (data && data.vip_price) ? data.vip_price : 'İletişime Geçin';
+    }
+}
+fetchGodVipPrice(); // Sayfa yüklendiğinde fiyatı vitrine as
+
+
 // MOTORLARI ATEŞLE
 if (typeof setDynamicMotivations === 'function') setDynamicMotivations();
 checkTeacherSecurity();
