@@ -672,75 +672,111 @@ window.prevCard = function() {
     }
 }
 
-// YZ SES TANIMA (WEB SPEECH API)
+// YZ SES TANIMA (WEB SPEECH API) - GÜÇLENDİRİLMİŞ SÜRÜM
 window.startListening = function() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-        showToast("Tarayıcınız ses tanımayı desteklemiyor. Chrome veya Safari kullanın.", "error");
+        showToast("Tarayıcınız ses tanımayı desteklemiyor.", "error");
         return;
     }
 
-    // Hedef kelimeyi (İngilizcesini) al, küçük harfe çevirip noktalama işaretlerini atalım
-    const targetWord = currentFcWords[currentFcIndex].en.toLowerCase().replace(/[^\w\s]/gi, '').trim();
+    const targetWordOriginal = currentFcWords[currentFcIndex].en;
+    const targetWord = targetWordOriginal.toLowerCase().replace(/[^\w\s]/gi, '').trim();
     
     const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US'; // Sadece İngilizce dinlesin
+    recognition.lang = 'en-US';
     recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+    recognition.maxAlternatives = 3; // Ağızdan çıkan farklı ihtimalleri de alsın (Red/Read için)
 
     const micStatus = document.getElementById('micStatus');
     const micIcon = document.getElementById('micIcon');
     const ripple = document.getElementById('micRipple');
 
+    let fallbackTimeout; // Kilitlenmeyi önleyecek bomba
+
     recognition.onstart = function() {
-        micStatus.innerText = "Sizi dinliyor...";
+        micStatus.innerText = "Sizi dinliyor... Konuşun";
         micIcon.classList.remove('text-purple-600');
         micIcon.classList.add('animate-pulse', 'text-rose-500');
         ripple.classList.add('animate-ping', 'opacity-100');
+        
+        // 6 saniye içinde ses gelmezse sistemi zorla kapat ve sıfırla (Kilitlenmeye karşı koruma)
+        fallbackTimeout = setTimeout(() => {
+            recognition.stop();
+            resetMicUI("Ses alınamadı, tekrar dokun.");
+        }, 6000);
     };
 
+    function resetMicUI(msg) {
+        micStatus.innerText = msg;
+        micStatus.className = "text-xs text-rose-300 font-bold uppercase tracking-widest mt-4";
+        micIcon.className = "w-10 h-10 text-purple-600";
+        micIcon.classList.remove('animate-pulse', 'text-rose-500');
+        ripple.classList.remove('animate-ping', 'opacity-100');
+    }
+
     recognition.onresult = function(event) {
-        const spokenWord = event.results[0][0].transcript.toLowerCase().replace(/[^\w\s]/gi, '').trim();
+        clearTimeout(fallbackTimeout); // Zaman aşımını iptal et çünkü ses geldi
         
-        // Eşleşme kontrolü (içinde geçiyorsa da kabul ediyoruz çocukları zorlamamak için)
-        if (spokenWord === targetWord || spokenWord.includes(targetWord) || targetWord.includes(spokenWord)) {
+        // Bütün ihtimalleri topla
+        let spokenWords = [];
+        for(let i=0; i<event.results[0].length; i++) {
+            spokenWords.push(event.results[0][i].transcript.toLowerCase().replace(/[^\w\s]/gi, '').trim());
+        }
+        
+        // Sesteş kelimeleri (Homophones) affetme motoru
+        let isMatch = false;
+        spokenWords.forEach(word => {
+            if (word === targetWord || word.includes(targetWord) || targetWord.includes(word)) isMatch = true;
+            
+            // Özel hataları affet: Red/Read, Two/To/Too, Write/Right vs.
+            if (targetWord === 'red' && word === 'read') isMatch = true;
+            if ((targetWord === 'two' || targetWord === 'too') && (word === 'to' || word === 'two' || word === 'too')) isMatch = true;
+            if (targetWord === 'write' && word === 'right') isMatch = true;
+            if (targetWord === 'eight' && word === 'ate') isMatch = true;
+            if (targetWord === 'buy' && word === 'by') isMatch = true;
+            if (targetWord === 'see' && word === 'sea') isMatch = true;
+            if (targetWord === 'know' && word === 'no') isMatch = true;
+        });
+
+        if (isMatch) {
             micStatus.innerText = "HARİKA! DOĞRU TELAFFUZ!";
             micStatus.className = "text-xs text-emerald-300 font-black uppercase tracking-widest mt-4";
             micIcon.className = "w-10 h-10 text-emerald-500";
+            micIcon.classList.remove('animate-pulse', 'text-rose-500');
+            ripple.classList.remove('animate-ping', 'opacity-100');
             
-            // Tatlı bir Ding! sesi
             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
             audio.play().catch(e => console.log(e));
 
-            // 1.5 saniye sonra otomatik sonrakine geç
             setTimeout(() => {
                 if (currentFcIndex < currentFcWords.length - 1) nextCard();
+                else {
+                    micStatus.innerText = "GÖREV BİTTİ! BİTİR BUTONUNA BAS.";
+                    micStatus.className = "text-xs text-amber-400 font-black uppercase tracking-widest mt-4";
+                }
             }, 1500);
 
         } else {
-            micStatus.innerText = `Yanlış! "${spokenWord}" dediniz.`;
-            micStatus.className = "text-xs text-rose-300 font-black uppercase tracking-widest mt-4";
-            micIcon.className = "w-10 h-10 text-rose-500";
-            
-            // Hata sesi
+            const heard = spokenWords[0];
+            resetMicUI(`Yanlış! "${heard}" dediniz.`);
             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3');
             audio.play().catch(e => console.log(e));
         }
     };
 
     recognition.onspeechend = function() {
-        recognition.stop();
-        ripple.classList.remove('animate-ping', 'opacity-100');
+        recognition.stop(); // Konuşma bitince algılamayı kapat
     };
 
     recognition.onerror = function(event) {
-        micStatus.innerText = "Anlayamadım, bir daha dene.";
-        micIcon.className = "w-10 h-10 text-purple-600";
-        ripple.classList.remove('animate-ping', 'opacity-100');
+        clearTimeout(fallbackTimeout);
+        resetMicUI("Anlayamadım, tekrar dokun.");
     };
 
     recognition.start();
 }
+
 
 window.finishFlashcardTask = async function() {
     const onay = await customConfirm("Kelime pratiğini tamamladın mı?", "Evet, Bitir");
