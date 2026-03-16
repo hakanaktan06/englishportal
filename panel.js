@@ -1084,7 +1084,7 @@ window.openTeacherAnalysis = function(resultId) {
 window.closeTeacherAnalysisModal = () => document.getElementById('teacherAnalysisModal').classList.add('hidden');
 
 // ==========================================
-// 9. VIP ÖĞRENCİ PROFİLİ VE PDF KARNE MOTORU (PERFORMANS FİXLİ)
+// 9. VIP ÖĞRENCİ PROFİLİ VE PDF KARNE MOTORU (ULTRA HIZLI FİX)
 // ==========================================
 window.openStudentProfile = async function(id, name, phone) {
     document.getElementById('profStudentId').value = id;
@@ -1099,13 +1099,13 @@ window.openStudentProfile = async function(id, name, phone) {
     
     document.getElementById('lessonDate').value = new Date().toISOString().split('T')[0]; 
 
-    // 🚀 PERFORMANS FİX: Modalı anında göster! (Telefonun kasmasını engeller)
+    // Modalı göster
     document.getElementById('studentProfileModal').classList.remove('hidden');
 
-    // 🚀 PERFORMANS FİX: Ağır grafik ve veri çekme işlemlerini 100ms ertele (İşlemciye nefes aldır)
+    // Ağır işlemleri çok hafif erteleyip işlemciyi rahatlatıyoruz
     setTimeout(() => {
         fetchStudentLessons(id);
-    }, 100);
+    }, 50);
 }
 
 const newLessonForm = document.getElementById('newLessonForm');
@@ -1144,14 +1144,19 @@ async function fetchStudentLessons(studentId) {
     const list = document.getElementById('lessonList');
     const pdfList = document.getElementById('pdfLessonList');
     if(!list || !pdfList) return;
-    
-    list.innerHTML = ''; pdfList.innerHTML = '';
 
     if (!lessons || lessons.length === 0) {
         list.innerHTML = '<p class="text-gray-400 dark:text-gray-500 text-sm italic p-4 text-center">Henüz seans kaydı girilmemiş.</p>';
         pdfList.innerHTML = '<p class="text-gray-500 italic">Bu dönem kayıtlı seans bulunmamaktadır.</p>';
+        const badgeEl = document.getElementById('unpaidTotalBadge');
+        if(badgeEl) badgeEl.classList.add('hidden');
     } else {
         let totalUnpaid = 0; 
+        
+        // 🚀 PERFORMANS FİX: Döngü içinde innerHTML yapmayı YASAKLADIK! Veriyi hafızada topluyoruz.
+        let tempLessonHtml = '';
+        let tempPdfLessonHtml = '';
+
         lessons.forEach(l => {
             const date = new Date(l.lesson_date).toLocaleDateString('tr-TR');
             const time = l.lesson_time ? l.lesson_time : '';
@@ -1164,7 +1169,7 @@ async function fetchStudentLessons(studentId) {
 
             const priceText = l.price ? `<span class="text-[10px] font-black bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-gray-200 px-2 py-1 rounded-md">₺${l.price}</span>` : '';
 
-            list.innerHTML += `
+            tempLessonHtml += `
                 <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm flex flex-col hover:border-indigo-200 transition">
                     <div class="flex justify-between items-start">
                         <div class="flex flex-wrap gap-2 mb-2">
@@ -1181,8 +1186,12 @@ async function fetchStudentLessons(studentId) {
                     </div>
                 </div>`;
             
-            pdfList.innerHTML += `<div class="mb-4 border-b border-gray-100 pb-3"><p class="text-xs font-black text-indigo-600 tracking-wider">${date}</p><p class="text-sm font-bold text-gray-800 mt-1">${l.topic}</p></div>`;
+            tempPdfLessonHtml += `<div class="mb-4 border-b border-gray-100 pb-3"><p class="text-xs font-black text-indigo-600 tracking-wider">${date}</p><p class="text-sm font-bold text-gray-800 mt-1">${l.topic}</p></div>`;
         });
+
+        // Topladığımız HTML'i TEK SEFERDE ekrana basıyoruz!
+        list.innerHTML = tempLessonHtml;
+        pdfList.innerHTML = tempPdfLessonHtml;
 
         const badgeEl = document.getElementById('unpaidTotalBadge');
         if (totalUnpaid > 0) { badgeEl.innerText = `Bekleyen: ₺${totalUnpaid}`; badgeEl.classList.remove('hidden'); } 
@@ -1191,31 +1200,30 @@ async function fetchStudentLessons(studentId) {
 
     const { data: results } = await supabaseClient.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: true });
     const pdfQuizList = document.getElementById('pdfQuizList');
-    if(pdfQuizList) pdfQuizList.innerHTML = '';
     let labels = [], scores = [];
 
     if (!results || results.length === 0) {
         if(pdfQuizList) pdfQuizList.innerHTML = '<p class="text-gray-500 italic">Öğrenci henüz sınava girmemiştir.</p>';
         labels = ['Sınav Yok']; scores = [0];
     } else {
+        let tempQuizHtml = '';
         results.forEach(r => {
             labels.push(r.quizzes.title); scores.push(r.score);
             let color = r.score >= 80 ? 'text-emerald-600' : (r.score >= 50 ? 'text-yellow-600' : 'text-rose-600');
-            if(pdfQuizList) {
-                pdfQuizList.innerHTML = `<div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-2"><span class="text-sm font-bold text-gray-700">${r.quizzes.title}</span><span class="text-sm font-black ${color}">${r.score} Puan</span></div>` + pdfQuizList.innerHTML; 
-            }
+            tempQuizHtml = `<div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-2"><span class="text-sm font-bold text-gray-700">${r.quizzes.title}</span><span class="text-sm font-black ${color}">${r.score} Puan</span></div>` + tempQuizHtml; 
         });
+        if(pdfQuizList) pdfQuizList.innerHTML = tempQuizHtml;
     }
 
-            // 🚀 PERFORMANS FİX: Animasyonları kapat ve PDF grafiğinde esnemeyi durdur!
+    // Grafikleri çizmeyi ayrı bir sıraya alıyoruz ki arayüz donmasın!
     setTimeout(() => {
         const chartConfig = (isPdf) => ({
             type: 'line',
             data: { labels: labels, datasets: [{ label: 'Sınav Puanı', data: scores, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', borderWidth: 3, tension: 0.4, fill: true, pointRadius: 5 }] },
             options: { 
-                responsive: isPdf ? false : true, // PDF İÇİN ESNEMEYİ YASAKLADIK!
+                responsive: isPdf ? false : true, 
                 maintainAspectRatio: false, 
-                animation: false, // TELEFONU KASAN ANİMASYONU KOMPLE KAPATTIK!
+                animation: false, 
                 scales: { y: { beginAtZero: true, max: 100 } }, 
                 plugins: { legend: { display: false } } 
             }
@@ -1229,9 +1237,7 @@ async function fetchStudentLessons(studentId) {
         if(ctxProf) profileChartInstance = new Chart(ctxProf.getContext('2d'), chartConfig(false));
         if(ctxPdf) pdfChartInstance = new Chart(ctxPdf.getContext('2d'), chartConfig(true));
     }, 50);
-
 }
-
 
 window.deleteLesson = async function(id) {
     if (!await customConfirm("Ders kaydını silmek istediğine emin misin?", "Evet, Sil")) return;
@@ -1251,68 +1257,6 @@ window.markAsPaid = async function(lessonId, studentId) {
     }
 }
 
-// ==========================================
-// YENİ DÜZELTİLMİŞ PDF VE SERTİFİKA MOTORU
-// ==========================================
-window.generatePDF = function() {
-    if (!isPremiumTeacher) { openPaywall("PDF Gelişim Raporu VIP Bir Özelliktir"); return; }
-    showToast("PDF hazırlanıyor, lütfen bekleyin...", "info");
-    const element = document.getElementById('pdfTemplate');
-    const sName = document.getElementById('profileStudentName').innerText;
-    const opt = { margin: 0, filename: `${sName}_Gelisim_Raporu.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-    
-    html2pdf().set(opt).from(element).save().then(() => { 
-        showToast("PDF Başarıyla İndirildi!", "success"); 
-    });
-}
-
-window.generateCertificate = function() {
-    if (!isPremiumTeacher) { openPaywall("Altın Sertifika VIP Bir Özelliktir"); return; }
-    showToast("Altın Sertifika Hazırlanıyor...", "info");
-    const element = document.getElementById('certificateTemplate');
-    const sName = document.getElementById('profileStudentName').innerText;
-    
-    const certNameEl = document.getElementById('certStudentName');
-    if (certNameEl) certNameEl.innerText = sName;
-    
-    const certTeacherEl = document.getElementById('certTeacherName');
-    if (certTeacherEl) certTeacherEl.innerText = currentTeacherName;
-
-    const opt = { margin: 0, filename: `${sName}_VIP_Sertifika.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 3, useCORS: true, letterRendering: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } };
-    
-    html2pdf().set(opt).from(element).save().then(() => { 
-        showToast("Sertifika Başarıyla İndirildi!", "success"); 
-    });
-}
-
-// ==========================================
-// YENİ NESİL WHATSAPP VELİ RAPORU MOTORU
-// ==========================================
-window.sendWhatsAppReport = function() {
-    if (!isPremiumTeacher) { openPaywall("Canlı Veli Linki VIP Bir Özelliktir"); return; }
-    const studentName = document.getElementById('profileStudentName').innerText;
-    const studentId = document.getElementById('profStudentId').value;
-    let rawPhone = document.getElementById('profParentPhone').value; 
-    
-    if (!rawPhone || rawPhone.trim() === '') {
-        showToast("Bu öğrencinin veli numarası sisteme kayıtlı değil!", "error");
-        return;
-    }
-
-    let phone = rawPhone.replace(/\D/g, ''); 
-    if(phone.startsWith('0')) phone = phone.substring(1); 
-    if(phone.length === 10) phone = '90' + phone; 
-
-    const currentUrl = window.location.href.split('/').slice(0, -1).join('/'); 
-    const magicLink = `${currentUrl}/veli.html?id=${studentId}`;
-
-    const message = `Merhaba Sayın Velimiz,\n\nÖğrencimiz *${studentName}*'ın İngilizce derslerindeki güncel gelişim raporu, sınav sonuçları ve ödev durumunu aşağıdaki akıllı linkten inceleyebilirsiniz:\n\n ${magicLink}\n\nİyi günler dilerim!`;
-
-    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-    
-    window.open(whatsappUrl, '_blank');
-    showToast("Veli sohbeti açılıyor...", "success");
-}
 
 // ==========================================
 // 10. DİNAMİK KARŞILAMA MESAJI MOTORU
