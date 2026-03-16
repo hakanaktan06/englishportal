@@ -626,45 +626,42 @@ window.flipCard = function() {
 }
 
 function updateFlashcardUI() {
-    // Önceki mikrofon oturumunu zorla kapat
     if (currentRecognition) {
         try { currentRecognition.abort(); } catch(e) {}
         currentRecognition = null;
     }
 
     const word = currentFcWords[currentFcIndex];
-
-    // Türkçe (ön yüz)
     document.getElementById('fcWordTr').innerText = word.tr;
-
-    // İngilizce (arka yüz)
     document.getElementById('fcWordEn').innerText = word.en;
 
-    // 🆕 FONETİK YAZILIŞI GÜNCELLE
     const phEl = document.getElementById('fcWordPh');
     if (phEl) {
         phEl.innerText = word.ph ? `/${word.ph}/` : '';
         phEl.style.display = word.ph ? 'block' : 'none';
     }
 
+    // 🌟 UNSPLASH GÖRSEL ÇEKME MOTORU 🌟
+    const imgEl = document.getElementById('fcWordImage');
+    if (imgEl) {
+        // Kelimeye göre telif haksız yüksek çözünürlüklü görsel çeker
+        imgEl.src = `https://source.unsplash.com/600x800/?${encodeURIComponent(word.en)}`;
+    }
+
     document.getElementById('fcProgress').innerText = `Kelime ${currentFcIndex + 1} / ${currentFcWords.length}`;
-    
-    // Kartı ön yüze çevir
     isCardFlipped = false;
     document.getElementById('fcInner').classList.remove('rotate-y-180');
 
-    // Mikrofon durumunu sıfırla
     const micStatus = document.getElementById('micStatus');
     const micIcon = document.getElementById('micIcon');
     const ripple = document.getElementById('micRipple');
     if (micStatus) {
         micStatus.innerText = "Mikrofona Dokun ve Oku";
-        micStatus.className = "text-xs text-indigo-100 font-bold uppercase tracking-widest mt-4";
+        micStatus.className = "text-xs text-white font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm";
     }
     if (micIcon) micIcon.className = "w-10 h-10 text-purple-600 transition-colors";
     if (ripple) ripple.classList.remove('animate-ping', 'opacity-100');
 
-    // Son kelimedeyse bitir butonunu göster
     if (currentFcIndex === currentFcWords.length - 1) {
         document.getElementById('btnFinishFlashcard').classList.remove('hidden');
     } else {
@@ -672,19 +669,6 @@ function updateFlashcardUI() {
     }
 }
 
-window.nextCard = function() {
-    if (currentFcIndex < currentFcWords.length - 1) {
-        currentFcIndex++;
-        updateFlashcardUI();
-    }
-}
-
-window.prevCard = function() {
-    if (currentFcIndex > 0) {
-        currentFcIndex--;
-        updateFlashcardUI();
-    }
-}
 
 // ==========================================
 // 🔧 TELAFFUZ MOTORU — TAM DÜZELTME
