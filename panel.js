@@ -466,7 +466,7 @@ async function fetchStudents() {
     const listContainer = document.getElementById('studentList');
     if(!listContainer || !currentTeacherId) return;
     
-    listContainer.innerHTML = '<div class="w-full py-10 text-center text-gray-500 dark:text-gray-400 font-bold animate-pulse">İstihbarat verileri toplanıyor...</div>';
+    listContainer.innerHTML = '<div class="w-full py-10 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 animate-pulse"><svg class="w-8 h-8 mb-3 opacity-50 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg><span class="text-sm font-bold uppercase tracking-widest">Öğrenci Verileri Yükleniyor...</span></div>';
 
     const { data: students, error: studErr } = await supabaseClient.from('profiles').select('*').eq('role', 'student').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
     const { data: quizResults } = await supabaseClient.from('quiz_results').select('student_id, score, profiles!inner(*)').eq('profiles.teacher_id', currentTeacherId);
