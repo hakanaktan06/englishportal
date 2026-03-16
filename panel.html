@@ -451,7 +451,8 @@
                         <p class="text-xs text-purple-200 mb-5 font-medium relative z-10">Konuyu yazın ve kaç soru istediğinizi seçin, şıklarıyla birlikte anında eklensin.</p>
                         <div class="flex flex-col sm:flex-row gap-3 relative z-10">
                             <input id="aiTopicInput" class="flex-[3] bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-purple-200 px-5 py-3.5 rounded-xl text-sm font-bold outline-none focus:bg-white/20 focus:border-white/50 transition-all shadow-inner" placeholder="Örn: Simple Past Tense...">
-                            <input type="number" id="aiQuestionCount" class="flex-[1] bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-purple-200 px-5 py-3.5 rounded-xl text-sm font-bold outline-none focus:bg-white/20 focus:border-white/50 transition-all shadow-inner text-center appearance-none" placeholder="Sayı" min="1" max="20" value="5" title="Soru Sayısı">
+                          <input type=number id=aiQuestionCount oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value > 20) this.value = 20;" class="flex-[1] bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-purple-200 px-5 py-3.5 rounded-xl text-sm font-bold outline-none focus:bg-white/20 focus:border-white/50 transition-all shadow-inner text-center appearance-none" placeholder=Sayı min=1 max=20 value=5 title="Soru Sayısı">
+
                             <button type="button" id="btnGenerateAI" class="flex-[2] bg-white text-purple-700 hover:bg-gray-50 px-6 py-3.5 rounded-xl font-black text-sm shadow-lg transition-transform transform active:scale-95 whitespace-nowrap">SİHRİ BAŞLAT</button>
                         </div>
                     </div>
