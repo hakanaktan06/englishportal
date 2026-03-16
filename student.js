@@ -864,13 +864,15 @@ window.startListening = function() {
         }
     };
 
-    // Başlat
-    try {
-        recognition.start();
-    } catch(e) {
-        // Zaten çalışıyorsa (çift tıklama koruması)
-        resetMicUI("Lütfen bekle ve tekrar dene.");
-    }
+    // Başlat — 300ms bekleme mobilde önceki session kapanmasını garantiler
+    setTimeout(() => {
+        try {
+            recognition.start();
+        } catch(e) {
+            resetMicUI("Lütfen tekrar dokun.");
+            currentRecognition = null;
+        }
+    }, 300);
 }
 
 
