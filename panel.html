@@ -215,7 +215,13 @@
             </header>
             <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-1 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-slate-700 h-fit">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 border-b border-gray-100 dark:border-slate-700 pb-2">Yeni Ödev Oluştur</h3>
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-slate-700 pb-2">
+    <h3 class="text-lg font-bold text-gray-800 dark:text-white">Yeni Ödev Oluştur</h3>
+    <button onclick="openFlashcardSihirbazi()" type="button" class="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-black transition flex items-center gap-1 shadow-sm border border-purple-200 dark:border-purple-800">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> KELİME KARTI ATA
+    </button>
+</div>
+
                     <form id="newHomeworkForm" class="space-y-4">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Kime Verilecek?</label>
@@ -790,6 +796,54 @@
             </div>
         </div>
     </div>
+
+       <div id="aiFlashcardModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center z-[99999] p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-[30px] w-full max-w-lg h-[80vh] flex flex-col shadow-2xl overflow-hidden border border-transparent dark:border-slate-700">
+            <div class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gradient-to-r from-purple-600 to-indigo-600 shrink-0">
+                <h3 class="text-lg md:text-xl font-black text-white flex items-center gap-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Kelime Sihirbazı
+                </h3>
+                <button onclick="document.getElementById('aiFlashcardModal').classList.add('hidden')" class="text-3xl text-white/70 hover:text-white transition leading-none">&times;</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-5 bg-slate-50 dark:bg-slate-900" style="-webkit-overflow-scrolling: touch;">
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-purple-100 dark:border-purple-900/30 mb-6">
+                    <div class="mb-4">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Konu veya Ünite</label>
+                        <input id="fcTopic" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:border-purple-500 font-bold text-sm" placeholder="Örn: Animals, Unit 4, Irregular Verbs...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Kelime Sayısı</label>
+                        <select id="fcCount" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:border-purple-500 font-bold text-sm appearance-none">
+                            <option value="5">5 Kelime</option>
+                            <option value="10">10 Kelime</option>
+                            <option value="15">15 Kelime</option>
+                        </select>
+                    </div>
+                    <button id="btnGenerateFlashcards" class="w-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-600 hover:text-white font-black py-3.5 rounded-xl transition flex justify-center items-center gap-2 text-sm transform active:scale-95 shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        YAPAY ZEKA İLE ÜRET
+                    </button>
+                </div>
+                
+                <div id="fcPreviewContainer" class="hidden">
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Üretilen Kelimeler</h4>
+                    <div id="fcWordsList" class="grid grid-cols-1 gap-2 mb-6"></div>
+                    
+                    <div class="bg-indigo-50 dark:bg-indigo-900/20 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-800">
+                        <label class="block text-[10px] font-black text-indigo-800 dark:text-indigo-300 uppercase tracking-widest mb-2 ml-1">Kime Atanacak?</label>
+                        <select id="fcStudentSelect" class="w-full px-4 py-3 rounded-xl border-2 border-indigo-200 dark:border-indigo-700 dark:bg-slate-800 dark:text-white outline-none mb-4 font-bold text-sm appearance-none">
+                            <option value="">Öğrenci Seçin...</option>
+                        </select>
+                        <button id="btnAssignFlashcards" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black py-4 rounded-xl shadow-lg transition transform active:scale-95 text-sm tracking-widest uppercase">
+                            GÖREVİ GÖNDER 
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script src="panel.js"></script>
 </body>
