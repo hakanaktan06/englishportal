@@ -5,6 +5,22 @@ const supabaseUrl = 'https://vucpxabicxqfmmmqvkpv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1Y3B4YWJpY3hxZm1tbXF2a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDIwMDYsImV4cCI6MjA4ODkxODAwNn0.wYXmIDO4H7ml8nC9pQzRmW8tPK_ihtqFy3r4SqN3cTk';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+// XSS GÜVENLİK FİLTRESİ (Gümrük Memuru)
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, function(tag) {
+        const charsToReplace = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        };
+        return charsToReplace[tag] || tag;
+    });
+}
+
+
 // 🌟 YENİ: SİSTEMDEKİ AKTİF ÖĞRETMENİN HAFIZASI VE LİMİT BEKÇİLERİ 🌟
 let currentTeacherId = null;
 let currentTeacherName = '';
