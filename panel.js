@@ -1084,7 +1084,7 @@ window.openTeacherAnalysis = function(resultId) {
 window.closeTeacherAnalysisModal = () => document.getElementById('teacherAnalysisModal').classList.add('hidden');
 
 // ==========================================
-// 9. VIP ÖĞRENCİ PROFİLİ VE PDF KARNE MOTORU
+// 9. VIP ÖĞRENCİ PROFİLİ VE PDF KARNE MOTORU (PERFORMANS FİXLİ)
 // ==========================================
 window.openStudentProfile = async function(id, name, phone) {
     document.getElementById('profStudentId').value = id;
@@ -1305,7 +1305,6 @@ window.sendWhatsAppReport = function() {
     window.open(whatsappUrl, '_blank');
     showToast("Veli sohbeti açılıyor...", "success");
 }
-
 
 // ==========================================
 // 10. DİNAMİK KARŞILAMA MESAJI MOTORU
