@@ -615,7 +615,7 @@ window.flipCard = function() {
     else card.classList.remove('rotate-y-180');
 }
 
-// 🌟 GÖRSEL VE ARAYÜZ GÜNCELLEME (ÇÖKMEYE KARŞI ZIRHLI) 🌟
+// 🌟 GÖRSEL VE ARAYÜZ GÜNCELLEME (HIZLI LOREMFlickr MOTORU) 🌟
 window.updateFlashcardUI = function() {
     try {
         if (currentRecognition) {
@@ -633,14 +633,18 @@ window.updateFlashcardUI = function() {
             phEl.style.display = word.ph ? 'block' : 'none';
         }
 
-        // 🌟 YAPAY ZEKA GÖRSEL MOTORU (UNSPLASH YERİNE POLLINATIONS AI) 🌟
+        // 🌟 IŞIK HIZINDA GÖRSEL ÇEKME 🌟
         const imgEl = document.getElementById('fcWordImage');
         if (imgEl) {
-            imgEl.style.opacity = '0';
-            // Kelimeyi yapay zekaya verip anında resmini çizdiriyoruz
-            imgEl.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(word.en + ' object')}?width=600&height=800&nologo=true`;
-            imgEl.onload = () => { imgEl.style.opacity = '0.4'; };
-            imgEl.onerror = () => { imgEl.style.opacity = '0'; }; // Hata verse bile sistemi kitlemez
+            imgEl.style.opacity = '0'; // Yeni resim yüklenene kadar gizle
+            
+            // "Get up" gibi boşluklu kelimeleri "get,up" formatına çevir ki sistem anlasın
+            const cleanWord = word.en.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, ',');
+            
+            imgEl.src = `https://loremflickr.com/600/800/${cleanWord}?lock=${currentFcIndex}`;
+            
+            imgEl.onload = () => { imgEl.style.opacity = '0.5'; }; // Yüklenince %50 opaklıkla göster
+            imgEl.onerror = () => { imgEl.style.opacity = '0'; };
         }
 
         document.getElementById('fcProgress').innerText = `Kelime ${currentFcIndex + 1} / ${currentFcWords.length}`;
@@ -653,7 +657,7 @@ window.updateFlashcardUI = function() {
         
         if (micStatus) {
             micStatus.innerText = "Mikrofona Dokun ve Oku";
-            micStatus.className = "text-xs text-white font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm";
+            micStatus.className = "text-xs text-white font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10";
         }
         if (micIcon) micIcon.className = "w-10 h-10 text-purple-600 transition-colors";
         if (ripple) ripple.classList.remove('animate-ping', 'opacity-100');
@@ -667,6 +671,7 @@ window.updateFlashcardUI = function() {
         console.error("UI Güncelleme Hatası:", err);
     }
 }
+
 
 window.nextCard = function() {
     if (currentFcIndex < currentFcWords.length - 1) {
