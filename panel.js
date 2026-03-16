@@ -1447,11 +1447,17 @@ if (searchStudentInput) {
 }
 
 // ==========================================
-// 15. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU
+// 15. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU (GÜNCELLENDİ)
 // ==========================================
 const btnGenerateAI = document.getElementById('btnGenerateAI');
 if (btnGenerateAI) {
     btnGenerateAI.addEventListener('click', async () => {
+        // PREMIUM KONTROLÜ
+        if (!isPremiumTeacher) {
+            openPaywall("Yapay Zeka Sınav Üreticisi VIP Bir Özelliktir");
+            return;
+        }
+
         if (!currentActiveQuizId) { showToast('Önce bir sınav seçmelisin!', 'error'); return; }
 
         const topicInput = document.getElementById('aiTopicInput');
@@ -1460,21 +1466,23 @@ if (btnGenerateAI) {
         const topic = topicInput ? topicInput.value.trim() : '';
         let qCount = countInput ? parseInt(countInput.value) : 5;
         
-                if (!topic) { showToast('Lütfen yapay zeka için bir konu yazın!', 'error'); return; }
+        if (!topic) { showToast('Lütfen yapay zeka için bir konu yazın!', 'error'); return; }
         if (isNaN(qCount) || qCount < 1) qCount = 5;
-        if (qCount > 20) qCount = 20; // Otomatik 20'ye sabitledik
-
-
-        let apiKey = sessionStorage.getItem('openai_api_key');
-        if (!apiKey) {
-            apiKey = prompt("Lütfen OpenAI API Şifrenizi (sk-...) girin:\n\n(Sadece sizin cihazınızda kalır, güvendedir.)");
-            if (!apiKey) { showToast('İşlem iptal edildi.', 'error'); return; }
-            sessionStorage.setItem('openai_api_key', apiKey.trim());
-        }
+        if (qCount > 20) qCount = 20;
 
         const originalText = btnGenerateAI.innerHTML;
         btnGenerateAI.innerHTML = '<svg class="animate-spin h-5 w-5 text-purple-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
         btnGenerateAI.disabled = true;
+
+        // 🌟 PATRONUN KASASINDAN GİZLİCE API KEY ÇEKME 🌟
+        const { data: godProfile, error: godErr } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
+        if (godErr || !godProfile || !godProfile.openai_key) {
+            showToast("Sistem hatası: API şifresi bulunamadı! Lütfen patrona bildirin.", "error");
+            btnGenerateAI.innerHTML = originalText;
+            btnGenerateAI.disabled = false;
+            return;
+        }
+        const apiKey = godProfile.openai_key;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -1483,29 +1491,15 @@ if (btnGenerateAI) {
                 body: JSON.stringify({
                     model: 'gpt-4o-mini',
                     messages: [
-                        { 
-                            role: 'system', 
-                            content: `Sen uzman bir İngilizce öğretmenisin. Verilen konuya göre tam ${qCount} adet çoktan seçmeli (A, B, C, D) İngilizce sorusu hazırla. Çıktıyı SADECE ve KESİNLİKLE geçerli bir JSON dizisi formatında ver. Soru ve şıklardaki İngilizce kelimelerde kesinlikle Türkçe karakter (İ, ı, ş, ğ vb.) kullanma, sadece standart İngilizce alfabesi kullan. Markdown kullanma. Format: [{"q": "Soru", "a": "A", "b": "B", "c": "C", "d": "D", "correct": "A"}]` 
-                        },
-                        { 
-                            role: 'user', 
-                            content: `Konu: ${topic}` 
-                        }
+                        { role: 'system', content: `Sen uzman bir İngilizce öğretmenisin. Verilen konuya göre tam ${qCount} adet çoktan seçmeli (A, B, C, D) İngilizce sorusu hazırla. Çıktıyı SADECE ve KESİNLİKLE geçerli bir JSON dizisi formatında ver. Soru ve şıklardaki İngilizce kelimelerde kesinlikle Türkçe karakter (İ, ı, ş, ğ vb.) kullanma, sadece standart İngilizce alfabesi kullan. Markdown kullanma. Format: [{"q": "Soru", "a": "A", "b": "B", "c": "C", "d": "D", "correct": "A"}]` },
+                        { role: 'user', content: `Konu: ${topic}` }
                     ], 
                     temperature: 0.7
                 })
             });
 
             const data = await response.json();
-            
-            if (data.error) {
-                console.error("OpenAI Hatası:", data.error);
-                showToast('API Hatası! Şifreniz yanlış veya krediniz bitmiş.', 'error');
-                if(data.error.code === 'invalid_api_key') sessionStorage.removeItem('openai_api_key');
-                btnGenerateAI.innerHTML = originalText;
-                btnGenerateAI.disabled = false;
-                return;
-            }
+            if (data.error) throw data.error;
 
             let jsonStr = data.choices[0].message.content.trim();
             if (jsonStr.startsWith('```json')) jsonStr = jsonStr.replace('```json', '');
@@ -1516,13 +1510,7 @@ if (btnGenerateAI) {
             showToast(`Yapay zeka ${questions.length} soru yazdı! Yükleniyor...`, 'info');
 
             const inserts = questions.map(q => ({
-                quiz_id: currentActiveQuizId,
-                question_text: q.q,
-                option_a: q.a,
-                option_b: q.b,
-                option_c: q.c,
-                option_d: q.d,
-                correct_option: q.correct
+                quiz_id: currentActiveQuizId, question_text: q.q, option_a: q.a, option_b: q.b, option_c: q.c, option_d: q.d, correct_option: q.correct
             }));
 
             const { error } = await supabaseClient.from('questions').insert(inserts);
@@ -1534,33 +1522,13 @@ if (btnGenerateAI) {
 
         } catch (err) {
             console.error(err);
-            showToast('Sorular üretilemedi veya AI yanıtı çözülemedi.', 'error');
+            showToast('Sorular üretilemedi. Patronun API şifresi geçersiz olabilir.', 'error');
         }
 
         btnGenerateAI.innerHTML = originalText;
         btnGenerateAI.disabled = false;
     });
 }
-
-document.addEventListener('click', (e) => {
-    const filterBtn = e.target.closest('.filter-btn');
-    if (filterBtn) {
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.className = "filter-btn bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap shadow-sm border border-gray-100 dark:border-slate-700 transition flex items-center gap-1";
-        });
-        filterBtn.className = "filter-btn bg-purple-600 text-white px-5 py-2.5 rounded-xl text-xs font-black whitespace-nowrap shadow-[0_0_15px_rgba(147,51,234,0.4)] transition flex items-center gap-1";
-        
-        const filter = filterBtn.getAttribute('data-filter');
-        document.querySelectorAll('.activity-card').forEach(card => {
-            card.style.display = (filter === 'all' || card.getAttribute('data-category') === filter) ? 'flex' : 'none';
-        });
-    }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const hwDueDateInput = document.getElementById('hwDueDate');
-    if (hwDueDateInput) hwDueDateInput.value = new Date().toISOString().split('T')[0];
-});
 
 // ==========================================
 // 16. PAYWALL (ÖDEME DUVARI) MOTORU
@@ -1609,13 +1577,19 @@ async function fetchGodVipPrice() {
 }
 fetchGodVipPrice();
 
+
 // ==========================================
-// 18. YAPAY ZEKA KELİME KARTLARI (FLASHCARD) MOTORU
+// 18. YAPAY ZEKA KELİME KARTLARI (FLASHCARD) MOTORU (GÜNCELLENDİ)
 // ==========================================
 let generatedFlashcards = [];
 
 window.openFlashcardSihirbazi = async function() {
-    // Önce öğrenci listesini çekip dropdown'a dolduralım
+    // PREMIUM KONTROLÜ
+    if (!isPremiumTeacher) {
+        openPaywall("Yapay Zeka Kelime Sihirbazı VIP Bir Özelliktir");
+        return;
+    }
+
     const { data } = await supabaseClient.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
     const select = document.getElementById('fcStudentSelect');
     if (data && select) {
@@ -1633,16 +1607,19 @@ if (btnGenerateFlashcards) {
         
         if (!topic) { showToast('Lütfen bir konu yazın!', 'error'); return; }
 
-        let apiKey = sessionStorage.getItem('openai_api_key');
-        if (!apiKey) {
-            apiKey = prompt("Lütfen OpenAI API Şifrenizi (sk-...) girin:");
-            if (!apiKey) return;
-            sessionStorage.setItem('openai_api_key', apiKey.trim());
-        }
-
         const originalText = btnGenerateFlashcards.innerHTML;
         btnGenerateFlashcards.innerHTML = 'Üretiliyor... Bekleyin ⏳';
         btnGenerateFlashcards.disabled = true;
+
+        // 🌟 PATRONUN KASASINDAN GİZLİCE API KEY ÇEKME 🌟
+        const { data: godProfile, error: godErr } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
+        if (godErr || !godProfile || !godProfile.openai_key) {
+            showToast("Sistem hatası: API şifresi bulunamadı! Lütfen patrona bildirin.", "error");
+            btnGenerateFlashcards.innerHTML = originalText;
+            btnGenerateFlashcards.disabled = false;
+            return;
+        }
+        const apiKey = godProfile.openai_key;
 
         try {
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -1651,10 +1628,7 @@ if (btnGenerateFlashcards) {
                 body: JSON.stringify({
                     model: 'gpt-4o-mini',
                     messages: [
-                        { 
-                            role: 'system', 
-                            content: `Sen bir İngilizce öğretmenisin. Verilen konuyla ilgili tam ${count} adet İngilizce kelime, Türkçe çevirisi ve IPA fonetik yazılışını üret. Çıktıyı SADECE JSON formatında dizi olarak ver. IPA yazılışı kısa ve basit olsun, slash olmadan yaz. Format: [{"en":"Apple", "tr":"Elma", "ph":"ˈæp.əl"}, {"en":"Run", "tr":"Koşmak", "ph":"rʌn"}]` 
-                        },
+                        { role: 'system', content: `Sen bir İngilizce öğretmenisin. Verilen konuyla ilgili tam ${count} adet İngilizce kelime, Türkçe çevirisi ve IPA fonetik yazılışını üret. Çıktıyı SADECE JSON formatında dizi olarak ver. IPA yazılışı kısa ve basit olsun, slash olmadan yaz. Format: [{"en":"Apple", "tr":"Elma", "ph":"ˈæp.əl"}, {"en":"Run", "tr":"Koşmak", "ph":"rʌn"}]` },
                         { role: 'user', content: `Konu: ${topic}` }
                     ], 
                     temperature: 0.7
@@ -1669,7 +1643,6 @@ if (btnGenerateFlashcards) {
             
             generatedFlashcards = JSON.parse(jsonStr.trim());
             
-            // Ekrana Çiz
             const listContainer = document.getElementById('fcWordsList');
             listContainer.innerHTML = '';
             generatedFlashcards.forEach((word, index) => {
@@ -1685,8 +1658,7 @@ if (btnGenerateFlashcards) {
 
         } catch (err) {
             console.error(err);
-            showToast('API Hatası! Şifreyi kontrol et.', 'error');
-            sessionStorage.removeItem('openai_api_key');
+            showToast('API Hatası! Patronun şifresi geçersiz olabilir.', 'error');
         }
 
         btnGenerateFlashcards.innerHTML = originalText;
@@ -1694,53 +1666,6 @@ if (btnGenerateFlashcards) {
     });
 }
 
-const btnAssignFlashcards = document.getElementById('btnAssignFlashcards');
-if (btnAssignFlashcards) {
-    btnAssignFlashcards.addEventListener('click', async () => {
-        const studentId = document.getElementById('fcStudentSelect').value;
-        const topic = document.getElementById('fcTopic').value.trim();
-
-        if (!studentId) { showToast('Bir öğrenci seçmelisin!', 'error'); return; }
-        if (generatedFlashcards.length === 0) { showToast('Önce kelime üretmelisin!', 'error'); return; }
-
-        btnAssignFlashcards.innerText = "Gönderiliyor...";
-        
-        // Zekice taktik: Ödev başlığına gizli kod ekliyoruz. 
-        const taskTitle = `[KELİME_KARTI] ${topic}`;
-        const taskData = JSON.stringify(generatedFlashcards);
-
-        // Gelecek ayın tarihini verelim süre dolmasın
-        const dueDate = new Date();
-        dueDate.setDate(dueDate.getDate() + 30); 
-        const dueDateStr = dueDate.toISOString().split('T')[0];
-
-        let inserts = [];
-        if (studentId === 'all') {
-            // Sınıftaki herkese ata
-            const { data: allStudents } = await supabaseClient.from('profiles').select('id').eq('role', 'student').eq('teacher_id', currentTeacherId);
-            inserts = allStudents.map(s => ({
-                student_id: s.id, title: taskTitle, description: taskData, due_date: dueDateStr, status: 'Bekliyor', teacher_id: currentTeacherId
-            }));
-        } else {
-            // Tek öğrenciye ata
-            inserts = [{
-                student_id: studentId, title: taskTitle, description: taskData, due_date: dueDateStr, status: 'Bekliyor', teacher_id: currentTeacherId
-            }];
-        }
-
-        const { error } = await supabaseClient.from('homeworks').insert(inserts);
-
-        if (error) { showToast("Atama hatası!", "error"); } 
-        else { 
-            showToast("Kelime Kartları öğrenciye başarıyla gönderildi! 🚀", "success"); 
-            document.getElementById('aiFlashcardModal').classList.add('hidden');
-            document.getElementById('fcPreviewContainer').classList.add('hidden');
-            document.getElementById('fcTopic').value = '';
-            fetchHomeworks(); // Tabloyu güncelle
-        }
-        btnAssignFlashcards.innerText = "GÖREVİ GÖNDER ";
-    });
-}
 
 
 // MOTORLARI ATEŞLE
