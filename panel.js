@@ -1257,9 +1257,71 @@ window.markAsPaid = async function(lessonId, studentId) {
     }
 }
 
+// ==========================================
+// 10. YENİ DÜZELTİLMİŞ PDF VE SERTİFİKA MOTORU
+// ==========================================
+window.generatePDF = function() {
+    if (!isPremiumTeacher) { openPaywall("PDF Gelişim Raporu VIP Bir Özelliktir"); return; }
+    showToast("PDF hazırlanıyor, lütfen bekleyin...", "info");
+    const element = document.getElementById('pdfTemplate');
+    const sName = document.getElementById('profileStudentName').innerText;
+    const opt = { margin: 0, filename: `${sName}_Gelisim_Raporu.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+    
+    html2pdf().set(opt).from(element).save().then(() => { 
+        showToast("PDF Başarıyla İndirildi!", "success"); 
+    });
+}
+
+window.generateCertificate = function() {
+    if (!isPremiumTeacher) { openPaywall("Altın Sertifika VIP Bir Özelliktir"); return; }
+    showToast("Altın Sertifika Hazırlanıyor...", "info");
+    const element = document.getElementById('certificateTemplate');
+    const sName = document.getElementById('profileStudentName').innerText;
+    
+    const certNameEl = document.getElementById('certStudentName');
+    if (certNameEl) certNameEl.innerText = sName;
+    
+    const certTeacherEl = document.getElementById('certTeacherName');
+    if (certTeacherEl) certTeacherEl.innerText = currentTeacherName;
+
+    const opt = { margin: 0, filename: `${sName}_VIP_Sertifika.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 3, useCORS: true, letterRendering: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } };
+    
+    html2pdf().set(opt).from(element).save().then(() => { 
+        showToast("Sertifika Başarıyla İndirildi!", "success"); 
+    });
+}
 
 // ==========================================
-// 10. DİNAMİK KARŞILAMA MESAJI MOTORU
+// 11. YENİ NESİL WHATSAPP VELİ RAPORU MOTORU
+// ==========================================
+window.sendWhatsAppReport = function() {
+    if (!isPremiumTeacher) { openPaywall("Canlı Veli Linki VIP Bir Özelliktir"); return; }
+    const studentName = document.getElementById('profileStudentName').innerText;
+    const studentId = document.getElementById('profStudentId').value;
+    let rawPhone = document.getElementById('profParentPhone').value; 
+    
+    if (!rawPhone || rawPhone.trim() === '') {
+        showToast("Bu öğrencinin veli numarası sisteme kayıtlı değil!", "error");
+        return;
+    }
+
+    let phone = rawPhone.replace(/\D/g, ''); 
+    if(phone.startsWith('0')) phone = phone.substring(1); 
+    if(phone.length === 10) phone = '90' + phone; 
+
+    const currentUrl = window.location.href.split('/').slice(0, -1).join('/'); 
+    const magicLink = `${currentUrl}/veli.html?id=${studentId}`;
+
+    const message = `Merhaba Sayın Velimiz,\n\nÖğrencimiz *${studentName}*'ın İngilizce derslerindeki güncel gelişim raporu, sınav sonuçları ve ödev durumunu aşağıdaki akıllı linkten inceleyebilirsiniz:\n\n ${magicLink}\n\nİyi günler dilerim!`;
+
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    
+    window.open(whatsappUrl, '_blank');
+    showToast("Veli sohbeti açılıyor...", "success");
+}
+
+// ==========================================
+// 12. DİNAMİK KARŞILAMA MESAJI MOTORU
 // ==========================================
 function setDynamicMotivations() {
     const welcomeMsgs = [
@@ -1280,7 +1342,7 @@ function setDynamicMotivations() {
 }
 
 // ==========================================
-// 11. GECE MODU (DARK MODE) MOTORU
+// 13. GECE MODU (DARK MODE) MOTORU
 // ==========================================
 const dmToggleBtn = document.getElementById('darkModeToggle');
 const htmlElement = document.documentElement;
@@ -1311,7 +1373,7 @@ if (dmToggleBtn) {
 }
 
 // ==========================================
-// 12. GERÇEK ZAMANLI ÖĞRENCİ ARAMA MOTORU
+// 14. GERÇEK ZAMANLI ÖĞRENCİ ARAMA MOTORU
 // ==========================================
 const searchStudentInput = document.getElementById('searchStudentInput');
 
@@ -1353,7 +1415,7 @@ if (searchStudentInput) {
 }
 
 // ==========================================
-// 13. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU
+// 15. YAPAY ZEKA (AI) OTOMATİK SINAV MOTORU
 // ==========================================
 const btnGenerateAI = document.getElementById('btnGenerateAI');
 if (btnGenerateAI) {
@@ -1468,7 +1530,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==========================================
-// 14. PAYWALL (ÖDEME DUVARI) MOTORU
+// 16. PAYWALL (ÖDEME DUVARI) MOTORU
 // ==========================================
 window.openPaywall = function(reasonText) {
     const reasonEl = document.getElementById('paywallReason');
