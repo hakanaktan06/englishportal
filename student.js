@@ -920,7 +920,7 @@ if (prof) {
 showToast("Tebrikler! +50 XP kazandın!", "success");
 closeFlashcardModal();
 initStudentPortal();
-```
+
 
 }
 
