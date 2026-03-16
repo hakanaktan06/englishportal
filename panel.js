@@ -1595,6 +1595,138 @@ async function fetchGodVipPrice() {
 }
 fetchGodVipPrice();
 
+// ==========================================
+// 18. YAPAY ZEKA KELİME KARTLARI (FLASHCARD) MOTORU
+// ==========================================
+let generatedFlashcards = [];
+
+window.openFlashcardSihirbazi = async function() {
+    // Önce öğrenci listesini çekip dropdown'a dolduralım
+    const { data } = await supabaseClient.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
+    const select = document.getElementById('fcStudentSelect');
+    if (data && select) {
+        select.innerHTML = '<option value="">Öğrenci Seçin...</option><option value="all" class="text-purple-600 font-black">🌟 TÜM SINIFA GÖNDER 🌟</option>';
+        data.forEach(s => { select.innerHTML += `<option value="${s.id}">${s.full_name}</option>`; });
+    }
+    document.getElementById('aiFlashcardModal').classList.remove('hidden');
+}
+
+const btnGenerateFlashcards = document.getElementById('btnGenerateFlashcards');
+if (btnGenerateFlashcards) {
+    btnGenerateFlashcards.addEventListener('click', async () => {
+        const topic = document.getElementById('fcTopic').value.trim();
+        const count = document.getElementById('fcCount').value;
+        
+        if (!topic) { showToast('Lütfen bir konu yazın!', 'error'); return; }
+
+        let apiKey = sessionStorage.getItem('openai_api_key');
+        if (!apiKey) {
+            apiKey = prompt("Lütfen OpenAI API Şifrenizi (sk-...) girin:");
+            if (!apiKey) return;
+            sessionStorage.setItem('openai_api_key', apiKey.trim());
+        }
+
+        const originalText = btnGenerateFlashcards.innerHTML;
+        btnGenerateFlashcards.innerHTML = 'Üretiliyor... Bekleyin ⏳';
+        btnGenerateFlashcards.disabled = true;
+
+        try {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [
+                        { 
+                            role: 'system', 
+                            content: `Sen bir İngilizce öğretmenisin. Verilen konuyla ilgili tam ${count} adet İngilizce kelime ve Türkçe çevirisini üret. Çıktıyı SADECE JSON formatında dizi olarak ver. Format: [{"en":"Apple", "tr":"Elma"}, {"en":"Run", "tr":"Koşmak"}]` 
+                        },
+                        { role: 'user', content: `Konu: ${topic}` }
+                    ], 
+                    temperature: 0.7
+                })
+            });
+
+            const data = await response.json();
+            if (data.error) throw data.error;
+
+            let jsonStr = data.choices[0].message.content.trim();
+            if (jsonStr.startsWith('```json')) jsonStr = jsonStr.replace('```json', '').replace('```', '');
+            
+            generatedFlashcards = JSON.parse(jsonStr.trim());
+            
+            // Ekrana Çiz
+            const listContainer = document.getElementById('fcWordsList');
+            listContainer.innerHTML = '';
+            generatedFlashcards.forEach((word, index) => {
+                listContainer.innerHTML += `
+                    <div class="flex justify-between items-center p-3 bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm">
+                        <span class="font-black text-indigo-600 dark:text-indigo-400 text-sm">${index+1}. ${word.en}</span>
+                        <span class="font-bold text-gray-500 dark:text-gray-400 text-xs">${word.tr}</span>
+                    </div>`;
+            });
+
+            document.getElementById('fcPreviewContainer').classList.remove('hidden');
+            showToast('Kelimeler başarıyla üretildi!', 'success');
+
+        } catch (err) {
+            console.error(err);
+            showToast('API Hatası! Şifreyi kontrol et.', 'error');
+            sessionStorage.removeItem('openai_api_key');
+        }
+
+        btnGenerateFlashcards.innerHTML = originalText;
+        btnGenerateFlashcards.disabled = false;
+    });
+}
+
+const btnAssignFlashcards = document.getElementById('btnAssignFlashcards');
+if (btnAssignFlashcards) {
+    btnAssignFlashcards.addEventListener('click', async () => {
+        const studentId = document.getElementById('fcStudentSelect').value;
+        const topic = document.getElementById('fcTopic').value.trim();
+
+        if (!studentId) { showToast('Bir öğrenci seçmelisin!', 'error'); return; }
+        if (generatedFlashcards.length === 0) { showToast('Önce kelime üretmelisin!', 'error'); return; }
+
+        btnAssignFlashcards.innerText = "Gönderiliyor...";
+        
+        // Zekice taktik: Ödev başlığına gizli kod ekliyoruz. 
+        const taskTitle = `[KELİME_KARTI] ${topic}`;
+        const taskData = JSON.stringify(generatedFlashcards);
+
+        // Gelecek ayın tarihini verelim süre dolmasın
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 30); 
+        const dueDateStr = dueDate.toISOString().split('T')[0];
+
+        let inserts = [];
+        if (studentId === 'all') {
+            // Sınıftaki herkese ata
+            const { data: allStudents } = await supabaseClient.from('profiles').select('id').eq('role', 'student').eq('teacher_id', currentTeacherId);
+            inserts = allStudents.map(s => ({
+                student_id: s.id, title: taskTitle, description: taskData, due_date: dueDateStr, status: 'Bekliyor', teacher_id: currentTeacherId
+            }));
+        } else {
+            // Tek öğrenciye ata
+            inserts = [{
+                student_id: studentId, title: taskTitle, description: taskData, due_date: dueDateStr, status: 'Bekliyor', teacher_id: currentTeacherId
+            }];
+        }
+
+        const { error } = await supabaseClient.from('homeworks').insert(inserts);
+
+        if (error) { showToast("Atama hatası!", "error"); } 
+        else { 
+            showToast("Kelime Kartları öğrenciye başarıyla gönderildi! 🚀", "success"); 
+            document.getElementById('aiFlashcardModal').classList.add('hidden');
+            document.getElementById('fcPreviewContainer').classList.add('hidden');
+            document.getElementById('fcTopic').value = '';
+            fetchHomeworks(); // Tabloyu güncelle
+        }
+        btnAssignFlashcards.innerText = "GÖREVİ GÖNDER ";
+    });
+}
 
 
 // MOTORLARI ATEŞLE
