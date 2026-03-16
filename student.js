@@ -641,7 +641,7 @@ window.updateFlashcardUI = function() {
             // Sadece ilk kelimeyi alıp aratıyoruz ki daha net ve doğru fotoğraflar çıksın (Örn: "get up" yerine "get")
             const cleanWord = word.en.toLowerCase().split(' ')[0].replace(/[^\w]/gi, '');
             
-            imgEl.src = `https://loremflickr.com/600/800/${cleanWord}?lock=${currentFcIndex}`;
+            imgEl.src = `https://image.pollinations.ai/prompt/a%20realistic%20photo%20of%20${encodeURIComponent(cleanWord)}?width=600&height=800&nologo=true&seed=${currentFcIndex}`;
             
             // Resim yüklenince %100 opaklıkta göster (Çünkü HTML'de siyah filtremiz var zaten)
             imgEl.onload = () => { imgEl.style.opacity = '1'; }; 
