@@ -571,7 +571,7 @@ async function fetchStudents() {
                         ${escapeHTML(student.full_name.charAt(0).toUpperCase())}
                     </div>
                     <div>
-                        <h4 class="font-black text-gray-800 dark:text-white text-base leading-tight">${student.full_name}</h4>
+                        <h4 class="font-black text-gray-800 dark:text-white text-base leading-tight">${escapeHTML(student.full_name)}</h4>
                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Kayıt: ${dateStr}</p>
                     </div>
                 </div>
