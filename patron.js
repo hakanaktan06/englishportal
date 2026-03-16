@@ -242,24 +242,33 @@ window.deleteTeacher = async function(teacherId, teacherName) {
 }
 
 // ==========================================
-// VIP FİYAT YÖNETİM MOTORU
+// VIP FİYAT YÖNETİM MOTORU (3'LÜ PAKET)
 // ==========================================
 async function loadVipPrice() {
     const { data } = await supabaseClient.from('profiles').select('vip_price').eq('role', 'god').single();
     if(data && data.vip_price) {
-        document.getElementById('vipPriceInput').value = data.vip_price;
+        try {
+            const prices = JSON.parse(data.vip_price);
+            document.getElementById('vipPrice1').value = prices.p1 || '';
+            document.getElementById('vipPrice3').value = prices.p3 || '';
+            document.getElementById('vipPrice12').value = prices.p12 || '';
+        } catch(e) { console.log("İlk kurulum"); }
     }
 }
-loadVipPrice(); // Sayfa açılınca mevcut fiyatı getir
+loadVipPrice();
 
 document.getElementById('savePriceBtn').addEventListener('click', async () => {
-    const newPrice = document.getElementById('vipPriceInput').value.trim();
-    if(!newPrice) { showToast("Fiyat boş olamaz!", "error"); return; }
+    const p1 = document.getElementById('vipPrice1').value.trim();
+    const p3 = document.getElementById('vipPrice3').value.trim();
+    const p12 = document.getElementById('vipPrice12').value.trim();
     
-    showToast("Fiyat güncelleniyor...", "info");
-    const { error } = await supabaseClient.from('profiles').update({ vip_price: newPrice }).eq('role', 'god');
+    if(!p1 || !p3 || !p12) { showToast("Tüm paket fiyatlarını doldurmalısın!", "error"); return; }
+    
+    const priceJson = JSON.stringify({ p1: p1, p3: p3, p12: p12 }); // Paketledik
+    
+    showToast("Fiyatlar güncelleniyor...", "info");
+    const { error } = await supabaseClient.from('profiles').update({ vip_price: priceJson }).eq('role', 'god');
     
     if(error) showToast("Hata: " + error.message, "error");
-    else showToast("Fiyat Vitrine Asıldı! 💸", "success");
+    else showToast("Fiyatlar başarıyla güncellendi! 💸", "success");
 });
-
