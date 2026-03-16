@@ -690,34 +690,37 @@ window.startListening = async function() {
 
     function resetMicUI(msg, isError = true) {
         micStatus.innerText = msg;
-        micStatus.className = `text-xs font-bold uppercase tracking-widest mt-4 ${isError ? 'text-rose-300' : 'text-emerald-300'}`;
+        micStatus.className = `text-xs font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm ${isError ? 'text-rose-300' : 'text-emerald-300'}`;
         micIcon.className = "w-10 h-10 text-purple-600 transition-colors";
         ripple.classList.remove('animate-ping', 'opacity-100');
     }
 
-    // API Key kontrol
-    let apiKey = sessionStorage.getItem('openai_api_key');
-    if (!apiKey) {
-        apiKey = prompt("Telaffuz için OpenAI API Şifrenizi girin (sk-...):");
-        if (!apiKey) { resetMicUI("API şifresi gerekli."); return; }
-        sessionStorage.setItem('openai_api_key', apiKey.trim());
-    }
-
-    // Mikrofon aç
+    // 🌟 ANDROID FIX: MİKROFON İZNİNİ EN BAŞTA İSTİYORUZ (Zaman kaybı olmadan) 🌟
     let stream;
     try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch(err) {
         if (err.name === 'NotAllowedError') {
-            showToast("Mikrofon izni reddedildi!", "error");
-            resetMicUI("Mikrofon izni yok.");
+            showToast("Mikrofon izni reddedildi! Lütfen tarayıcı ayarlarından izin verin.", "error");
+            resetMicUI("Mikrofon İzni Reddedildi");
         } else {
             resetMicUI("Mikrofon açılamadı, tekrar dene.");
         }
         return;
     }
 
-    // Kayıt formatı belirle (tarayıcıya göre)
+    micStatus.innerText = "Sisteme Bağlanıyor...";
+    micStatus.className = "text-xs text-indigo-200 font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm animate-pulse";
+    
+    // 🌟 PATRON KASASINDAN GİZLİCE API KEY ÇEKME 🌟
+    const { data: godProfile, error: godErr } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
+    if (godErr || !godProfile || !godProfile.openai_key) {
+        stream.getTracks().forEach(t => t.stop());
+        resetMicUI("Sistem Hatası: API bağlantısı kurulamadı.");
+        return;
+    }
+    const apiKey = godProfile.openai_key;
+
     const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' :
                      MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' :
                      MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : 'audio/ogg';
@@ -728,11 +731,9 @@ window.startListening = async function() {
     recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
 
     recorder.onstop = async () => {
-        // Streami kapat — bir sonraki çağrı için temiz bırak
         stream.getTracks().forEach(t => t.stop());
-
         micStatus.innerText = "Analiz ediliyor...";
-        micStatus.className = "text-xs text-indigo-200 font-bold uppercase tracking-widest mt-4 animate-pulse";
+        micStatus.className = "text-xs text-amber-200 font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm animate-pulse";
         ripple.classList.remove('animate-ping', 'opacity-100');
 
         const ext = mimeType.includes('webm') ? 'webm' : mimeType.includes('mp4') ? 'mp4' : 'ogg';
@@ -742,7 +743,7 @@ window.startListening = async function() {
         formData.append('file', audioBlob, `audio.${ext}`);
         formData.append('model', 'whisper-1');
         formData.append('language', 'en');
-        formData.append('prompt', targetWordOriginal); // Whisper'a hedef kelimeyi ipucu ver
+        formData.append('prompt', targetWordOriginal);
 
         try {
             const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
@@ -754,45 +755,30 @@ window.startListening = async function() {
             const data = await response.json();
 
             if (data.error) {
-                if (data.error.code === 'invalid_api_key') sessionStorage.removeItem('openai_api_key');
-                resetMicUI("API hatası, tekrar dene.");
+                resetMicUI("Yapay Zeka Hatası, tekrar dene.");
                 return;
             }
 
             const spoken = (data.text || '').toLowerCase().replace(/[^\w\s]/gi, '').trim();
 
-            // Eşleşme kontrolü
             let isMatch = false;
             if (spoken === targetWordFull) isMatch = true;
             if (spoken === targetWord) isMatch = true;
             if (spoken.includes(targetWord) && targetWord.length > 2) isMatch = true;
             if (targetWord.includes(spoken) && spoken.length > 2) isMatch = true;
 
-            // Sesteş kelimeler
             const homophones = {
-                'red': ['read'], 'read': ['red'],
-                'two': ['to','too'], 'to': ['two','too'], 'too': ['to','two'],
-                'write': ['right'], 'right': ['write'],
-                'eight': ['ate'], 'ate': ['eight'],
-                'buy': ['by','bye'], 'by': ['buy','bye'],
-                'see': ['sea'], 'sea': ['see'],
-                'hear': ['here'], 'here': ['hear'],
-                'one': ['won'], 'won': ['one'],
-                'sun': ['son'], 'son': ['sun'],
-                'meet': ['meat'], 'meat': ['meet'],
-                'week': ['weak'], 'weak': ['week'],
-                'whole': ['hole'], 'hole': ['whole'],
-                'peace': ['piece'], 'piece': ['peace'],
-                'new': ['knew'], 'knew': ['new'],
-                'our': ['hour'], 'hour': ['our'],
-                'wood': ['would'], 'would': ['wood'],
-                'way': ['weigh'], 'weigh': ['way'],
+                'red': ['read'], 'read': ['red'], 'two': ['to','too'], 'to': ['two','too'], 'too': ['to','two'],
+                'write': ['right'], 'right': ['write'], 'eight': ['ate'], 'ate': ['eight'], 'buy': ['by','bye'], 
+                'by': ['buy','bye'], 'see': ['sea'], 'sea': ['see'], 'hear': ['here'], 'here': ['hear'],
+                'one': ['won'], 'won': ['one'], 'sun': ['son'], 'son': ['sun'], 'meet': ['meat'], 'meat': ['meet'],
+                'week': ['weak'], 'weak': ['week'], 'whole': ['hole'], 'hole': ['whole'], 'peace': ['piece'], 'piece': ['peace']
             };
             if (homophones[targetWord]?.includes(spoken)) isMatch = true;
 
             if (isMatch) {
                 micStatus.innerText = "HARİKA! DOĞRU TELAFFUZ! 🎉";
-                micStatus.className = "text-xs text-emerald-300 font-black uppercase tracking-widest mt-4";
+                micStatus.className = "text-xs text-emerald-300 font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm";
                 micIcon.className = "w-10 h-10 text-emerald-400 transition-colors";
 
                 const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
@@ -803,7 +789,7 @@ window.startListening = async function() {
                     if (currentFcIndex < currentFcWords.length - 1) nextCard();
                     else {
                         micStatus.innerText = "TÜM KELİMELER TAMAM! 🏆";
-                        micStatus.className = "text-xs text-amber-400 font-black uppercase tracking-widest mt-4";
+                        micStatus.className = "text-xs text-amber-400 font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm";
                     }
                 }, 1500);
 
@@ -819,18 +805,17 @@ window.startListening = async function() {
         }
     };
 
-    // Kayda başla
     recorder.start();
     micStatus.innerText = "Dinliyor... Konuşun! 🎤";
-    micStatus.className = "text-xs text-white font-bold uppercase tracking-widest mt-4 animate-pulse";
+    micStatus.className = "text-xs text-white font-black uppercase tracking-widest mt-5 drop-shadow-md bg-rose-500/80 px-4 py-2 rounded-full backdrop-blur-sm animate-pulse";
     micIcon.className = "w-10 h-10 text-rose-400 animate-pulse transition-colors";
     ripple.classList.add('animate-ping', 'opacity-100');
 
-    // 3 saniye kayıt al, sonra Whisper'a gönder
     setTimeout(() => {
         if (recorder.state === 'recording') recorder.stop();
     }, 3000);
 }
+
 
 
 window.finishFlashcardTask = async function() {
