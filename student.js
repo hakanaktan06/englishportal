@@ -781,7 +781,7 @@ window.startListening = async function() {
             };
             if (homophones[targetWord]?.includes(spoken)) isMatch = true;
 
-            if (isMatch) {
+                        if (isMatch) {
                 micStatus.innerText = "HARİKA! DOĞRU TELAFFUZ! 🎉";
                 micStatus.className = "text-xs text-emerald-300 font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm";
                 micIcon.className = "w-10 h-10 text-emerald-400 transition-colors";
@@ -790,15 +790,19 @@ window.startListening = async function() {
                 audio.volume = 0.5;
                 audio.play().catch(() => {});
 
+                // 🌟 SONRAKİ KARTA GEÇİŞ FİX'İ 🌟
                 setTimeout(() => {
-                    if (currentFcIndex < currentFcWords.length - 1) nextCard();
-                    else {
+                    if (currentFcIndex < currentFcWords.length - 1) {
+                        nextCard(); // Sıradaki karta geç
+                    } else {
                         micStatus.innerText = "TÜM KELİMELER TAMAM! 🏆";
                         micStatus.className = "text-xs text-amber-400 font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm";
+                        document.getElementById('btnFinishFlashcard').classList.remove('hidden'); // Görevi bitir butonunu aç
                     }
                 }, 1500);
 
             } else {
+             
                 const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3');
                 audio.volume = 0.3;
                 audio.play().catch(() => {});
