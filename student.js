@@ -9,7 +9,6 @@ let currentStudentId = null;
 let currentQuizQuestions = []; 
 let activeTakingQuizId = null;
 let quizTimerInterval = null; 
-let currentRecognition = null; // YENİ SATIR
 
 document.querySelector('main')?.addEventListener('touchstart', function() {}, {passive: true});
 
@@ -590,6 +589,7 @@ let currentFcWords = [];
 let currentFcIndex = 0;
 let currentFcTaskId = null;
 let isCardFlipped = false;
+let currentRecognition = null;
 
 window.startFlashcardTask = function(taskId, dataStr, title) {
     currentFcTaskId = taskId;
@@ -626,14 +626,14 @@ window.flipCard = function() {
 }
 
 function updateFlashcardUI() {
-    // YENİ: Önceki recognition'ı zorla kapat
+    // Önceki mikrofon oturumunu zorla kapat
     if (currentRecognition) {
         try { currentRecognition.abort(); } catch(e) {}
         currentRecognition = null;
     }
-    
+
     const word = currentFcWords[currentFcIndex];
-    
+
     // Türkçe (ön yüz)
     document.getElementById('fcWordTr').innerText = word.tr;
 
@@ -692,6 +692,12 @@ window.prevCard = function() {
 // Çözüm: onspeechend kaldırıldı. onend + resultReceived flag sistemi kuruldu.
 // ==========================================
 window.startListening = function() {
+    // Eğer hala çalışıyorsa önce durdur
+    if (currentRecognition) {
+        try { currentRecognition.abort(); } catch(e) {}
+        currentRecognition = null;
+    }
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
         showToast("Tarayıcınız ses tanımayı desteklemiyor.", "error");
@@ -699,11 +705,11 @@ window.startListening = function() {
     }
 
     const targetWordOriginal = currentFcWords[currentFcIndex].en;
-    // Çok kelimeli ifadelerin sadece ilk kelimesini al (örn: "run away" → "run")
     const targetWord = targetWordOriginal.toLowerCase().split(' ')[0].replace(/[^\w]/gi, '').trim();
     const targetWordFull = targetWordOriginal.toLowerCase().replace(/[^\w\s]/gi, '').trim();
 
     const recognition = new SpeechRecognition();
+    currentRecognition = recognition; // Global referans
     recognition.lang = 'en-US';
     recognition.interimResults = false;
     recognition.maxAlternatives = 5; // Daha fazla alternatif = daha yüksek doğruluk
