@@ -1429,9 +1429,10 @@ if (btnGenerateAI) {
         const topic = topicInput ? topicInput.value.trim() : '';
         let qCount = countInput ? parseInt(countInput.value) : 5;
         
-        if (!topic) { showToast('Lütfen yapay zeka için bir konu yazın!', 'error'); return; }
+                if (!topic) { showToast('Lütfen yapay zeka için bir konu yazın!', 'error'); return; }
         if (isNaN(qCount) || qCount < 1) qCount = 5;
-        if (qCount > 20) { showToast('En fazla 20 soru üretebilirsiniz.', 'error'); return; }
+        if (qCount > 20) qCount = 20; // Otomatik 20'ye sabitledik
+
 
         let apiKey = localStorage.getItem('openai_api_key');
         if (!apiKey) {
