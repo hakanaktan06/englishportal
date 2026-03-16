@@ -568,7 +568,7 @@ async function fetchStudents() {
             <div class="flex justify-between items-start mb-5">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 text-indigo-600 dark:text-indigo-300 flex items-center justify-center text-lg font-black shadow-inner border border-indigo-50 dark:border-slate-600">
-                        ${student.full_name.charAt(0).toUpperCase()}
+                        ${escapeHTML(student.full_name.charAt(0).toUpperCase())}
                     </div>
                     <div>
                         <h4 class="font-black text-gray-800 dark:text-white text-base leading-tight">${student.full_name}</h4>
