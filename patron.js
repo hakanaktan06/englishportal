@@ -240,3 +240,26 @@ window.deleteTeacher = async function(teacherId, teacherName) {
         fetchSystemData();
     }
 }
+
+// ==========================================
+// VIP FİYAT YÖNETİM MOTORU
+// ==========================================
+async function loadVipPrice() {
+    const { data } = await supabaseClient.from('profiles').select('vip_price').eq('role', 'god').single();
+    if(data && data.vip_price) {
+        document.getElementById('vipPriceInput').value = data.vip_price;
+    }
+}
+loadVipPrice(); // Sayfa açılınca mevcut fiyatı getir
+
+document.getElementById('savePriceBtn').addEventListener('click', async () => {
+    const newPrice = document.getElementById('vipPriceInput').value.trim();
+    if(!newPrice) { showToast("Fiyat boş olamaz!", "error"); return; }
+    
+    showToast("Fiyat güncelleniyor...", "info");
+    const { error } = await supabaseClient.from('profiles').update({ vip_price: newPrice }).eq('role', 'god');
+    
+    if(error) showToast("Hata: " + error.message, "error");
+    else showToast("Fiyat Vitrine Asıldı! 💸", "success");
+});
+
