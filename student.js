@@ -615,7 +615,7 @@ window.flipCard = function() {
     else card.classList.remove('rotate-y-180');
 }
 
-// 🌟 GÖRSEL VE ARAYÜZ GÜNCELLEME MOTORU 🌟
+// 🌟 GÖRSEL VE ARAYÜZ GÜNCELLEME MOTORU (KUSURSUZ 3 KATMANLI SİSTEM) 🌟
 window.updateFlashcardUI = function() {
     try {
         if (currentRecognition) {
@@ -633,19 +633,42 @@ window.updateFlashcardUI = function() {
             phEl.style.display = word.ph ? 'block' : 'none';
         }
 
-        // 🌟 IŞIK HIZINDA GÖRSEL ÇEKME VE KALİTE FİX 🌟
+        // 🌟 3 KATMANLI KUSURSUZ GÖRSEL MOTORU 🌟
         const imgEl = document.getElementById('fcWordImage');
         if (imgEl) {
-            imgEl.style.opacity = '0'; 
+            imgEl.style.opacity = '0'; // Resim inene kadar gizle
             
-            // Sadece ilk kelimeyi alıp aratıyoruz ki daha net ve doğru fotoğraflar çıksın (Örn: "get up" yerine "get")
+            // Kelimeyi temizle (Örn: "Get up" -> "get")
             const cleanWord = word.en.toLowerCase().split(' ')[0].replace(/[^\w]/gi, '');
             
-            imgEl.src = `https://image.pollinations.ai/prompt/a%20realistic%20photo%20of%20${encodeURIComponent(cleanWord)}?width=600&height=800&nologo=true&seed=${currentFcIndex}`;
-            
-            // Resim yüklenince %100 opaklıkta göster (Çünkü HTML'de siyah filtremiz var zaten)
+            // 1. KATMAN: Wikipedia API (Ücretsiz, Kusursuz Doğruluk, Işık Hızında)
+            fetch(`https://en.wikipedia.org/w/api.php?action=query&titles=${cleanWord}&prop=pageimages&format=json&pithumbsize=800&origin=*`)
+            .then(res => res.json())
+            .then(data => {
+                const pages = data.query.pages;
+                const pageId = Object.keys(pages)[0];
+                
+                if (pageId !== "-1" && pages[pageId].thumbnail) {
+                    imgEl.src = pages[pageId].thumbnail.source; // Wikipedia Resmi
+                } else {
+                    // 2. KATMAN: Wikipedia Bulamazsa Microsoft Bing Gizli Arama Motoru
+                    imgEl.src = `https://tse2.mm.bing.net/th?q=${encodeURIComponent(cleanWord + " real photo")}&w=600&h=800&c=7&pid=Api`;
+                }
+            })
+            .catch(() => {
+                // Fetch patlarsa direkt Bing'e geç
+                imgEl.src = `https://tse2.mm.bing.net/th?q=${encodeURIComponent(cleanWord + " real photo")}&w=600&h=800&c=7&pid=Api`;
+            });
+
+            // Resim yüklendiğinde cam gibi göster
             imgEl.onload = () => { imgEl.style.opacity = '1'; }; 
-            imgEl.onerror = () => { imgEl.style.opacity = '0'; };
+            
+            // 3. KATMAN: Olur da her şey çökerse, siyah ekran yerine şık bir manzara koy
+            imgEl.onerror = () => { 
+                if (!imgEl.src.includes('picsum')) {
+                    imgEl.src = `https://picsum.photos/seed/${cleanWord}/600/800`; 
+                }
+            };
         }
 
         document.getElementById('fcProgress').innerText = `Kelime ${currentFcIndex + 1} / ${currentFcWords.length}`;
@@ -672,6 +695,7 @@ window.updateFlashcardUI = function() {
         console.error("UI Güncelleme Hatası:", err);
     }
 }
+
 
 
 
