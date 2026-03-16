@@ -242,27 +242,50 @@ async function fetchMyHomeworks() {
     let newHwHtml = '';
     let doneHwHtml = '';
 
-    data.forEach(hw => {
+        data.forEach(hw => {
         const dueDate = new Date(hw.due_date).toLocaleDateString('tr-TR');
         const isCompleted = hw.status === 'Tamamlandı';
         
+        let cardTitle = hw.title;
+        let isFlashcard = false;
+        let flashcardDataStr = "[]";
+        
+        // EĞER ÖDEV BAŞLIĞINDA GİZLİ KOD VARSA ONU ÖZEL KARTA ÇEVİR
+        if (hw.title.includes('[KELİME_KARTI]')) {
+            isFlashcard = true;
+            cardTitle = hw.title.replace('[KELİME_KARTI]', '🚀 Telaffuz Görevi:');
+            // Tırnak hatalarını önlemek için HTML entity kullanıyoruz
+            flashcardDataStr = hw.description.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+        }
+
         const card = `
             <div class="bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition-all flex flex-col h-full relative overflow-hidden group">
-                ${isCompleted ? '<div class="absolute top-0 left-0 w-full h-1.5 bg-emerald-500"></div>' : '<div class="absolute top-0 left-0 w-full h-1.5 bg-amber-400"></div>'}
+                ${isCompleted ? '<div class="absolute top-0 left-0 w-full h-1.5 bg-emerald-500"></div>' : (isFlashcard ? '<div class="absolute top-0 left-0 w-full h-1.5 bg-purple-500"></div>' : '<div class="absolute top-0 left-0 w-full h-1.5 bg-amber-400"></div>')}
                 
-                <h4 class="text-base font-black text-gray-800 dark:text-white mb-2 mt-1 line-clamp-2 leading-tight">${hw.title}</h4>
-                <p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl leading-relaxed font-medium border border-gray-100 dark:border-slate-700/50">${hw.description}</p>
+                <h4 class="text-base font-black ${isFlashcard ? 'text-purple-600 dark:text-purple-400' : 'text-gray-800 dark:text-white'} mb-2 mt-1 line-clamp-2 leading-tight">${cardTitle}</h4>
+                
+                ${isFlashcard 
+                    ? `<p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-2xl font-medium border border-purple-100 dark:border-purple-800/50">Yapay zeka ile üretilmiş ${isCompleted ? 'tamamlanmış' : 'yeni'} kelime telaffuz görevi.</p>` 
+                    : `<p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl leading-relaxed font-medium border border-gray-100 dark:border-slate-700/50">${hw.description}</p>`
+                }
+
                 <div class="flex justify-between items-center mt-auto">
                     <span class="text-[10px] font-black uppercase text-gray-400 flex items-center gap-1 bg-gray-50 dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-slate-600"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Son: ${dueDate}</span>
+                    
                     ${isCompleted 
                         ? '<span class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ONAYLANDI</span>' 
-                        : '<span class="text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> BEKLİYOR</span>'}
+                        : (isFlashcard 
+                            ? `<button onclick="startFlashcardTask('${hw.id}', '${flashcardDataStr}', '${hw.title.replace(/'/g, "\\'")}')" class="text-[10px] font-black text-white bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 px-4 py-2 rounded-lg shadow-md transform active:scale-95 transition flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> PRATİĞE BAŞLA</button>`
+                            : '<span class="text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> BEKLİYOR</span>'
+                        )
+                    }
                 </div>
             </div>`;
 
         if(isCompleted) doneHwHtml += card;
         else newHwHtml += card;
     });
+
 
     container.innerHTML = `
         <div class="col-span-full mb-1"><h4 class="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs flex items-center gap-2"><svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Yeni / Bekleyen Ödevler</h4></div>
@@ -568,6 +591,181 @@ window.closeAnalysisModal = function() {
     document.getElementById('analysisModal').classList.add('hidden'); 
     switchTab('quizzes');
 }
+
+
+// ==========================================
+// 7. 3D KELİME KARTI VE TELAFFUZ MOTORU
+// ==========================================
+let currentFcWords = [];
+let currentFcIndex = 0;
+let currentFcTaskId = null;
+let isCardFlipped = false;
+
+window.startFlashcardTask = function(taskId, dataStr, title) {
+    currentFcTaskId = taskId;
+    
+    // JSON verisini çöz 
+    const rawData = dataStr.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+    try {
+        currentFcWords = JSON.parse(rawData);
+    } catch(e) {
+        showToast("Kelime verisi okunamadı!", "error");
+        return;
+    }
+
+    if(currentFcWords.length === 0) return;
+
+    currentFcIndex = 0;
+    document.getElementById('fcModalTitle').innerText = title.replace('[KELİME_KARTI]', '').trim();
+    document.getElementById('flashcardModal').classList.remove('hidden');
+    
+    updateFlashcardUI();
+}
+
+window.closeFlashcardModal = function() {
+    document.getElementById('flashcardModal').classList.add('hidden');
+}
+
+window.flipCard = function() {
+    const card = document.getElementById('fcInner');
+    isCardFlipped = !isCardFlipped;
+    if (isCardFlipped) {
+        card.classList.add('rotate-y-180');
+    } else {
+        card.classList.remove('rotate-y-180');
+    }
+}
+
+function updateFlashcardUI() {
+    const word = currentFcWords[currentFcIndex];
+    document.getElementById('fcWordTr').innerText = word.tr;
+    document.getElementById('fcWordEn').innerText = word.en;
+    document.getElementById('fcProgress').innerText = `Kelime ${currentFcIndex + 1} / ${currentFcWords.length}`;
+    
+    // Kartı ön yüze çevir
+    isCardFlipped = false;
+    document.getElementById('fcInner').classList.remove('rotate-y-180');
+
+    // Durumu sıfırla
+    document.getElementById('micStatus').innerText = "Mikrofona Dokun ve Oku";
+    document.getElementById('micStatus').className = "text-xs text-indigo-100 font-bold uppercase tracking-widest mt-4";
+    document.getElementById('micIcon').className = "w-10 h-10 text-purple-600 transition-colors";
+    
+    // Son kelimedeyse bitir butonunu göster
+    if (currentFcIndex === currentFcWords.length - 1) {
+        document.getElementById('btnFinishFlashcard').classList.remove('hidden');
+    } else {
+        document.getElementById('btnFinishFlashcard').classList.add('hidden');
+    }
+}
+
+window.nextCard = function() {
+    if (currentFcIndex < currentFcWords.length - 1) {
+        currentFcIndex++;
+        updateFlashcardUI();
+    }
+}
+
+window.prevCard = function() {
+    if (currentFcIndex > 0) {
+        currentFcIndex--;
+        updateFlashcardUI();
+    }
+}
+
+// YZ SES TANIMA (WEB SPEECH API)
+window.startListening = function() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        showToast("Tarayıcınız ses tanımayı desteklemiyor. Chrome veya Safari kullanın.", "error");
+        return;
+    }
+
+    // Hedef kelimeyi (İngilizcesini) al, küçük harfe çevirip noktalama işaretlerini atalım
+    const targetWord = currentFcWords[currentFcIndex].en.toLowerCase().replace(/[^\w\s]/gi, '').trim();
+    
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US'; // Sadece İngilizce dinlesin
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    const micStatus = document.getElementById('micStatus');
+    const micIcon = document.getElementById('micIcon');
+    const ripple = document.getElementById('micRipple');
+
+    recognition.onstart = function() {
+        micStatus.innerText = "Sizi dinliyor...";
+        micIcon.classList.remove('text-purple-600');
+        micIcon.classList.add('animate-pulse', 'text-rose-500');
+        ripple.classList.add('animate-ping', 'opacity-100');
+    };
+
+    recognition.onresult = function(event) {
+        const spokenWord = event.results[0][0].transcript.toLowerCase().replace(/[^\w\s]/gi, '').trim();
+        
+        // Eşleşme kontrolü (içinde geçiyorsa da kabul ediyoruz çocukları zorlamamak için)
+        if (spokenWord === targetWord || spokenWord.includes(targetWord) || targetWord.includes(spokenWord)) {
+            micStatus.innerText = "HARİKA! DOĞRU TELAFFUZ!";
+            micStatus.className = "text-xs text-emerald-300 font-black uppercase tracking-widest mt-4";
+            micIcon.className = "w-10 h-10 text-emerald-500";
+            
+            // Tatlı bir Ding! sesi
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
+            audio.play().catch(e => console.log(e));
+
+            // 1.5 saniye sonra otomatik sonrakine geç
+            setTimeout(() => {
+                if (currentFcIndex < currentFcWords.length - 1) nextCard();
+            }, 1500);
+
+        } else {
+            micStatus.innerText = `Yanlış! "${spokenWord}" dediniz.`;
+            micStatus.className = "text-xs text-rose-300 font-black uppercase tracking-widest mt-4";
+            micIcon.className = "w-10 h-10 text-rose-500";
+            
+            // Hata sesi
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3');
+            audio.play().catch(e => console.log(e));
+        }
+    };
+
+    recognition.onspeechend = function() {
+        recognition.stop();
+        ripple.classList.remove('animate-ping', 'opacity-100');
+    };
+
+    recognition.onerror = function(event) {
+        micStatus.innerText = "Anlayamadım, bir daha dene.";
+        micIcon.className = "w-10 h-10 text-purple-600";
+        ripple.classList.remove('animate-ping', 'opacity-100');
+    };
+
+    recognition.start();
+}
+
+window.finishFlashcardTask = async function() {
+    const onay = await customConfirm("Kelime pratiğini tamamladın mı?", "Evet, Bitir");
+    if (!onay) return;
+
+    showToast("Görev tamamlanıyor...", "info");
+
+    // Öğretmen tarafında ödevi 'Tamamlandı' yap
+    const { error } = await supabaseClient.from('homeworks').update({ status: 'Tamamlandı' }).eq('id', currentFcTaskId);
+    if (error) { showToast("Hata: " + error.message, "error"); return; }
+
+    // Öğrenciye kendi kendine otomatik 50 XP ekle
+    const { data: prof } = await supabaseClient.from('profiles').select('xp').eq('id', currentStudentId).single();
+    if (prof) {
+        const newXp = (prof.xp || 0) + 50;
+        await supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentStudentId);
+    }
+
+    showToast("Tebrikler! +50 XP kazandın!", "success");
+    closeFlashcardModal();
+    initStudentPortal(); // Sayfayı yenile ki ödev onaylandı görünsün
+}
+
+
 
 // Sistemi Başlat
 initStudentPortal();
