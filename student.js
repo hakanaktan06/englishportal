@@ -691,42 +691,18 @@ window.prevCard = function() {
 // Ana sorun: onspeechend → stop() çağırıyordu ama onresult henüz tetiklenmemişti.
 // Çözüm: onspeechend kaldırıldı. onend + resultReceived flag sistemi kuruldu.
 // ==========================================
-window.startListening = function() {
-    // Eğer hala çalışıyorsa önce durdur
-    if (currentRecognition) {
-        try { currentRecognition.abort(); } catch(e) {}
-        currentRecognition = null;
-    }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        showToast("Tarayıcınız ses tanımayı desteklemiyor.", "error");
-        return;
-    }
-
-    const targetWordOriginal = currentFcWords[currentFcIndex].en;
-    const targetWord = targetWordOriginal.toLowerCase().split(' ')[0].replace(/[^\w]/gi, '').trim();
-    const targetWordFull = targetWordOriginal.toLowerCase().replace(/[^\w\s]/gi, '').trim();
-
-    const recognition = new SpeechRecognition();
-    currentRecognition = recognition; // Global referans
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 5; // Daha fazla alternatif = daha yüksek doğruluk
-    recognition.continuous = false;
-
+// 🎙️ WHISPER TABANLI TELAFFUZ MOTORU
+// Web Speech API yerine OpenAI Whisper kullanıyor.
+// Her seferinde fresh MediaRecorder açılıyor — mobilde sorunsuz çalışır.
+// ==========================================
+window.startListening = async function() {
     const micStatus = document.getElementById('micStatus');
     const micIcon = document.getElementById('micIcon');
     const ripple = document.getElementById('micRipple');
 
-    // Dinleme başladı — UI güncelle
-    micStatus.innerText = "Sizi dinliyor... Konuşun 🎤";
-    micStatus.className = "text-xs text-white font-bold uppercase tracking-widest mt-4 animate-pulse";
-    micIcon.className = "w-10 h-10 text-rose-400 animate-pulse transition-colors";
-    ripple.classList.add('animate-ping', 'opacity-100');
-
-    // Sonuç geldi mi? Bu flag olmadan onend yanlış "ses alınamadı" verebiliyordu
-    let resultReceived = false;
+    const targetWordOriginal = currentFcWords[currentFcIndex].en;
+    const targetWord = targetWordOriginal.toLowerCase().split(' ')[0].replace(/[^\w]/gi, '').trim();
+    const targetWordFull = targetWordOriginal.toLowerCase().replace(/[^\w\s]/gi, '').trim();
 
     function resetMicUI(msg, isError = true) {
         micStatus.innerText = msg;
@@ -735,144 +711,141 @@ window.startListening = function() {
         ripple.classList.remove('animate-ping', 'opacity-100');
     }
 
-    // ✅ SONUÇ GELDİ
-    recognition.onresult = function(event) {
-        resultReceived = true;
+    // API Key kontrol
+    let apiKey = sessionStorage.getItem('openai_api_key');
+    if (!apiKey) {
+        apiKey = prompt("Telaffuz için OpenAI API Şifrenizi girin (sk-...):");
+        if (!apiKey) { resetMicUI("API şifresi gerekli."); return; }
+        sessionStorage.setItem('openai_api_key', apiKey.trim());
+    }
 
-        // Tüm alternatifleri topla
-        let spokenWords = [];
-        for(let i = 0; i < event.results[0].length; i++) {
-            const cleaned = event.results[0][i].transcript
-                .toLowerCase()
-                .replace(/[^\w\s]/gi, '')
-                .trim();
-            spokenWords.push(cleaned);
+    // Mikrofon aç
+    let stream;
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch(err) {
+        if (err.name === 'NotAllowedError') {
+            showToast("Mikrofon izni reddedildi!", "error");
+            resetMicUI("Mikrofon izni yok.");
+        } else {
+            resetMicUI("Mikrofon açılamadı, tekrar dene.");
         }
+        return;
+    }
 
-        // Eşleşme kontrolü — hem tam kelime hem de ilk kelime kontrolü
-        let isMatch = false;
-        spokenWords.forEach(spoken => {
-            // Tam eşleşme
+    // Kayıt formatı belirle (tarayıcıya göre)
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' :
+                     MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' :
+                     MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : 'audio/ogg';
+
+    const recorder = new MediaRecorder(stream, { mimeType });
+    const chunks = [];
+
+    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+    recorder.onstop = async () => {
+        // Streami kapat — bir sonraki çağrı için temiz bırak
+        stream.getTracks().forEach(t => t.stop());
+
+        micStatus.innerText = "Analiz ediliyor...";
+        micStatus.className = "text-xs text-indigo-200 font-bold uppercase tracking-widest mt-4 animate-pulse";
+        ripple.classList.remove('animate-ping', 'opacity-100');
+
+        const ext = mimeType.includes('webm') ? 'webm' : mimeType.includes('mp4') ? 'mp4' : 'ogg';
+        const audioBlob = new Blob(chunks, { type: mimeType });
+
+        const formData = new FormData();
+        formData.append('file', audioBlob, `audio.${ext}`);
+        formData.append('model', 'whisper-1');
+        formData.append('language', 'en');
+        formData.append('prompt', targetWordOriginal); // Whisper'a hedef kelimeyi ipucu ver
+
+        try {
+            const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${apiKey}` },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                if (data.error.code === 'invalid_api_key') sessionStorage.removeItem('openai_api_key');
+                resetMicUI("API hatası, tekrar dene.");
+                return;
+            }
+
+            const spoken = (data.text || '').toLowerCase().replace(/[^\w\s]/gi, '').trim();
+
+            // Eşleşme kontrolü
+            let isMatch = false;
             if (spoken === targetWordFull) isMatch = true;
-            // İlk kelime eşleşmesi
             if (spoken === targetWord) isMatch = true;
-            // Kelime içerme (kısa kelimelerde yanıltabilir, ama genel olarak iyi)
             if (spoken.includes(targetWord) && targetWord.length > 2) isMatch = true;
             if (targetWord.includes(spoken) && spoken.length > 2) isMatch = true;
 
-            // Sesteş kelimeler (Homophones) listesi
+            // Sesteş kelimeler
             const homophones = {
                 'red': ['read'], 'read': ['red'],
-                'two': ['to', 'too'], 'to': ['two', 'too'], 'too': ['to', 'two'],
+                'two': ['to','too'], 'to': ['two','too'], 'too': ['to','two'],
                 'write': ['right'], 'right': ['write'],
                 'eight': ['ate'], 'ate': ['eight'],
-                'buy': ['by', 'bye'], 'by': ['buy', 'bye'], 'bye': ['buy', 'by'],
+                'buy': ['by','bye'], 'by': ['buy','bye'],
                 'see': ['sea'], 'sea': ['see'],
-                'know': ['no'], 'no': ['know'],
                 'hear': ['here'], 'here': ['hear'],
-                'their': ['there', 'theyre'], 'there': ['their'],
                 'one': ['won'], 'won': ['one'],
                 'sun': ['son'], 'son': ['sun'],
                 'meet': ['meat'], 'meat': ['meet'],
                 'week': ['weak'], 'weak': ['week'],
-                'flower': ['flour'], 'flour': ['flower'],
                 'whole': ['hole'], 'hole': ['whole'],
-                'bare': ['bear'], 'bear': ['bare'],
-                'pair': ['pear', 'pare'], 'pear': ['pair'],
                 'peace': ['piece'], 'piece': ['peace'],
-                'rain': ['reign', 'rein'], 'reign': ['rain'],
-                'blue': ['blew'], 'blew': ['blue'],
-                'for': ['four', 'fore'], 'four': ['for'],
-                'hair': ['hare'], 'hare': ['hair'],
-                'knight': ['night'], 'night': ['knight'],
-                'knot': ['not'], 'not': ['knot'],
-                'know': ['no'], 'no': ['know'],
                 'new': ['knew'], 'knew': ['new'],
                 'our': ['hour'], 'hour': ['our'],
-                'plain': ['plane'], 'plane': ['plain'],
-                'sale': ['sail'], 'sail': ['sale'],
-                'some': ['sum'], 'sum': ['some'],
-                'stair': ['stare'], 'stare': ['stair'],
-                'steal': ['steel'], 'steel': ['steal'],
-                'tale': ['tail'], 'tail': ['tale'],
-                'waist': ['waste'], 'waste': ['waist'],
-                'way': ['weigh'], 'weigh': ['way'],
                 'wood': ['would'], 'would': ['wood'],
+                'way': ['weigh'], 'weigh': ['way'],
             };
+            if (homophones[targetWord]?.includes(spoken)) isMatch = true;
 
-            if (homophones[targetWord] && homophones[targetWord].includes(spoken)) isMatch = true;
-        });
+            if (isMatch) {
+                micStatus.innerText = "HARİKA! DOĞRU TELAFFUZ! 🎉";
+                micStatus.className = "text-xs text-emerald-300 font-black uppercase tracking-widest mt-4";
+                micIcon.className = "w-10 h-10 text-emerald-400 transition-colors";
 
-        if (isMatch) {
-            // 🎉 DOĞRU!
-            micStatus.innerText = "HARİKA! DOĞRU TELAFFUZ! 🎉";
-            micStatus.className = "text-xs text-emerald-300 font-black uppercase tracking-widest mt-4";
-            micIcon.className = "w-10 h-10 text-emerald-400 transition-colors";
-            ripple.classList.remove('animate-ping', 'opacity-100');
-            
-            // Başarı sesi
-            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
-            audio.volume = 0.5;
-            audio.play().catch(() => {});
+                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
+                audio.volume = 0.5;
+                audio.play().catch(() => {});
 
-            // 1.5 saniye sonra otomatik ilerle
-            setTimeout(() => {
-                if (currentFcIndex < currentFcWords.length - 1) {
-                    nextCard();
-                } else {
-                    micStatus.innerText = "TÜM KELİMELER TAMAM! 🏆";
-                    micStatus.className = "text-xs text-amber-400 font-black uppercase tracking-widest mt-4";
-                }
-            }, 1500);
+                setTimeout(() => {
+                    if (currentFcIndex < currentFcWords.length - 1) nextCard();
+                    else {
+                        micStatus.innerText = "TÜM KELİMELER TAMAM! 🏆";
+                        micStatus.className = "text-xs text-amber-400 font-black uppercase tracking-widest mt-4";
+                    }
+                }, 1500);
 
-        } else {
-            // ❌ YANLIŞ
-            const heard = spokenWords[0] || '?';
-            resetMicUI(`Yanlış! "${heard}" duyduk. Tekrar dene.`);
-            
-            // Hata sesi
-            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3');
-            audio.volume = 0.3;
-            audio.play().catch(() => {});
+            } else {
+                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3');
+                audio.volume = 0.3;
+                audio.play().catch(() => {});
+                resetMicUI(`Yanlış! "${spoken || '?'}" duyduk. Tekrar dene.`);
+            }
+
+        } catch(err) {
+            resetMicUI("Bağlantı hatası, tekrar dene.");
         }
     };
 
-    // ✅ TANIMI KAPANDI (onresult sonrası veya hata olmadan)
-    // Bu event her zaman tetiklenir — onresult'tan SONRA da çalışır
-    recognition.onend = function() {
-        // Eğer hiç sonuç gelmediyse kullanıcıya bildir
-        if (!resultReceived) {
-            resetMicUI("Ses alınamadı, tekrar dokuna bas.");
-        }
-        // Animasyonları her durumda durdur
-        ripple.classList.remove('animate-ping', 'opacity-100');
-    };
+    // Kayda başla
+    recorder.start();
+    micStatus.innerText = "Dinliyor... Konuşun! 🎤";
+    micStatus.className = "text-xs text-white font-bold uppercase tracking-widest mt-4 animate-pulse";
+    micIcon.className = "w-10 h-10 text-rose-400 animate-pulse transition-colors";
+    ripple.classList.add('animate-ping', 'opacity-100');
 
-    // ✅ HATA
-    recognition.onerror = function(event) {
-        resultReceived = true; // onend'in "ses alınamadı" göstermesini engelle
-
-        if (event.error === 'no-speech') {
-            resetMicUI("Ses algılanamadı. Biraz daha yüksek konuş.");
-        } else if (event.error === 'not-allowed' || event.error === 'permission-denied') {
-            showToast("Mikrofon izni reddedildi! Tarayıcı ayarlarından izin ver.", "error");
-            resetMicUI("Mikrofon izni yok.");
-        } else if (event.error === 'network') {
-            resetMicUI("Ağ hatası. İnternet bağlantını kontrol et.");
-        } else {
-            resetMicUI("Anlayamadım, tekrar dokun.");
-        }
-    };
-
-    // Başlat — 300ms bekleme mobilde önceki session kapanmasını garantiler
+    // 3 saniye kayıt al, sonra Whisper'a gönder
     setTimeout(() => {
-        try {
-            recognition.start();
-        } catch(e) {
-            resetMicUI("Lütfen tekrar dokun.");
-            currentRecognition = null;
-        }
-    }, 300);
+        if (recorder.state === 'recording') recorder.stop();
+    }, 3000);
 }
 
 
