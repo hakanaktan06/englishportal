@@ -1160,7 +1160,8 @@ async function fetchStudentLessons(studentId) {
         lessons.forEach(l => {
             const date = new Date(l.lesson_date).toLocaleDateString('tr-TR');
             const time = l.lesson_time ? l.lesson_time : '';
-            const duration = l.duration_hours ? `${l.duration_hours} Saat` : '';
+            const duration = l.duration_hours ? `${l.duration_hours} Ders` : '';
+
             if (!l.is_paid) totalUnpaid += Number(l.price || 0);
 
             const payBadge = l.is_paid 
