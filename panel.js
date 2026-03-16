@@ -595,7 +595,7 @@ async function fetchStudents() {
 
             <div class="flex items-center justify-between mt-auto border-t border-gray-50 dark:border-slate-700 pt-5">
                 ${debtHtml}
-                <button onclick="openStudentProfile('${student.id}', '${student.full_name.replace(/'/g, "\\'")}', '${student.parent_phone || ''}')" class="bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-600 dark:hover:bg-indigo-500 text-indigo-600 dark:text-indigo-400 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all shadow-sm flex items-center gap-1">
+                <button onclick="openStudentProfile('${student.id}', '${escapeHTML(student.full_name.replace(/'/g, "\\'"))}', '${student.parent_phone || ''}')" class="bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-600 dark:hover:bg-indigo-500 text-indigo-600 dark:text-indigo-400 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all shadow-sm flex items-center gap-1">
                     PROFİLİ AÇ
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                 </button>
