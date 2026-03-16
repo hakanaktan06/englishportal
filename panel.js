@@ -1556,16 +1556,28 @@ window.closePaywall = function() {
 }
 
 // ==========================================
-// 17. DİNAMİK FİYAT ÇEKME MOTORU
+// 17. DİNAMİK FİYAT ÇEKME MOTORU (3'LÜ PAKET)
 // ==========================================
 async function fetchGodVipPrice() {
     const { data } = await supabaseClient.from('profiles').select('vip_price').eq('role', 'god').single();
-    const priceEl = document.getElementById('displayVipPrice');
-    if (priceEl) {
-        priceEl.innerText = (data && data.vip_price) ? data.vip_price : 'İletişime Geçin';
+    
+    const el1 = document.getElementById('displayPrice1');
+    const el3 = document.getElementById('displayPrice3');
+    const el12 = document.getElementById('displayPrice12');
+
+    if (data && data.vip_price) {
+        try {
+            const prices = JSON.parse(data.vip_price);
+            if(el1) el1.innerText = "₺" + (prices.p1 || "250");
+            if(el3) el3.innerText = "₺" + (prices.p3 || "600");
+            if(el12) el12.innerText = "₺" + (prices.p12 || "2000");
+        } catch(e) {
+            console.log("Fiyatlar okunurken hata oluştu.");
+        }
     }
 }
-fetchGodVipPrice(); // Sayfa yüklendiğinde fiyatı vitrine as
+fetchGodVipPrice();
+
 
 
 // MOTORLARI ATEŞLE
