@@ -615,7 +615,7 @@ window.flipCard = function() {
     else card.classList.remove('rotate-y-180');
 }
 
-// 🌟 GÖRSEL VE ARAYÜZ GÜNCELLEME (HIZLI LOREMFlickr MOTORU) 🌟
+// 🌟 GÖRSEL VE ARAYÜZ GÜNCELLEME MOTORU 🌟
 window.updateFlashcardUI = function() {
     try {
         if (currentRecognition) {
@@ -633,17 +633,18 @@ window.updateFlashcardUI = function() {
             phEl.style.display = word.ph ? 'block' : 'none';
         }
 
-        // 🌟 IŞIK HIZINDA GÖRSEL ÇEKME 🌟
+        // 🌟 IŞIK HIZINDA GÖRSEL ÇEKME VE KALİTE FİX 🌟
         const imgEl = document.getElementById('fcWordImage');
         if (imgEl) {
-            imgEl.style.opacity = '0'; // Yeni resim yüklenene kadar gizle
+            imgEl.style.opacity = '0'; 
             
-            // "Get up" gibi boşluklu kelimeleri "get,up" formatına çevir ki sistem anlasın
-            const cleanWord = word.en.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, ',');
+            // Sadece ilk kelimeyi alıp aratıyoruz ki daha net ve doğru fotoğraflar çıksın (Örn: "get up" yerine "get")
+            const cleanWord = word.en.toLowerCase().split(' ')[0].replace(/[^\w]/gi, '');
             
             imgEl.src = `https://loremflickr.com/600/800/${cleanWord}?lock=${currentFcIndex}`;
             
-            imgEl.onload = () => { imgEl.style.opacity = '0.5'; }; // Yüklenince %50 opaklıkla göster
+            // Resim yüklenince %100 opaklıkta göster (Çünkü HTML'de siyah filtremiz var zaten)
+            imgEl.onload = () => { imgEl.style.opacity = '1'; }; 
             imgEl.onerror = () => { imgEl.style.opacity = '0'; };
         }
 
@@ -671,6 +672,7 @@ window.updateFlashcardUI = function() {
         console.error("UI Güncelleme Hatası:", err);
     }
 }
+
 
 
 window.nextCard = function() {
