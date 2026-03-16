@@ -641,11 +641,14 @@ function updateFlashcardUI() {
         phEl.style.display = word.ph ? 'block' : 'none';
     }
 
-    // 🌟 UNSPLASH GÖRSEL ÇEKME MOTORU 🌟
+    // 🌟 UNSPLASH GÖRSEL ÇEKME MOTORU (GÜVENLİ) 🌟
     const imgEl = document.getElementById('fcWordImage');
     if (imgEl) {
-        // Kelimeye göre telif haksız yüksek çözünürlüklü görsel çeker
+        // Görsel yüklenene kadar opaklığı sıfırla, yüklenince göster
+        imgEl.style.opacity = '0';
         imgEl.src = `https://source.unsplash.com/600x800/?${encodeURIComponent(word.en)}`;
+        imgEl.onload = () => { imgEl.style.opacity = '0.3'; };
+        imgEl.onerror = () => { imgEl.style.opacity = '0'; }; // Hata verirse görseli sakla ama sistemi çökertme
     }
 
     document.getElementById('fcProgress').innerText = `Kelime ${currentFcIndex + 1} / ${currentFcWords.length}`;
@@ -655,6 +658,7 @@ function updateFlashcardUI() {
     const micStatus = document.getElementById('micStatus');
     const micIcon = document.getElementById('micIcon');
     const ripple = document.getElementById('micRipple');
+    
     if (micStatus) {
         micStatus.innerText = "Mikrofona Dokun ve Oku";
         micStatus.className = "text-xs text-white font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm";
@@ -668,6 +672,7 @@ function updateFlashcardUI() {
         document.getElementById('btnFinishFlashcard').classList.add('hidden');
     }
 }
+
 
 
 // ==========================================
