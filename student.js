@@ -626,8 +626,14 @@ window.flipCard = function() {
 }
 
 function updateFlashcardUI() {
+    // YENİ: Önceki recognition'ı zorla kapat
+    if (currentRecognition) {
+        try { currentRecognition.abort(); } catch(e) {}
+        currentRecognition = null;
+    }
+    
     const word = currentFcWords[currentFcIndex];
-
+    
     // Türkçe (ön yüz)
     document.getElementById('fcWordTr').innerText = word.tr;
 
