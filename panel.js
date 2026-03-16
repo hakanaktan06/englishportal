@@ -726,7 +726,7 @@ async function fetchHomeworks() {
                 </tr>`;
         });
     }
-
+}
 
 window.approveHomework = async function(hwId, studentId) {
     const onay = await customConfirm("Ödevi onaylayıp öğrenciye +50 XP kazandırmak istediğinize emin misiniz?", "Evet, Onayla");
