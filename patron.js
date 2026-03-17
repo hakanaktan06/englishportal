@@ -319,3 +319,26 @@ if (saveApiKeyBtn) {
     });
 }
 
+// ==========================================
+// DUYURU YAYIN MOTORU
+// ==========================================
+async function loadAnnouncement() {
+    const { data } = await supabaseClient.from('profiles').select('announcement').eq('role', 'god').single();
+    if (data && data.announcement) document.getElementById('godAnnouncement').value = data.announcement;
+}
+loadAnnouncement();
+
+const saveAnnouncementBtn = document.getElementById('saveAnnouncementBtn');
+if (saveAnnouncementBtn) {
+    saveAnnouncementBtn.addEventListener('click', async () => {
+        const text = document.getElementById('godAnnouncement').value;
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        
+        showToast("Yayınlanıyor...", "info");
+        const { error } = await supabaseClient.from('profiles').update({ announcement: text }).eq('id', user.id);
+        
+        if (error) showToast("Hata: " + error.message, "error");
+        else showToast(text.trim() === "" ? "Duyuru kaldırıldı!" : "Duyuru tüm panellere gönderildi!", "success");
+    });
+}
+
