@@ -350,3 +350,101 @@ if (saveAnnouncementBtn) {
     });
 }
 
+// ==========================================
+// ÖĞRETMEN YÖNETİM MOTORU (YENİ NESİL KART SİSTEMİ)
+// ==========================================
+async function fetchTeachers() {
+    const listContainer = document.getElementById('teacherList');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = '<p class="text-slate-400 text-sm animate-pulse col-span-full text-center py-5">Öğretmenler yükleniyor...</p>';
+
+    // Öğretmenleri Supabase'den çek
+    const { data, error } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('role', 'teacher')
+        .order('created_at', { ascending: false });
+
+    if (error || !data || data.length === 0) {
+        listContainer.innerHTML = '<div class="col-span-full text-center p-8 text-slate-500 font-bold border border-dashed border-slate-700 rounded-2xl">Sistemde henüz kayıtlı öğretmen bulunmuyor.</div>';
+        return;
+    }
+
+    listContainer.innerHTML = '';
+
+    data.forEach(teacher => {
+        // VIP durumu kontrolü
+        const isVip = teacher.is_premium;
+        const vipBadge = isVip 
+            ? `<span class="bg-amber-500/20 text-amber-500 border border-amber-500/50 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-[0_0_10px_rgba(245,158,11,0.2)]">VIP AKTİF</span>` 
+            : `<span class="bg-slate-700/50 text-slate-400 border border-slate-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">Standart</span>`;
+
+        // VIP veya Standart renk ayarları
+        const avatarColor = isVip ? 'from-amber-400 to-orange-500' : 'from-indigo-500 to-purple-600';
+
+        // Kart tasarımı
+        const card = document.createElement('div');
+        card.className = "bg-slate-800/40 border border-slate-700/50 p-5 rounded-[20px] flex flex-col gap-4 hover:border-indigo-500/50 transition-colors group relative overflow-hidden";
+        
+        card.innerHTML = `
+            ${isVip ? '<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>' : ''}
+            <div class="flex justify-between items-start">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br ${avatarColor} flex items-center justify-center text-white font-black text-xl shadow-lg shrink-0">
+                        ${teacher.full_name ? teacher.full_name.charAt(0).toUpperCase() : '?'}
+                    </div>
+                    <div>
+                        <h4 class="font-black text-white text-base leading-tight">${teacher.full_name || 'İsimsiz'}</h4>
+                        <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-bold">Kayıt: ${new Date(teacher.created_at).toLocaleDateString('tr-TR')}</p>
+                    </div>
+                </div>
+                <div class="shrink-0">${vipBadge}</div>
+            </div>
+            
+            <div class="flex gap-2 mt-auto border-t border-slate-700/50 pt-4">
+                <button onclick="toggleTeacherVip('${teacher.id}', ${isVip})" class="flex-1 ${isVip ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-amber-500 hover:bg-amber-400 text-black'} py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition shadow-sm">
+                    ${isVip ? 'VIP İPTAL' : 'VIP YAP'}
+                </button>
+                <button onclick="deleteTeacher('${teacher.id}')" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white w-12 flex items-center justify-center rounded-xl transition border border-red-500/20" title="Öğretmeni Sil">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            </div>
+        `;
+        listContainer.appendChild(card);
+    });
+}
+
+// VIP Aç / Kapat
+window.toggleTeacherVip = async function(id, currentStatus) {
+    if (typeof showToast === "function") showToast("İşleniyor...", "info");
+    const { error } = await supabaseClient.from('profiles').update({ is_premium: !currentStatus }).eq('id', id);
+    if (error) {
+        if (typeof showToast === "function") showToast("Hata oluştu!", "error");
+    } else {
+        if (typeof showToast === "function") showToast(currentStatus ? "VIP yetkisi alındı." : "Öğretmen VIP yapıldı!", "success");
+        fetchTeachers();
+    }
+}
+
+// Öğretmeni Sil
+window.deleteTeacher = async function(id) {
+    // Özel confirm veya normal confirm
+    const isConfirmed = confirm("Bu öğretmeni tamamen silmek istediğine emin misin?");
+    if (!isConfirmed) return;
+    
+    const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
+    if (error) {
+        if (typeof showToast === "function") showToast("Silinirken hata oluştu!", "error");
+    } else {
+        if (typeof showToast === "function") showToast("Öğretmen başarıyla silindi.", "success");
+        fetchTeachers();
+    }
+}
+
+// Sayfa yüklendiğinde öğretmenleri çek
+document.addEventListener('DOMContentLoaded', fetchTeachers);
+// Eğer defer kullandıysak veya hemen çalışması gerekiyorsa direkt de çağıralım
+fetchTeachers();
+
+
