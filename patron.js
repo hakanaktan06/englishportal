@@ -459,22 +459,22 @@ async function fetchTeachers() {
     });
 }
 
-// VIP TEK TIKLA GÜNCELLEME MOTORU
+// VIP KURUMSAL GÜNCELLEME MOTORU
 window.updateTeacherVip = async function(id, months) {
     let msg = "";
-    if (months === 0) msg = "Bu öğretmenin VIP paketini tamamen iptal edip Freemium'a düşürmek istediğine emin misin?";
-    else if (months < 0) msg = `Öğretmenin süresinden ${Math.abs(months)} ay silmek istediğinize emin misiniz?`;
-    else msg = `Öğretmene ${months} aylık VIP tanımlamak istediğine emin misin?`;
+    if (months === 0) msg = "Öğretmenin VIP yetkisini iptal etmek ve standart pakete geçirmek istediğinizi onaylıyor musunuz?";
+    else if (months < 0) msg = `Öğretmenin VIP aboneliğinden ${Math.abs(months)} ay eksiltilecektir. Onaylıyor musunuz?`;
+    else msg = `Öğretmen hesabına ${months} aylık Premium VIP yetkisi tanımlanacaktır. Onaylıyor musunuz?`;
 
     const isConfirmed = confirm(msg);
     if(!isConfirmed) return;
 
-    if (typeof showToast === "function") showToast("İşleniyor...", "info");
+    if (typeof showToast === "function") showToast("İşlem başlatıldı...", "info");
 
     if (months === 0) {
         const { error } = await supabaseClient.from('profiles').update({ is_premium: false, premium_until: null }).eq('id', id);
-        if (error) { if (typeof showToast === "function") showToast("Hata oluştu!", "error"); } 
-        else { if (typeof showToast === "function") showToast("Öğretmen Freemium'a düşürüldü.", "success"); fetchTeachers(); }
+        if (error) { if (typeof showToast === "function") showToast("Sistem hatası oluştu.", "error"); } 
+        else { if (typeof showToast === "function") showToast("Hesap standart pakete güncellendi.", "success"); fetchTeachers(); }
     } else {
         const { data: t } = await supabaseClient.from('profiles').select('premium_until').eq('id', id).single();
         let baseDate = new Date();
@@ -488,7 +488,7 @@ window.updateTeacherVip = async function(id, months) {
         
         if (baseDate <= new Date()) {
             await supabaseClient.from('profiles').update({ is_premium: false, premium_until: null }).eq('id', id);
-            if (typeof showToast === "function") showToast("Süre bittiği için öğretmen Freemium'a düşürüldü.", "success");
+            if (typeof showToast === "function") showToast("Süre sona erdiği için hesap standart pakete alındı.", "success");
             fetchTeachers();
             return;
         }
@@ -496,24 +496,25 @@ window.updateTeacherVip = async function(id, months) {
         const expiryStr = baseDate.toISOString();
         const { error } = await supabaseClient.from('profiles').update({ is_premium: true, premium_until: expiryStr }).eq('id', id);
         
-        if (error) { if (typeof showToast === "function") showToast("Hata oluştu!", "error"); } 
+        if (error) { if (typeof showToast === "function") showToast("Sistem hatası oluştu.", "error"); } 
         else {
-            const toastMsg = months > 0 ? `+${months} Ay eklendi!` : `${months} Ay silindi!`;
+            const toastMsg = months > 0 ? `Premium süre ${months} ay uzatıldı.` : `Premium süre ${Math.abs(months)} ay kısaltıldı.`;
             if (typeof showToast === "function") showToast(toastMsg, "success");
             fetchTeachers();
         }
     }
 }
 
-// Öğretmeni Sil
+// KURUMSAL SİLME MOTORU
 window.deleteTeacher = async function(id) {
-    const isConfirmed = confirm("Bu öğretmeni tamamen silmek istediğine emin misin? (Geri dönüşü yoktur)");
+    const isConfirmed = confirm("Öğretmen kaydını sistemden kalıcı olarak silmek istediğinizi onaylıyor musunuz? Bu işlem geri alınamaz.");
     if (!isConfirmed) return;
     
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
-    if (error) { if (typeof showToast === "function") showToast("Silinirken hata oluştu!", "error"); } 
-    else { if (typeof showToast === "function") showToast("Öğretmen başarıyla silindi.", "success"); fetchTeachers(); }
+    if (error) { if (typeof showToast === "function") showToast("Silme işlemi başarısız oldu.", "error"); } 
+    else { if (typeof showToast === "function") showToast("Öğretmen kaydı başarıyla silindi.", "success"); fetchTeachers(); }
 }
+
 
 // Sayfa yüklendiğinde motoru ateşle!
 document.addEventListener('DOMContentLoaded', fetchTeachers);
