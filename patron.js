@@ -1,4 +1,4 @@
- // ==========================================
+// ==========================================
 // 1. SUPABASE BAĞLANTISI
 // ==========================================
 const supabaseUrl = 'https://vucpxabicxqfmmmqvkpv.supabase.co';
@@ -90,7 +90,7 @@ async function checkGodSecurity() {
 checkGodSecurity();
 
 document.getElementById('godLogoutBtn').addEventListener('click', async () => {
-    const onay = await customConfirm("God Panelden çıkış yapıyorsun. Emin misin?", "Evet, Çık");
+    const onay = await customConfirm("God Panel oturumunu sonlandırmak istediğinizi onaylıyor musunuz?", "Evet, Çıkış Yap");
     if(onay) {
         await supabaseClient.auth.signOut();
         window.location.href = 'index.html';
@@ -103,7 +103,6 @@ document.getElementById('godLogoutBtn').addEventListener('click', async () => {
 let allTeachersData = []; 
 
 async function fetchSystemData() {
-    // 🌟 premium_until kolonunu da çekiyoruz!
     const { data: teachers, error: tErr } = await supabaseClient.from('profiles').select('id, full_name, is_premium, premium_until, created_at').eq('role', 'teacher').order('created_at', { ascending: false });
     const { data: allStudents } = await supabaseClient.from('profiles').select('id, teacher_id').eq('role', 'student');
 
@@ -130,11 +129,10 @@ async function fetchSystemData() {
         let badgeClass = "bg-slate-800 text-slate-400 border-slate-700";
         let dateInfo = "-";
 
-        // Süre kontrolü
         if (isPremium && teacher.premium_until) {
             const expiry = new Date(teacher.premium_until);
             if (today > expiry) {
-                isPremium = false; // SÜRE BİTMİŞ!
+                isPremium = false; 
                 badgeText = "SÜRESİ BİTTİ";
                 badgeClass = "bg-rose-500/10 text-rose-400 border-rose-500/20";
                 dateInfo = `<span class="text-rose-500">${expiry.toLocaleDateString('tr-TR')}</span>`;
@@ -164,7 +162,7 @@ async function fetchSystemData() {
                 <td class="p-3 md:p-4 text-center">${statusBadge}</td>
                 <td class="p-3 md:p-4 text-right flex items-center justify-end gap-2">
                     ${actionBtn}
-                    <button onclick="deleteTeacher('${teacher.id}', '${teacher.full_name.replace(/'/g, "\\'")}')" class="bg-slate-800 hover:bg-rose-500 text-slate-500 hover:text-white p-2 rounded-xl transition border border-slate-700 hover:border-rose-500" title="Öğretmeni Sistemden Sil"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    <button onclick="deleteTeacher('${teacher.id}')" class="bg-slate-800 hover:bg-rose-500 text-slate-500 hover:text-white p-2 rounded-xl transition border border-slate-700 hover:border-rose-500" title="Öğretmeni Sistemden Sil"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                 </td>
             </tr>`;
     });
@@ -213,7 +211,7 @@ window.applyPremium = async function(days) {
 }
 
 window.revokePremium = async function(teacherId) {
-    const onay = await customConfirm("Öğretmenin Premium yetkisini iptal ediyorsun. Emin misin?", "Evet, İptal Et");
+    const onay = await customConfirm("Öğretmenin Premium yetkisini iptal etmek istediğinizi onaylıyor musunuz?", "Evet, İptal Et");
     if (!onay) return;
     showToast("Yetki alınıyor...", "info");
     const { error } = await supabaseClient.from('profiles').update({ 
@@ -225,23 +223,8 @@ window.revokePremium = async function(teacherId) {
 }
 
 // ==========================================
-// HOCA SİLME MOTORU
+// AYAR KAYIT MOTORLARI
 // ==========================================
-window.deleteTeacher = async function(teacherId, teacherName) {
-    const onay = await customConfirm(`DİKKAT! ${teacherName} isimli öğretmeni siliyorsun. Tüm öğrencileri ve verileri de gidebilir. Emin misin?`, "Evet, Acımam Sil");
-    if (!onay) return;
-
-    showToast("Öğretmen siliniyor...", "info");
-    const { error } = await supabaseClient.from('profiles').delete().eq('id', teacherId);
-    
-    if (error) showToast("Hata: " + error.message, "error");
-    else {
-        showToast("Öğretmen sistemden kazındı!", "success");
-        fetchSystemData();
-    }
-}
-
-// VIP Fiyatları ve Linkleri Çek
 async function loadVipData() {
     const { data } = await supabaseClient.from('profiles').select('vip_price').eq('role', 'god').single();
     if (data && data.vip_price) {
@@ -259,7 +242,6 @@ async function loadVipData() {
 }
 loadVipData();
 
-// VIP Fiyatları ve Linkleri Kaydet
 document.getElementById('vipPriceForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const p1 = document.getElementById('price1').value;
@@ -280,11 +262,6 @@ document.getElementById('vipPriceForm').addEventListener('submit', async (e) => 
     else showToast("Fiyatlar ve Linkler Sisteme İşlendi!", "success");
 });
 
-
-
-// ==========================================
-// YAPAY ZEKA API KEY YÖNETİM MOTORU
-// ==========================================
 async function loadApiKey() {
     const { data, error } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
     if (data && data.openai_key) {
@@ -292,15 +269,6 @@ async function loadApiKey() {
     }
 }
 loadApiKey();
-
-window.toggleApiKeyVisibility = function() {
-    const input = document.getElementById('godApiKey');
-    if (input.type === 'password') {
-        input.type = 'text';
-    } else {
-        input.type = 'password';
-    }
-};
 
 const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
 if (saveApiKeyBtn) {
@@ -327,9 +295,6 @@ if (saveApiKeyBtn) {
     });
 }
 
-// ==========================================
-// DUYURU YAYIN MOTORU
-// ==========================================
 async function loadAnnouncement() {
     const { data } = await supabaseClient.from('profiles').select('announcement').eq('role', 'god').single();
     if (data && data.announcement) document.getElementById('godAnnouncement').value = data.announcement;
@@ -466,7 +431,7 @@ window.updateTeacherVip = async function(id, months) {
     else if (months < 0) msg = `Öğretmenin VIP aboneliğinden ${Math.abs(months)} ay eksiltilecektir. Onaylıyor musunuz?`;
     else msg = `Öğretmen hesabına ${months} aylık Premium VIP yetkisi tanımlanacaktır. Onaylıyor musunuz?`;
 
-    const isConfirmed = confirm(msg);
+    const isConfirmed = await customConfirm(msg, "Evet, Onayla");
     if(!isConfirmed) return;
 
     if (typeof showToast === "function") showToast("İşlem başlatıldı...", "info");
@@ -507,7 +472,7 @@ window.updateTeacherVip = async function(id, months) {
 
 // KURUMSAL SİLME MOTORU
 window.deleteTeacher = async function(id) {
-    const isConfirmed = confirm("Öğretmen kaydını sistemden kalıcı olarak silmek istediğinizi onaylıyor musunuz? Bu işlem geri alınamaz.");
+    const isConfirmed = await customConfirm("Öğretmen kaydını sistemden kalıcı olarak silmek istediğinizi onaylıyor musunuz? Bu işlem geri alınamaz.", "Kalıcı Olarak Sil");
     if (!isConfirmed) return;
     
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
@@ -515,9 +480,6 @@ window.deleteTeacher = async function(id) {
     else { if (typeof showToast === "function") showToast("Öğretmen kaydı başarıyla silindi.", "success"); fetchTeachers(); }
 }
 
-
 // Sayfa yüklendiğinde motoru ateşle!
 document.addEventListener('DOMContentLoaded', fetchTeachers);
 fetchTeachers();
-
-
