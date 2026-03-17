@@ -1714,9 +1714,22 @@ if (btnAssignFlashcards) {
     });
 }
 
-// MOTORLARI ATEŞLE
-if (typeof setDynamicMotivations === 'function') setDynamicMotivations();
-checkTeacherSecurity();
+// ==========================================
+// GLOBAL DUYURU KONTROL MOTORU
+// ==========================================
+async function checkGlobalAnnouncement() {
+    try {
+        const { data } = await supabaseClient.from('profiles').select('announcement').eq('role', 'god').single();
+        if (data && data.announcement && data.announcement.trim() !== "") {
+            const banner = document.createElement('div');
+            banner.className = "bg-gradient-to-r from-amber-400 to-orange-500 text-black font-black text-center py-2 px-4 text-[10px] md:text-xs uppercase tracking-widest z-[999999] relative shadow-md w-full";
+            banner.innerHTML = `<span class="animate-pulse mr-2">📢</span> ${data.announcement}`;
+            document.body.insertBefore(banner, document.body.firstChild);
+        }
+    } catch(e) { console.log("Duyuru çekilemedi."); }
+}
+checkGlobalAnnouncement();
+
 
 
 // MOTORLARI ATEŞLE
