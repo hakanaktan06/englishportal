@@ -141,18 +141,22 @@
         </div>
 
     </div>
-        <div class="mt-8 text-center pb-6">
-            <div class="inline-flex flex-col items-center justify-center opacity-40 hover:opacity-100 transition-opacity duration-500 cursor-default select-none">
-                <span class="text-[8px] font-black text-slate-500 tracking-[0.4em] uppercase mb-1.5">Powered By</span>
-                <div class="flex flex-col items-center">
-                    <span class="font-serif text-lg md:text-xl font-black text-white tracking-[0.15em] leading-none">MAXIMILLIEN</span>
-                    <span class="text-xs md:text-sm font-black text-blue-500 tracking-[0.3em] uppercase leading-tight mt-1">SYNTHETIX</span>
-                </div>
-            </div>
-        </div>
-
+        
     <div id="toast-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
     <script src="login.js"></script>
+
+    <div class="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 group cursor-default select-none">
+        <div class="absolute inset-0 w-full h-full bg-transparent z-10"></div>
+        
+        <div class="relative z-20 flex flex-col items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-500">
+            <span class="text-[8px] font-black text-white/60 tracking-[0.4em] uppercase mb-1.5">Powered By</span>
+            <div class="flex flex-col items-center">
+                <span class="font-serif text-lg font-black text-white tracking-[0.15em] leading-none drop-shadow-lg">MAXIMILLIEN</span>
+                <span class="text-[10px] font-black text-blue-400 tracking-[0.3em] uppercase leading-tight mt-1 drop-shadow-lg">SYNTHETIX</span>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
