@@ -351,7 +351,7 @@ if (saveAnnouncementBtn) {
 }
 
 // ==========================================
-// ÖĞRETMEN YÖNETİM MOTORU (YENİ NESİL KART SİSTEMİ)
+// ÖĞRETMEN YÖNETİM MOTORU (YENİ NESİL KART + SÜRE SİSTEMİ)
 // ==========================================
 async function fetchTeachers() {
     const listContainer = document.getElementById('teacherList');
@@ -374,21 +374,36 @@ async function fetchTeachers() {
     listContainer.innerHTML = '';
 
     data.forEach(teacher => {
-        // VIP durumu kontrolü
-        const isVip = teacher.is_premium;
-        const vipBadge = isVip 
-            ? `<span class="bg-amber-500/20 text-amber-500 border border-amber-500/50 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-[0_0_10px_rgba(245,158,11,0.2)]">VIP AKTİF</span>` 
-            : `<span class="bg-slate-700/50 text-slate-400 border border-slate-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">Standart</span>`;
+        // VIP durumu ve Tarih kontrolü
+        let isVip = teacher.is_premium;
+        let badgeHtml = "";
 
-        // VIP veya Standart renk ayarları
+        if (isVip && teacher.premium_until) {
+            const expiryDate = new Date(teacher.premium_until);
+            const today = new Date();
+            
+            if (today > expiryDate) {
+                isVip = false; // Süresi bitmiş
+                badgeHtml = `<span class="bg-slate-700/50 text-slate-400 border border-slate-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">Süresi Bitti</span>`;
+            } else {
+                const expiryText = expiryDate.toLocaleDateString('tr-TR');
+                badgeHtml = `<div class="text-right">
+                                <span class="bg-amber-500/20 text-amber-500 border border-amber-500/50 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-[0_0_10px_rgba(245,158,11,0.2)] block mb-1">PREMIUM VIP</span>
+                                <span class="text-[9px] text-amber-500/70 font-bold block tracking-widest">BİTİŞ: ${expiryText}</span>
+                             </div>`;
+            }
+        } else {
+            badgeHtml = `<span class="bg-slate-700/50 text-slate-400 border border-slate-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">FREEMIUM</span>`;
+        }
+
         const avatarColor = isVip ? 'from-amber-400 to-orange-500' : 'from-indigo-500 to-purple-600';
 
         // Kart tasarımı
         const card = document.createElement('div');
-        card.className = "bg-slate-800/40 border border-slate-700/50 p-5 rounded-[20px] flex flex-col gap-4 hover:border-indigo-500/50 transition-colors group relative overflow-hidden";
+        card.className = "bg-slate-800/40 border border-slate-700/50 p-5 rounded-[20px] flex flex-col gap-5 hover:border-indigo-500/50 transition-colors group relative overflow-hidden";
         
         card.innerHTML = `
-            ${isVip ? '<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>' : ''}
+            ${isVip ? '<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"></div>' : ''}
             <div class="flex justify-between items-start">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-full bg-gradient-to-br ${avatarColor} flex items-center justify-center text-white font-black text-xl shadow-lg shrink-0">
@@ -399,14 +414,27 @@ async function fetchTeachers() {
                         <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-bold">Kayıt: ${new Date(teacher.created_at).toLocaleDateString('tr-TR')}</p>
                     </div>
                 </div>
-                <div class="shrink-0">${vipBadge}</div>
+                <div class="shrink-0">${badgeHtml}</div>
             </div>
             
-            <div class="flex gap-2 mt-auto border-t border-slate-700/50 pt-4">
-                <button onclick="toggleTeacherVip('${teacher.id}', ${isVip})" class="flex-1 ${isVip ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-amber-500 hover:bg-amber-400 text-black'} py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition shadow-sm">
-                    ${isVip ? 'VIP İPTAL' : 'VIP YAP'}
+            <div class="flex gap-2 mt-auto border-t border-slate-700/50 pt-4 items-center">
+                <div class="relative flex-1">
+                    <select id="vipSelect_${teacher.id}" class="w-full bg-slate-900 border border-slate-700 text-slate-300 text-[11px] font-bold px-3 py-3 rounded-xl outline-none focus:border-indigo-500 appearance-none uppercase tracking-widest cursor-pointer">
+                        <option value="1">1 Aylık Ekle</option>
+                        <option value="3">3 Aylık Ekle</option>
+                        <option value="12">1 Yıllık Ekle</option>
+                        <option value="0" class="text-rose-400">Paketi İptal Et</option>
+                    </select>
+                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-slate-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                
+                <button onclick="updateTeacherVip('${teacher.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition shadow-md shrink-0">
+                    ONAYLA
                 </button>
-                <button onclick="deleteTeacher('${teacher.id}')" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white w-12 flex items-center justify-center rounded-xl transition border border-red-500/20" title="Öğretmeni Sil">
+                
+                <button onclick="deleteTeacher('${teacher.id}')" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white w-11 h-11 flex items-center justify-center rounded-xl transition border border-red-500/20 shrink-0" title="Öğretmeni Sil">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 </button>
             </div>
@@ -415,22 +443,55 @@ async function fetchTeachers() {
     });
 }
 
-// VIP Aç / Kapat
-window.toggleTeacherVip = async function(id, currentStatus) {
+// VIP SÜRE GÜNCELLEME MOTORU
+window.updateTeacherVip = async function(id) {
+    const selectEl = document.getElementById('vipSelect_' + id);
+    if(!selectEl) return;
+    
+    const months = parseInt(selectEl.value);
+    
+    // Doğrulama Sorusu
+    const isConfirmed = confirm(months === 0 ? "Bu öğretmenin VIP paketini tamamen iptal edip Freemium'a düşürmek istediğine emin misin?" : `Bu öğretmene ${months} aylık VIP tanımlamak istediğine emin misin?`);
+    if(!isConfirmed) return;
+
     if (typeof showToast === "function") showToast("İşleniyor...", "info");
-    const { error } = await supabaseClient.from('profiles').update({ is_premium: !currentStatus }).eq('id', id);
-    if (error) {
-        if (typeof showToast === "function") showToast("Hata oluştu!", "error");
+
+    if (months === 0) {
+        // İptal Et ve Freemium Yap
+        const { error } = await supabaseClient.from('profiles').update({ is_premium: false, premium_until: null }).eq('id', id);
+        if (error) {
+            if (typeof showToast === "function") showToast("Hata oluştu!", "error");
+        } else {
+            if (typeof showToast === "function") showToast("Öğretmen Freemium'a düşürüldü.", "success");
+            fetchTeachers();
+        }
     } else {
-        if (typeof showToast === "function") showToast(currentStatus ? "VIP yetkisi alındı." : "Öğretmen VIP yapıldı!", "success");
-        fetchTeachers();
+        // Süre Ekle (Eğer süresi varsa üstüne ekler, yoksa bugünden itibaren ekler)
+        const { data: t } = await supabaseClient.from('profiles').select('premium_until').eq('id', id).single();
+        let startDate = new Date();
+        
+        if (t && t.premium_until) {
+            const currentExpiry = new Date(t.premium_until);
+            if (currentExpiry > startDate) startDate = currentExpiry; // Henüz süresi bitmemişse var olanın üstüne ekle
+        }
+        
+        startDate.setMonth(startDate.getMonth() + months);
+        const expiryStr = startDate.toISOString();
+
+        const { error } = await supabaseClient.from('profiles').update({ is_premium: true, premium_until: expiryStr }).eq('id', id);
+        
+        if (error) {
+            if (typeof showToast === "function") showToast("Hata oluştu!", "error");
+        } else {
+            if (typeof showToast === "function") showToast(months + " Aylık VIP başarıyla tanımlandı!", "success");
+            fetchTeachers();
+        }
     }
 }
 
 // Öğretmeni Sil
 window.deleteTeacher = async function(id) {
-    // Özel confirm veya normal confirm
-    const isConfirmed = confirm("Bu öğretmeni tamamen silmek istediğine emin misin?");
+    const isConfirmed = confirm("Bu öğretmeni tamamen silmek istediğine emin misin? (Geri dönüşü yoktur)");
     if (!isConfirmed) return;
     
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
@@ -442,9 +503,8 @@ window.deleteTeacher = async function(id) {
     }
 }
 
-// Sayfa yüklendiğinde öğretmenleri çek
+// Sayfa yüklendiğinde çalıştır
 document.addEventListener('DOMContentLoaded', fetchTeachers);
-// Eğer defer kullandıysak veya hemen çalışması gerekiyorsa direkt de çağıralım
 fetchTeachers();
 
 
