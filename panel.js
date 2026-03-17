@@ -1796,6 +1796,34 @@ checkGlobalAnnouncement();
 
 
 
+// ==========================================
+// ETKİNLİK FİLTRELEME MOTORU
+// ==========================================
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        // Aktif buton stilini sıfırla ve yeni butona mor efekti ver
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('bg-purple-600', 'text-white', 'shadow-[0_0_15px_rgba(147,51,234,0.4)]');
+            b.classList.add('bg-white', 'dark:bg-slate-800', 'text-gray-500', 'dark:text-gray-400');
+        });
+        
+        const targetBtn = e.currentTarget;
+        targetBtn.classList.remove('bg-white', 'dark:bg-slate-800', 'text-gray-500', 'dark:text-gray-400');
+        targetBtn.classList.add('bg-purple-600', 'text-white', 'shadow-[0_0_15px_rgba(147,51,234,0.4)]');
+
+        // Kartları filtrele
+        const filterValue = targetBtn.getAttribute('data-filter');
+        const cards = document.querySelectorAll('#activityCards > div');
+        
+        cards.forEach(card => {
+            if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+});
 
 
 // MOTORLARI ATEŞLE
