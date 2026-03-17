@@ -241,37 +241,45 @@ window.deleteTeacher = async function(teacherId, teacherName) {
     }
 }
 
-// ==========================================
-// VIP FİYAT YÖNETİM MOTORU (3'LÜ PAKET)
-// ==========================================
-async function loadVipPrice() {
+// VIP Fiyatları ve Linkleri Çek
+async function loadVipData() {
     const { data } = await supabaseClient.from('profiles').select('vip_price').eq('role', 'god').single();
-    if(data && data.vip_price) {
+    if (data && data.vip_price) {
         try {
-            const prices = JSON.parse(data.vip_price);
-            document.getElementById('vipPrice1').value = prices.p1 || '';
-            document.getElementById('vipPrice3').value = prices.p3 || '';
-            document.getElementById('vipPrice12').value = prices.p12 || '';
-        } catch(e) { console.log("İlk kurulum"); }
+            const parsed = JSON.parse(data.vip_price);
+            document.getElementById('price1').value = parsed.p1 || "";
+            document.getElementById('price3').value = parsed.p3 || "";
+            document.getElementById('price12').value = parsed.p12 || "";
+            
+            document.getElementById('link1').value = parsed.l1 || "";
+            document.getElementById('link3').value = parsed.l3 || "";
+            document.getElementById('link12').value = parsed.l12 || "";
+        } catch(e) {}
     }
 }
-loadVipPrice();
+loadVipData();
 
-document.getElementById('savePriceBtn').addEventListener('click', async () => {
-    const p1 = document.getElementById('vipPrice1').value.trim();
-    const p3 = document.getElementById('vipPrice3').value.trim();
-    const p12 = document.getElementById('vipPrice12').value.trim();
+// VIP Fiyatları ve Linkleri Kaydet
+document.getElementById('vipPriceForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const p1 = document.getElementById('price1').value;
+    const p3 = document.getElementById('price3').value;
+    const p12 = document.getElementById('price12').value;
     
-    if(!p1 || !p3 || !p12) { showToast("Tüm paket fiyatlarını doldurmalısın!", "error"); return; }
+    const l1 = document.getElementById('link1').value;
+    const l3 = document.getElementById('link3').value;
+    const l12 = document.getElementById('link12').value;
+
+    const vipData = JSON.stringify({ p1, p3, p12, l1, l3, l12 });
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    showToast("Güncelleniyor...", "info");
+    const { error } = await supabaseClient.from('profiles').update({ vip_price: vipData }).eq('id', user.id);
     
-    const priceJson = JSON.stringify({ p1: p1, p3: p3, p12: p12 }); // Paketledik
-    
-    showToast("Fiyatlar güncelleniyor...", "info");
-    const { error } = await supabaseClient.from('profiles').update({ vip_price: priceJson }).eq('role', 'god');
-    
-    if(error) showToast("Hata: " + error.message, "error");
-    else showToast("Fiyatlar başarıyla güncellendi! 💸", "success");
+    if(error) showToast("Hata oluştu!", "error");
+    else showToast("Fiyatlar ve Linkler Sisteme İşlendi!", "success");
 });
+
 
 
 // ==========================================
