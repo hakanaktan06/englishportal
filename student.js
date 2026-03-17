@@ -867,6 +867,18 @@ window.finishFlashcardTask = async function() {
     initStudentPortal();
 }
 
+// ==========================================
+// 8. ANTI-CHEAT (HİLE KORUMASI VE GÜVENLİK)
+// ==========================================
+document.addEventListener('contextmenu', event => event.preventDefault()); // Sağ tık iptal
+document.onkeydown = function(e) {
+    // F12 Engeli
+    if (e.keyCode === 123) return false; 
+    // Ctrl+Shift+I / J / C (Geliştirici Araçları Engeli)
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 'I'.charCodeAt(0) || e.keyCode === 'J'.charCodeAt(0) || e.keyCode === 'C'.charCodeAt(0))) return false; 
+    // Ctrl+U (Kaynak Kodu Engeli)
+    if (e.ctrlKey && e.keyCode === 'U'.charCodeAt(0)) return false; 
+};
 
 // Sistemi Başlat
 initStudentPortal();
