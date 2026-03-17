@@ -396,7 +396,6 @@ async function fetchTeachers() {
 
         const avatarColor = isVip ? 'from-amber-400 to-orange-500' : 'from-indigo-500 to-purple-600';
 
-        // DİNAMİK BUTON MİMARİSİ (VIP ise farklı, Standart ise farklı)
         let actionUI = "";
         if (isVip) {
             actionUI = `
@@ -460,5 +459,64 @@ async function fetchTeachers() {
     });
 }
 
+// VIP TEK TIKLA GÜNCELLEME MOTORU
+window.updateTeacherVip = async function(id, months) {
+    let msg = "";
+    if (months === 0) msg = "Bu öğretmenin VIP paketini tamamen iptal edip Freemium'a düşürmek istediğine emin misin?";
+    else if (months < 0) msg = `Öğretmenin süresinden ${Math.abs(months)} ay silmek istediğinize emin misiniz?`;
+    else msg = `Öğretmene ${months} aylık VIP tanımlamak istediğine emin misin?`;
+
+    const isConfirmed = confirm(msg);
+    if(!isConfirmed) return;
+
+    if (typeof showToast === "function") showToast("İşleniyor...", "info");
+
+    if (months === 0) {
+        const { error } = await supabaseClient.from('profiles').update({ is_premium: false, premium_until: null }).eq('id', id);
+        if (error) { if (typeof showToast === "function") showToast("Hata oluştu!", "error"); } 
+        else { if (typeof showToast === "function") showToast("Öğretmen Freemium'a düşürüldü.", "success"); fetchTeachers(); }
+    } else {
+        const { data: t } = await supabaseClient.from('profiles').select('premium_until').eq('id', id).single();
+        let baseDate = new Date();
+        
+        if (t && t.premium_until) {
+            const currentExpiry = new Date(t.premium_until);
+            if (currentExpiry > baseDate) baseDate = currentExpiry; 
+        }
+        
+        baseDate.setMonth(baseDate.getMonth() + months);
+        
+        if (baseDate <= new Date()) {
+            await supabaseClient.from('profiles').update({ is_premium: false, premium_until: null }).eq('id', id);
+            if (typeof showToast === "function") showToast("Süre bittiği için öğretmen Freemium'a düşürüldü.", "success");
+            fetchTeachers();
+            return;
+        }
+
+        const expiryStr = baseDate.toISOString();
+        const { error } = await supabaseClient.from('profiles').update({ is_premium: true, premium_until: expiryStr }).eq('id', id);
+        
+        if (error) { if (typeof showToast === "function") showToast("Hata oluştu!", "error"); } 
+        else {
+            const toastMsg = months > 0 ? `+${months} Ay eklendi!` : `${months} Ay silindi!`;
+            if (typeof showToast === "function") showToast(toastMsg, "success");
+            fetchTeachers();
+        }
+    }
+}
+
+// Öğretmeni Sil
+window.deleteTeacher = async function(id) {
+    const isConfirmed = confirm("Bu öğretmeni tamamen silmek istediğine emin misin? (Geri dönüşü yoktur)");
+    if (!isConfirmed) return;
+    
+    const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
+    if (error) { if (typeof showToast === "function") showToast("Silinirken hata oluştu!", "error"); } 
+    else { if (typeof showToast === "function") showToast("Öğretmen başarıyla silindi.", "success"); fetchTeachers(); }
+}
+
+// Sayfa yüklendiğinde motoru ateşle!
+document.addEventListener('DOMContentLoaded', fetchTeachers);
+fetchTeachers();
 
 
