@@ -1826,6 +1826,24 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 });
 
 
+// ==========================================
+// GÖRÜNMEZ RADAR: SON GİRİŞ ZAMANINI GÜNCELLE
+// ==========================================
+async function pingLastLogin() {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (user) {
+            // Sadece sisteme giren öğretmenin last_login sütununa o anki saati yazar
+            await supabaseClient.from('profiles').update({ last_login: new Date().toISOString() }).eq('id', user.id);
+        }
+    } catch (e) {
+        console.log("Radar ping hatası (Önemsiz):", e);
+    }
+}
+// Sayfa yüklendiğinde radarı 1 kez ateşle
+setTimeout(pingLastLogin, 2000); 
+
+
 // MOTORLARI ATEŞLE
 if (typeof setDynamicMotivations === 'function') setDynamicMotivations();
 checkTeacherSecurity();
