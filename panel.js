@@ -1715,20 +1715,35 @@ if (btnAssignFlashcards) {
 }
 
 // ==========================================
-// GLOBAL DUYURU KONTROL MOTORU
+// GLOBAL DUYURU KONTROL MOTORU (ESTETİK FİX)
 // ==========================================
 async function checkGlobalAnnouncement() {
     try {
         const { data } = await supabaseClient.from('profiles').select('announcement').eq('role', 'god').single();
         if (data && data.announcement && data.announcement.trim() !== "") {
             const banner = document.createElement('div');
-            banner.className = "bg-gradient-to-r from-amber-400 to-orange-500 text-black font-black text-center py-2 px-4 text-[10px] md:text-xs uppercase tracking-widest z-[999999] relative shadow-md w-full";
-            banner.innerHTML = `<span class="animate-pulse mr-2">📢</span> ${data.announcement}`;
-            document.body.insertBefore(banner, document.body.firstChild);
+            
+            // Çok şık, ince, premium bir bildirim bandı tasarımı
+            banner.className = "bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black text-center py-2.5 px-4 text-xs uppercase tracking-widest shadow-md shrink-0 flex items-center justify-center gap-2 z-[50] relative";
+            
+            banner.innerHTML = `<span class="animate-pulse text-base">📢</span> <span>${data.announcement}</span>`;
+            
+            // Flex yapısını bozmamak için direkt <main> etiketinin içine, en üste ekliyoruz!
+            const mainContainer = document.querySelector('main');
+            if (mainContainer) {
+                mainContainer.insertBefore(banner, mainContainer.firstChild);
+            } else {
+                // Eğer sayfada <main> yoksa (farklı bir yapıdaysa) üste yapıştır
+                banner.classList.add('fixed', 'top-0', 'left-0', 'w-full');
+                document.body.insertBefore(banner, document.body.firstChild);
+            }
         }
-    } catch(e) { console.log("Duyuru çekilemedi."); }
+    } catch(e) { 
+        console.log("Duyuru çekilemedi."); 
+    }
 }
 checkGlobalAnnouncement();
+
 
 
 
