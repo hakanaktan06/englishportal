@@ -1555,27 +1555,48 @@ window.closePaywall = function() {
 }
 
 // ==========================================
-// 17. DİNAMİK FİYAT ÇEKME MOTORU (3'LÜ PAKET)
+// 17. DİNAMİK FİYAT VE ÖDEME LİNKİ ÇEKME MOTORU
 // ==========================================
 async function fetchGodVipPrice() {
     const { data } = await supabaseClient.from('profiles').select('vip_price').eq('role', 'god').single();
     
+    // Fiyat etiketleri
     const el1 = document.getElementById('displayPrice1');
     const el3 = document.getElementById('displayPrice3');
     const el12 = document.getElementById('displayPrice12');
 
+    // Satın al butonları (panel.html'de bu id'leri eklediğinden emin ol)
+    const btn1 = document.getElementById('buyBtn1');
+    const btn3 = document.getElementById('buyBtn3');
+    const btn12 = document.getElementById('buyBtn12');
+
     if (data && data.vip_price) {
         try {
-            const prices = JSON.parse(data.vip_price);
-            if(el1) el1.innerText = "₺" + (prices.p1 || "250");
-            if(el3) el3.innerText = "₺" + (prices.p3 || "600");
-            if(el12) el12.innerText = "₺" + (prices.p12 || "2000");
+            const parsed = JSON.parse(data.vip_price);
+            
+            // Fiyatları yazdır
+            if(el1) el1.innerText = "₺" + (parsed.p1 || "250");
+            if(el3) el3.innerText = "₺" + (parsed.p3 || "600");
+            if(el12) el12.innerText = "₺" + (parsed.p12 || "2000");
+
+            // Buton linklerini dinamik olarak tanımla
+            if(btn1) {
+                btn1.onclick = () => { window.open(parsed.l1 || '#', '_blank'); closePaywall(); showToast("Ödeme sayfasına yönlendiriliyorsunuz...", "info"); };
+            }
+            if(btn3) {
+                btn3.onclick = () => { window.open(parsed.l3 || '#', '_blank'); closePaywall(); showToast("Ödeme sayfasına yönlendiriliyorsunuz...", "info"); };
+            }
+            if(btn12) {
+                btn12.onclick = () => { window.open(parsed.l12 || '#', '_blank'); closePaywall(); showToast("Ödeme sayfasına yönlendiriliyorsunuz...", "info"); };
+            }
+            
         } catch(e) {
-            console.log("Fiyatlar okunurken hata oluştu.");
+            console.log("Fiyat ve link verisi okunamadı.");
         }
     }
 }
 fetchGodVipPrice();
+
 
 
 // ==========================================
