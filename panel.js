@@ -1715,27 +1715,56 @@ if (btnAssignFlashcards) {
 }
 
 // ==========================================
-// GLOBAL DUYURU KONTROL MOTORU (ESTETİK FİX)
+// GLOBAL DUYURU MOTORU (VİP ESTETİK VE ANİMASYONLU)
 // ==========================================
 async function checkGlobalAnnouncement() {
     try {
         const { data } = await supabaseClient.from('profiles').select('announcement').eq('role', 'god').single();
         if (data && data.announcement && data.announcement.trim() !== "") {
-            const banner = document.createElement('div');
             
-            // Çok şık, ince, premium bir bildirim bandı tasarımı
-            banner.className = "bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black text-center py-2.5 px-4 text-xs uppercase tracking-widest shadow-md shrink-0 flex items-center justify-center gap-2 z-[50] relative";
+            // Sadece Kokpit (Dashboard) ekranını bul
+            const dashboardSection = document.getElementById('section-dashboard');
+            const header = dashboardSection ? dashboardSection.querySelector('header') : null;
             
-            banner.innerHTML = `<span class="animate-pulse text-base">📢</span> <span>${data.announcement}</span>`;
-            
-            // Flex yapısını bozmamak için direkt <main> etiketinin içine, en üste ekliyoruz!
-            const mainContainer = document.querySelector('main');
-            if (mainContainer) {
-                mainContainer.insertBefore(banner, mainContainer.firstChild);
-            } else {
-                // Eğer sayfada <main> yoksa (farklı bir yapıdaysa) üste yapıştır
-                banner.classList.add('fixed', 'top-0', 'left-0', 'w-full');
-                document.body.insertBefore(banner, document.body.firstChild);
+            if (header) {
+                const banner = document.createElement('div');
+                
+                // Başlangıçta yukarıda (-20px) ve görünmez (opacity-0) olacak, sonra animasyonla aşağı kayacak
+                banner.className = "max-w-7xl mx-auto w-full px-4 md:px-6 mt-6 transition-all duration-700 transform -translate-y-5 opacity-0 z-0";
+                banner.id = "elegantAnnouncement";
+                
+                banner.innerHTML = `
+                    <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-700/50 rounded-2xl p-4 md:p-5 shadow-sm flex items-start md:items-center justify-between gap-4 relative overflow-hidden group">
+                        
+                        <div class="absolute -right-4 -top-4 opacity-5 group-hover:scale-110 transition-transform duration-500 pointer-events-none">
+                            <svg class="w-24 h-24 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clip-rule="evenodd"></path></svg>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 relative z-10">
+                            <div class="bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 w-12 h-12 rounded-full flex items-center justify-center shrink-0 border border-amber-200 dark:border-amber-700 shadow-inner">
+                                <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-[10px] font-black text-amber-500 dark:text-amber-400 uppercase tracking-widest mb-0.5">SİSTEM DUYURUSU</h4>
+                                <p class="text-sm md:text-base font-bold text-amber-900 dark:text-amber-100 leading-snug">${data.announcement}</p>
+                            </div>
+                        </div>
+                        
+                        <button onclick="document.getElementById('elegantAnnouncement').style.display='none'" class="text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 transition relative z-10 p-2 bg-amber-50 dark:bg-amber-900/30 rounded-xl hover:bg-amber-100 dark:hover:bg-amber-900/50" title="Kapat">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                `;
+                
+                // Karşılama mesajının altı, istatistiklerin hemen üstüne yerleştiriyoruz
+                header.insertAdjacentElement('afterend', banner);
+                
+                // Sayfa yüklendikten 0.5 saniye sonra animasyonu tetikleyip yavaşça indiriyoruz
+                setTimeout(() => {
+                    banner.classList.remove('-translate-y-5', 'opacity-0');
+                    banner.classList.add('translate-y-0', 'opacity-100');
+                }, 500); 
             }
         }
     } catch(e) { 
@@ -1743,6 +1772,7 @@ async function checkGlobalAnnouncement() {
     }
 }
 checkGlobalAnnouncement();
+
 
 
 
