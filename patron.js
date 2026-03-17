@@ -316,17 +316,31 @@ if (saveAnnouncementBtn) {
 }
 
 // ==========================================
-// ÖĞRETMEN YÖNETİM MOTORU (ULTRA-ESTETİK DİNAMİK KARTLAR)
+// ÖĞRETMEN YÖNETİM MOTORU VE GÖRÜNMEZ RADAR
 // ==========================================
+// Zaman farkını hesaplayan ufak zeka
+function timeAgo(dateString) {
+    if (!dateString) return "<span class='text-slate-500'>Hiç giriş yapmadı</span>";
+    const diff = new Date() - new Date(dateString);
+    const minutes = Math.floor(diff / 60000);
+    
+    if (minutes < 5) return "<span class='text-emerald-400 font-black animate-pulse'>Şu an Aktif 🟢</span>";
+    if (minutes < 60) return `<span class='text-amber-400'>${minutes} dk önce</span>`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `<span class='text-slate-300'>${hours} saat önce</span>`;
+    return `<span class='text-slate-400'>${Math.floor(hours / 24)} gün önce</span>`;
+}
+
 async function fetchTeachers() {
     const listContainer = document.getElementById('teacherList');
     if (!listContainer) return;
 
-    listContainer.innerHTML = '<p class="text-slate-400 text-sm animate-pulse col-span-full text-center py-5">Öğretmenler yükleniyor...</p>';
+    listContainer.innerHTML = '<p class="text-slate-400 text-sm animate-pulse col-span-full text-center py-5">Öğretmen radarı taranıyor...</p>';
 
+    // last_login kolonunu da çekiyoruz!
     const { data, error } = await supabaseClient
         .from('profiles')
-        .select('*')
+        .select('*, last_login')
         .eq('role', 'teacher')
         .order('created_at', { ascending: false });
 
@@ -360,6 +374,7 @@ async function fetchTeachers() {
         }
 
         const avatarColor = isVip ? 'from-amber-400 to-orange-500' : 'from-indigo-500 to-purple-600';
+        const radarStatus = timeAgo(teacher.last_login); // Radar verisini hesapla
 
         let actionUI = "";
         if (isVip) {
@@ -409,8 +424,13 @@ async function fetchTeachers() {
                         ${teacher.full_name ? teacher.full_name.charAt(0).toUpperCase() : '?'}
                     </div>
                     <div>
-                        <h4 class="font-black text-white text-base leading-tight">${teacher.full_name || 'İsimsiz'}</h4>
-                        <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-bold">Kayıt: ${new Date(teacher.created_at).toLocaleDateString('tr-TR')}</p>
+                        <h4 class="font-black text-white text-base leading-tight flex items-center gap-2">
+                            ${teacher.full_name || 'İsimsiz'}
+                        </h4>
+                        <p class="text-[10px] text-slate-400 mt-1.5 font-bold flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            Son Görülme: ${radarStatus}
+                        </p>
                     </div>
                 </div>
                 <div class="shrink-0">${badgeHtml}</div>
@@ -423,6 +443,7 @@ async function fetchTeachers() {
         listContainer.appendChild(card);
     });
 }
+
 
 // VIP KURUMSAL GÜNCELLEME MOTORU
 window.updateTeacherVip = async function(id, months) {
