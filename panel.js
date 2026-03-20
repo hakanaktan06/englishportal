@@ -1919,134 +1919,86 @@ window.sendDebtReminder = function(lessonDate, price) {
 }
 
 // ==========================================
-// 2. WRITING (GRAMER) GÖREVİ VE ŞIK PROMPT MOTORU
+// 2. YENİ NESİL WRITING (GRAMER) SİHİRBAZI MOTORU
 // ==========================================
-
-// A. ÖZEL GİRDİ (PROMPT) KUTUSU MOTORU
-window.customPrompt = function(title, placeholder) {
-    return new Promise((resolve) => {
-        const modal = document.getElementById('customPromptModal');
-        const box = document.getElementById('customPromptBox');
-        const input = document.getElementById('customPromptInput');
-        let btnOk = document.getElementById('customPromptOk');
-        let btnCancel = document.getElementById('customPromptCancel');
-
-        if(!modal) { resolve(prompt(title)); return; }
-
-        document.getElementById('customPromptMessage').innerText = title;
-        input.placeholder = placeholder;
-        input.value = '';
-        
-        const newBtnOk = btnOk.cloneNode(true);
-        const newBtnCancel = btnCancel.cloneNode(true);
-        btnOk.replaceWith(newBtnOk);
-        btnCancel.replaceWith(newBtnCancel);
-        btnOk = newBtnOk;
-        btnCancel = newBtnCancel;
-
-        modal.classList.remove('hidden');
-        setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); input.focus(); }, 10);
-
-        const cleanup = () => {
-            modal.classList.add('opacity-0'); box.classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        };
-
-        btnOk.addEventListener('click', () => { cleanup(); resolve(input.value.trim()); });
-        btnCancel.addEventListener('click', () => { cleanup(); resolve(null); });
-        
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                btnOk.click();
-            }
-        });
-    });
-};
-
-// B. GRAMER ÖDEVİ GÖNDERME MOTORU (ANİMASYONLU)
 window.openWritingModal = async function() {
     if (!isPremiumTeacher) { openPaywall("AI Gramer Asistanı VIP Bir Özelliktir"); return; }
     
-    const studentSelect = document.getElementById('hwStudentSelect');
-    const dateInput = document.getElementById('hwDueDate');
-    
-    const studentId = studentSelect.value;
-    if (!studentId) { 
-        studentSelect.classList.remove('border-gray-300', 'dark:border-slate-600');
-        studentSelect.classList.add('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
-        setTimeout(() => {
-            studentSelect.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
-            studentSelect.classList.add('border-gray-300', 'dark:border-slate-600');
-        }, 2000);
-        showToast("Lütfen kime ödev vereceğinizi seçin!", "error"); 
-        return; 
+    // Öğrencileri listeye doldur
+    const { data } = await supabaseClient.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
+    const select = document.getElementById('awStudentSelect');
+    if (data && select) {
+        select.innerHTML = '<option value="">Öğrenci Seçin...</option><option value="all" class="text-blue-600 font-black">🌟 TÜM SINIFA GÖNDER 🌟</option>';
+        data.forEach(s => { select.innerHTML += `<option value="${s.id}">${s.full_name}</option>`; });
     }
     
-    const dueDate = dateInput.value;
-    if (!dueDate) { 
-        dateInput.classList.remove('border-gray-300', 'dark:border-slate-600');
-        dateInput.classList.add('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
-        setTimeout(() => {
-            dateInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
-            dateInput.classList.add('border-gray-300', 'dark:border-slate-600');
-        }, 2000);
-        showToast("Lütfen son teslim tarihini seçin!", "error"); 
-        return; 
-    }
-    
-    const topic = await customPrompt("Ne Hakkında Yazılsın?", "Örn: Tatilde ne yaptığını anlat...");
-    if (!topic) return; 
+    // Tarihi yarına ayarla ve konuyu temizle
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('awDueDate').value = tomorrow.toISOString().split('T')[0];
+    document.getElementById('awTopic').value = '';
 
-    // 🌟 GÖRSEL GERİ BİLDİRİM: Butonu Bul ve Değiştir
-    const writingBtn = document.querySelector('button[onclick="openWritingModal()"]');
-    let originalBtnHtml = '';
-    if(writingBtn) {
-        originalBtnHtml = writingBtn.innerHTML;
-        writingBtn.innerHTML = '<span class="animate-pulse font-black">⏳ GÖNDERİLİYOR...</span>';
-        writingBtn.classList.add('opacity-80', 'pointer-events-none');
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    const { error } = await supabaseClient.from('homeworks').insert([{ 
-        student_id: studentId, 
-        title: `[WRITING] ${topic}`, 
-        description: "Yapay Zeka Gramer Koçu metninizi bekliyor...", 
-        due_date: dueDate, 
-        status: 'Bekliyor', 
-        teacher_id: currentTeacherId 
-    }]);
-
-    if (error) { 
-        if(writingBtn) {
-            writingBtn.innerHTML = originalBtnHtml;
-            writingBtn.classList.remove('opacity-80', 'pointer-events-none');
-        }
-        showToast("Görev atanamadı: " + error.message, "error"); 
-    } else { 
-        if(writingBtn) {
-            writingBtn.innerHTML = '✅ BAŞARILI!';
-            writingBtn.classList.remove('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-700', 'dark:text-blue-400');
-            writingBtn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600', 'shadow-lg');
-        }
-        
-        showToast("Gramer görevi başarıyla öğrencimize atandı!", "success"); 
-        
-        document.getElementById('newHomeworkForm').reset(); 
-        fetchHomeworks(); 
-        fetchDashboardStats(); 
-
-        setTimeout(() => {
-            if(writingBtn) {
-                writingBtn.innerHTML = originalBtnHtml;
-                writingBtn.classList.remove('bg-emerald-500', 'text-white', 'border-emerald-600', 'shadow-lg');
-                writingBtn.classList.add('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-700', 'dark:text-blue-400');
-                writingBtn.classList.remove('opacity-80', 'pointer-events-none');
-            }
-        }, 2000);
-    }
+    // Sihirbazı aç
+    document.getElementById('aiWritingModal').classList.remove('hidden');
 };
+
+const btnAssignWriting = document.getElementById('btnAssignWriting');
+if (btnAssignWriting) {
+    btnAssignWriting.addEventListener('click', async () => {
+        const topic = document.getElementById('awTopic').value.trim();
+        const studentId = document.getElementById('awStudentSelect').value;
+        const dueDate = document.getElementById('awDueDate').value;
+
+        if (!topic) { showToast('Lütfen bir konu belirleyin!', 'error'); return; }
+        if (!studentId) { showToast('Lütfen kime gideceğini seçin!', 'error'); return; }
+        if (!dueDate) { showToast('Lütfen teslim tarihi seçin!', 'error'); return; }
+
+        const originalText = btnAssignWriting.innerHTML;
+        btnAssignWriting.innerHTML = '<span class="animate-pulse">⏳ GÖNDERİLİYOR...</span>';
+        btnAssignWriting.disabled = true;
+
+        const taskTitle = `[WRITING] ${topic}`;
+        const desc = "Yapay Zeka Gramer Koçu metninizi bekliyor...";
+
+        let inserts = [];
+        if (studentId === 'all') {
+            const { data: allStudents } = await supabaseClient.from('profiles').select('id').eq('role', 'student').eq('teacher_id', currentTeacherId);
+            inserts = allStudents.map(s => ({
+                student_id: s.id, title: taskTitle, description: desc, due_date: dueDate, status: 'Bekliyor', teacher_id: currentTeacherId
+            }));
+        } else {
+            inserts = [{
+                student_id: studentId, title: taskTitle, description: desc, due_date: dueDate, status: 'Bekliyor', teacher_id: currentTeacherId
+            }];
+        }
+
+        const { error } = await supabaseClient.from('homeworks').insert(inserts);
+
+        if (error) { 
+            showToast("Görev atanamadı: " + error.message, "error"); 
+            btnAssignWriting.innerHTML = originalText;
+            btnAssignWriting.disabled = false;
+        } else { 
+            btnAssignWriting.innerHTML = '✅ BAŞARILI!';
+            btnAssignWriting.classList.remove('from-blue-600', 'to-indigo-600');
+            btnAssignWriting.classList.add('from-emerald-500', 'to-green-500');
+            
+            showToast("Gramer görevi başarıyla atandı! 🚀", "success"); 
+            fetchHomeworks(); 
+            fetchDashboardStats(); 
+
+            // 1.5 saniye başarıyı göster ve modalı kapat
+            setTimeout(() => {
+                document.getElementById('aiWritingModal').classList.add('hidden');
+                btnAssignWriting.innerHTML = originalText;
+                btnAssignWriting.classList.remove('from-emerald-500', 'to-green-500');
+                btnAssignWriting.classList.add('from-blue-600', 'to-indigo-600');
+                btnAssignWriting.disabled = false;
+            }, 1500);
+        }
+    });
+}
+
 
 
 
