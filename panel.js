@@ -2004,3 +2004,108 @@ window.sendPersonalMessage = async function(teacherId) {
     if (error) showToast("Mesaj gönderilemedi!", "error");
     else showToast("Özel mesaj hocanın paneline sabitlendi!", "success");
 };
+
+
+// ==========================================
+// 3. YAPAY ZEKA VELİ RAPORU ASİSTANI
+// ==========================================
+window.openAIReportModal = async function() {
+    if (!isPremiumTeacher) { openPaywall("Yapay Zeka Veli Raporu VIP Bir Özelliktir"); return; }
+    
+    const studentId = document.getElementById('profStudentId').value;
+    const studentName = document.getElementById('profileStudentName').innerText;
+    const parentPhone = document.getElementById('profParentPhone').value;
+    
+    if (!parentPhone || parentPhone.trim() === '') {
+        showToast("Bu öğrencinin veli numarası kayıtlı değil!", "error");
+        return;
+    }
+
+    const modal = document.getElementById('aiReportModal');
+    const textArea = document.getElementById('aiReportContent');
+    const waBtn = document.getElementById('btnSendAiReportWA');
+    
+    textArea.value = '';
+    textArea.placeholder = "Yapay zeka öğrenci verilerini (Notlar, Ödevler, Borçlar) analiz edip mesajı hazırlıyor. Lütfen bekleyin... ⏳";
+    waBtn.disabled = true;
+    waBtn.classList.add('opacity-50');
+    modal.classList.remove('hidden');
+    
+    showToast("Yapay zeka öğrenci verilerini tarıyor...", "info");
+    
+    // Veritabanından öğrencinin röntgenini çekiyoruz
+    const { data: quizResults } = await supabaseClient.from('quiz_results').select('score').eq('student_id', studentId);
+    const { data: homeworks } = await supabaseClient.from('homeworks').select('status').eq('student_id', studentId);
+    const { data: lessons } = await supabaseClient.from('private_lessons').select('topic, is_paid, price').eq('student_id', studentId);
+
+    let avg = 0;
+    if (quizResults && quizResults.length > 0) avg = Math.round(quizResults.reduce((a, b) => a + b.score, 0) / quizResults.length);
+    
+    let hwRate = 0;
+    if (homeworks && homeworks.length > 0) {
+        const completed = homeworks.filter(h => h.status === 'Tamamlandı').length;
+        hwRate = Math.round((completed / homeworks.length) * 100);
+    }
+
+    let recentTopics = "";
+    let debt = 0;
+    if (lessons && lessons.length > 0) {
+        recentTopics = lessons.slice(0, 3).map(l => l.topic).join(', ');
+        lessons.forEach(l => { if(!l.is_paid) debt += Number(l.price || 0); });
+    }
+
+    const { data: godProfile } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
+    if (!godProfile || !godProfile.openai_key) {
+        textArea.placeholder = "API şifresi eksik. İşlem başarısız.";
+        return;
+    }
+
+    // YZ'ye verdiğimiz o efsanevi komut
+    const promptText = `Öğrencinin Adı: ${studentName}. İngilizce Sınav Ortalaması: %${avg}. Ödev Yapma Oranı: %${hwRate}. Son işlenen konular: ${recentTopics || 'Genel İngilizce'}. Sen profesyonel, VIP bir İngilizce öğretmenisin. Veliye WhatsApp üzerinden atılmak üzere, öğrencinin bu istatistiklerine dayanarak kibar, motive edici ve pedagojik bir durum değerlendirme raporu yaz. Veliye doğrudan hitap et. Çok uzun olmasın, maksimum 3-4 cümle. ${debt > 0 ? 'Not: Velinin sana ' + debt + ' TL ödenmemiş ders borcu var, bunu da metnin sonuna son derece kibar ve nazik bir dille "gecikmiş ödemeniz bulunuyor" gibi bir ifadeyle iliştir.' : 'Borç yok, paradan kesinlikle bahsetme.'} Sonuna da "Detaylı gelişim raporu ve canlı takip için linke tıklayın:" yazıp bırak (ben linki ekleyeceğim).`;
+
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${godProfile.openai_key}` },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: "Sen VIP, profesyonel ve pedagojik dil kullanan bir öğretmensin. Metinlerinde yıldız (**) veya kalın harf kullanma." },
+                    { role: 'user', content: promptText }
+                ], 
+                temperature: 0.7
+            })
+        });
+
+        const resData = await response.json();
+        let aiText = resData.choices[0].message.content.trim();
+        
+        // Canlı linki sonuna ekle
+        const currentUrl = window.location.href.split('/').slice(0, -1).join('/'); 
+        const magicLink = `${currentUrl}/veli.html?id=${studentId}`;
+        aiText += `\n\n🔗 Canlı Veli Paneli: ${magicLink}`;
+
+        textArea.value = aiText;
+        textArea.placeholder = "";
+        waBtn.disabled = false;
+        waBtn.classList.remove('opacity-50');
+        showToast("Rapor hazır!", "success");
+
+    } catch(e) {
+        textArea.placeholder = "Bağlantı hatası oluştu.";
+    }
+}
+
+// WhatsApp Gönderme Tetikleyicisi
+window.sendAiReportWhatsApp = function() {
+    let rawPhone = document.getElementById('profParentPhone').value; 
+    let phone = rawPhone.replace(/\D/g, ''); 
+    if(phone.startsWith('0')) phone = phone.substring(1); 
+    if(phone.length === 10) phone = '90' + phone; 
+
+    const text = document.getElementById('aiReportContent').value;
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
+    document.getElementById('aiReportModal').classList.add('hidden');
+    showToast("WhatsApp açılıyor...", "success");
+}
