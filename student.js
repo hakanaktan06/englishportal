@@ -257,7 +257,7 @@ async function fetchMyHomeworks() {
             flashcardDataStr = hw.description.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
         } else if (hw.title.includes('[WRITING]')) {
             isWriting = true;
-            cardTitle = hw.title.replace('[WRITING]', '✍️ Gramer Görevi:');
+            cardTitle = hw.title.replace('[WRITING]', 'Gramer Görevi:');
         }
 
         const card = `
