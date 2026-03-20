@@ -404,15 +404,16 @@ async function fetchAgenda() {
             ? `<span class="ml-2 text-xs font-black text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${item.timeStr}</span>` 
             : '';
 
-        // Temizlenmiş başlığı şık rozetlerle donatıyoruz
+                // Ödevler tablosuyla BİREBİR aynı rozet tasarımı
         let badgeHtml = '';
         if (item.desc.includes('Gramer Görevi:')) {
-            badgeHtml = `<span class="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-[9px] font-black uppercase mr-1">Gramer</span>`;
+            badgeHtml = `<span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded text-[10px] font-black mr-2 uppercase tracking-widest border border-blue-200 dark:border-blue-800">GRAMER</span>`;
             item.desc = item.desc.replace('Gramer Görevi:', '').trim();
         } else if (item.desc.includes('Telaffuz Görevi:')) {
-            badgeHtml = `<span class="bg-purple-100 text-purple-600 px-2 py-0.5 rounded text-[9px] font-black uppercase mr-1">Telaffuz</span>`;
+            badgeHtml = `<span class="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded text-[10px] font-black mr-2 uppercase tracking-widest border border-purple-200 dark:border-purple-800">TELAFFUZ</span>`;
             item.desc = item.desc.replace('Telaffuz Görevi:', '').trim();
         }
+
 
         agendaContainer.innerHTML += `
             <div class="flex items-center gap-4 p-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-700 rounded-2xl border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition group cursor-default">
