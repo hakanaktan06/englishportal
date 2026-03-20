@@ -902,21 +902,41 @@
         </div>
     </div>
 
-    <div id="customPromptModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[9999] p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 border border-transparent dark:border-slate-700" id="customPromptBox">
-            <div class="p-6">
-                <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                </div>
-                <h3 class="text-xl font-black text-gray-800 dark:text-white mb-2 text-center" id="customPromptMessage">Konu Belirle</h3>
-                <input type="text" id="customPromptInput" class="w-full mt-4 p-4 rounded-2xl border-2 border-gray-100 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white focus:border-blue-400 outline-none text-sm font-bold transition-all shadow-sm" placeholder="...">
+        <div id="aiWritingModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center z-[99999] p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-[30px] w-full max-w-lg shadow-2xl overflow-hidden border border-transparent dark:border-slate-700 flex flex-col">
+            <div class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gradient-to-r from-blue-600 to-indigo-600 shrink-0">
+                <h3 class="text-lg md:text-xl font-black text-white flex items-center gap-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    Gramer Sihirbazı
+                </h3>
+                <button onclick="document.getElementById('aiWritingModal').classList.add('hidden')" class="text-3xl text-white/70 hover:text-white transition leading-none">&times;</button>
             </div>
-            <div class="flex border-t border-gray-100 dark:border-slate-700">
-                <button id="customPromptCancel" class="flex-1 py-4 text-gray-500 dark:text-gray-400 font-bold hover:bg-gray-50 dark:hover:bg-slate-700 transition border-r border-gray-100 dark:border-slate-700">İptal</button>
-                <button id="customPromptOk" class="flex-1 py-4 text-blue-600 font-black hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">Devam Et</button>
+            <div class="p-6 bg-slate-50 dark:bg-slate-900">
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-blue-100 dark:border-blue-900/30 mb-6">
+                    <div class="mb-4">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Ne Hakkında Yazılsın?</label>
+                        <input id="awTopic" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:border-blue-500 font-bold text-sm shadow-inner" placeholder="Örn: Tatilde ne yaptığını 50 kelimeyle anlat...">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Kime Atanacak?</label>
+                            <select id="awStudentSelect" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:border-blue-500 font-bold text-sm appearance-none shadow-sm">
+                                <option value="">Öğrenci Seçin...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Son Teslim</label>
+                            <input type="date" id="awDueDate" class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none focus:border-blue-500 font-bold text-sm shadow-sm">
+                        </div>
+                    </div>
+                </div>
+                <button id="btnAssignWriting" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black py-4 rounded-xl shadow-lg transition transform active:scale-95 text-sm tracking-widest uppercase flex items-center justify-center gap-2">
+                    GÖREVİ GÖNDER 
+                </button>
             </div>
         </div>
     </div>
+
 
     <div id="reviewWritingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[99999] p-4">
         <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden border border-transparent dark:border-slate-700 flex flex-col max-h-[90vh]">
