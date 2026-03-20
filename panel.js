@@ -316,6 +316,9 @@ async function fetchDashboardStats() {
     fetchAgenda();
 }
 
+// ==========================================
+// KOKPİT AJANDA MOTORU (GÜNCELLENDİ: Etiket Temizliği)
+// ==========================================
 async function fetchAgenda() {
     const agendaContainer = document.getElementById('agendaList');
     if (!agendaContainer || !currentTeacherId) return;
@@ -350,13 +353,21 @@ async function fetchAgenda() {
     if (homeworks) {
         homeworks.forEach(h => {
             if(h.status !== 'Tamamlandı') {
+                // YENİ: Başlık Temizleme Operasyonu
+                let cleanTitle = h.title;
+                if(cleanTitle.includes('[KELİME_KARTI]')) {
+                    cleanTitle = cleanTitle.replace('[KELİME_KARTI]', 'Telaffuz Görevi:').trim();
+                } else if (cleanTitle.includes('[WRITING]')) {
+                    cleanTitle = cleanTitle.replace('[WRITING]', 'Gramer Görevi:').trim();
+                }
+
                 agendaItems.push({
                     type: 'homework',
                     dateStr: h.due_date,
                     timeStr: '23:59',
                     dateObj: new Date(`${h.due_date}T23:59:00`),
                     title: `${h.profiles?.full_name || 'Öğrenci'} - Ödev Teslimi`,
-                    desc: h.title
+                    desc: cleanTitle
                 });
             }
         });
@@ -393,6 +404,16 @@ async function fetchAgenda() {
             ? `<span class="ml-2 text-xs font-black text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${item.timeStr}</span>` 
             : '';
 
+        // Temizlenmiş başlığı şık rozetlerle donatıyoruz
+        let badgeHtml = '';
+        if (item.desc.includes('Gramer Görevi:')) {
+            badgeHtml = `<span class="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-[9px] font-black uppercase mr-1">Gramer</span>`;
+            item.desc = item.desc.replace('Gramer Görevi:', '').trim();
+        } else if (item.desc.includes('Telaffuz Görevi:')) {
+            badgeHtml = `<span class="bg-purple-100 text-purple-600 px-2 py-0.5 rounded text-[9px] font-black uppercase mr-1">Telaffuz</span>`;
+            item.desc = item.desc.replace('Telaffuz Görevi:', '').trim();
+        }
+
         agendaContainer.innerHTML += `
             <div class="flex items-center gap-4 p-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-700 rounded-2xl border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition group cursor-default">
                 ${icon}
@@ -402,11 +423,12 @@ async function fetchAgenda() {
                         ${timeHtml}
                     </div>
                     <h4 class="text-sm font-black text-gray-800 dark:text-white leading-tight group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition">${item.title}</h4>
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 truncate max-w-[250px] sm:max-w-md">${item.desc}</p>
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 truncate max-w-[250px] sm:max-w-md">${badgeHtml} ${item.desc}</p>
                 </div>
             </div>`;
     });
 }
+
 
 // ==========================================
 // 3. YENİ NESİL: VIP ÖĞRENCİ İSTİHBARAT MOTORU (LİMİTLİ)
