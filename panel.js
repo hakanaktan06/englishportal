@@ -1971,16 +1971,31 @@ window.customPrompt = function(title, placeholder) {
 window.openWritingModal = async function() {
     if (!isPremiumTeacher) { openPaywall("AI Gramer Asistanı VIP Bir Özelliktir"); return; }
     
-    const studentId = document.getElementById('hwStudentSelect').value;
-    if (!studentId) { showToast("Önce formdan bir öğrenci seçin!", "error"); return; }
+    const studentSelect = document.getElementById('hwStudentSelect');
+    const dateInput = document.getElementById('hwDueDate');
     
-    const dueDate = document.getElementById('hwDueDate').value;
-    if (!dueDate) { showToast("Lütfen son teslim tarihini seçin!", "error"); return; }
+    const studentId = studentSelect.value;
+    if (!studentId) { 
+        // Kullanıcı seçmeyi unuttuysa kutuyu kırmızı yap ve titret
+        studentSelect.classList.add('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
+        setTimeout(() => studentSelect.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse'), 2000);
+        showToast("Lütfen kime ödev vereceğinizi seçin!", "error"); 
+        return; 
+    }
     
-    const topic = await customPrompt("Ne Hakkında Yazılsın?", "Örn: Tatilde ne yaptığını 50 kelimeyle anlat");
+    const dueDate = dateInput.value;
+    if (!dueDate) { 
+        // Tarih seçmeyi unuttuysa kırmızı yap
+        dateInput.classList.add('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
+        setTimeout(() => dateInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse'), 2000);
+        showToast("Lütfen son teslim tarihini seçin!", "error"); 
+        return; 
+    }
+    
+    const topic = await customPrompt("Ne Hakkında Yazılsın?", "Örn: Tatilde ne yaptığını anlat...");
     if (!topic) return; 
     
-    showToast("Gramer görevi atanıyor...", "info");
+    showToast("Gramer görevi hazırlanıyor, lütfen bekleyin...", "info");
     
     const { error } = await supabaseClient.from('homeworks').insert([{ 
         student_id: studentId, 
@@ -1994,11 +2009,13 @@ window.openWritingModal = async function() {
     if (error) { 
         showToast("Görev atanamadı: " + error.message, "error"); 
     } else { 
-        showToast("Gramer görevi başarıyla atandı!", "success"); 
+        showToast("Gramer görevi başarıyla öğrencimize atandı!", "success"); 
         document.getElementById('newHomeworkForm').reset(); 
         fetchHomeworks(); 
+        fetchDashboardStats(); // Kokpit paneli rakamlarını da günceller
     }
 };
+
 
 
 
