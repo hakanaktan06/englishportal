@@ -243,9 +243,22 @@ async function fetchMyHomeworks() {
 
     data.forEach(hw => {
         const dueDate = new Date(hw.due_date).toLocaleDateString('tr-TR');
-                const isCompleted = hw.status === 'Tamamlandı';
+        const isCompleted = hw.status === 'Tamamlandı';
         const isReviewing = hw.status === 'İnceleniyor';
-        // ... (title ve description atamaları kalacak) ...
+        
+        let cardTitle = hw.title;
+        let isFlashcard = false;
+        let isWriting = false;
+        let flashcardDataStr = "[]";
+        
+        if (hw.title.includes('[KELİME_KARTI]')) {
+            isFlashcard = true;
+            cardTitle = hw.title.replace('[KELİME_KARTI]', '🚀 Telaffuz Görevi:');
+            flashcardDataStr = hw.description.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+        } else if (hw.title.includes('[WRITING]')) {
+            isWriting = true;
+            cardTitle = hw.title.replace('[WRITING]', '✍️ Gramer Görevi:');
+        }
 
         const card = `
             <div class="bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition-all flex flex-col h-full relative overflow-hidden group">
@@ -280,8 +293,6 @@ async function fetchMyHomeworks() {
                 </div>
             </div>`;
 
-
-
         if(isCompleted) doneHwHtml += card;
         else newHwHtml += card;
     });
@@ -294,6 +305,7 @@ async function fetchMyHomeworks() {
         ${doneHwHtml || '<div class="col-span-full text-sm text-gray-400 italic">Henüz onaylanan ödevin yok.</div>'}
     `;
 }
+
 
 
 // ==========================================
