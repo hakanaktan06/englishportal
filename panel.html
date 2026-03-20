@@ -103,12 +103,20 @@
         <div id="section-dashboard" class="page-section w-full pb-10">
             <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center sticky top-0 z-10 gap-4 border-b border-gray-100 dark:border-slate-700">
                 <div class="w-full">
-                    <h2 class="text-2xl md:text-3xl font-black text-gray-800 dark:text-white tracking-tight leading-tight md:leading-snug mb-1 inline-block">
+                    <h2 class="text-2xl md:text-3xl font-black text-gray-800 dark:text-white tracking-tight leading-tight md:leading-snug mb-3">
                         Merhaba <span id="welcomeTeacherName" class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">Yükleniyor...</span>, Hoş Geldiniz!
-                        <svg class="w-6 h-6 md:w-7 md:h-7 text-amber-500 animate-pulse inline-block align-baseline -mt-1 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4L22 10l-6 5.4L17.8 22 12 18.3 6.2 22 8 15.4 2 10l7.6-.6L12 2z"/></svg>
-                        <span id="premiumBadge" class="hidden inline-flex items-center gap-1 bg-gradient-to-r from-amber-400 to-yellow-600 text-black px-2.5 py-0.5 rounded-lg text-[10px] md:text-xs font-black uppercase tracking-widest shadow-md align-middle ml-2 transform -translate-y-1"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2l1.664 4.887h5.111l-4.134 3.113 1.577 4.97-4.218-2.94-4.218 2.94 1.577-4.97-4.134-3.113h5.111L10 2z" clip-rule="evenodd"></path></svg> VIP</span>
                     </h2>
-                    <p id="dynamicWelcomeMsg" class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 font-medium leading-relaxed transition-opacity duration-500">Öğretmen paneline hoş geldiniz, veriler yükleniyor...</p>
+                    <div class="flex items-center gap-3 mb-3">
+                        <div id="premiumBadge" class="hidden flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/40 backdrop-blur-sm border-2 border-amber-400/40 text-amber-600 dark:text-amber-300 px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest shadow-sm dark:shadow-2xl dark:shadow-indigo-950/50 relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-amber-200/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                            <svg class="w-4 h-4 md:w-5 md:h-5 text-amber-500 dark:text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.582 3.954A1 1 0 0116.323 11H16v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4h-.323a1 1 0 01-.21-.023l1.582-3.954L9 4.323V3a1 1 0 011-1zM5 11h10v4a1 1 0 01-1 1H6a1 1 0 01-1-1v-4z" clip-rule="evenodd" />
+                                <path d="M10 6a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0V10H8a1 1 0 110-2h1V7a1 1 0 011-1z" />
+                            </svg>
+                            VIP PREMIUM ACADEMY
+                        </div>
+                    </div>
+                    <p id="dynamicWelcomeMsg" class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium leading-relaxed transition-opacity duration-500">Öğretmen paneline hoş geldiniz, veriler yükleniyor...</p>
                 </div>
             </header>
             <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -235,7 +243,7 @@
                                 KELİME KARTI 
                             </button>
                             <button onclick="openWritingModal()" type="button" class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition flex items-center gap-1 shadow-sm border border-blue-200 dark:border-blue-800">
-                                 GRAMER ÖDEVİ
+                                GRAMER ÖDEVİ
                             </button>
                         </div>
                     </div>
@@ -651,8 +659,6 @@
             </div>
         </div>
     </div>
-
-   <div id="toast-container" class="fixed bottom-6 right-6 z-[999999] flex flex-col gap-2 pointer-events-none"></div>
 
 
     <div id="studentProfileModal" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center z-50 p-4 pt-20 md:pt-4">
