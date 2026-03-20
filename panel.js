@@ -1978,8 +1978,15 @@ window.openWritingModal = async function() {
     const studentId = studentSelect.value;
     if (!studentId) { 
         // Kullanıcı seçmeyi unuttuysa kutuyu kırmızı yap ve titret
+        studentSelect.classList.remove('border-gray-300', 'dark:border-slate-600'); // Eski border'ı sil
         studentSelect.classList.add('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
-        setTimeout(() => studentSelect.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse'), 2000);
+        
+        // 2 saniye sonra normale döndür
+        setTimeout(() => {
+            studentSelect.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
+            studentSelect.classList.add('border-gray-300', 'dark:border-slate-600');
+        }, 2000);
+        
         showToast("Lütfen kime ödev vereceğinizi seçin!", "error"); 
         return; 
     }
@@ -1987,14 +1994,20 @@ window.openWritingModal = async function() {
     const dueDate = dateInput.value;
     if (!dueDate) { 
         // Tarih seçmeyi unuttuysa kırmızı yap
+        dateInput.classList.remove('border-gray-300', 'dark:border-slate-600');
         dateInput.classList.add('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
-        setTimeout(() => dateInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse'), 2000);
+        
+        setTimeout(() => {
+            dateInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
+            dateInput.classList.add('border-gray-300', 'dark:border-slate-600');
+        }, 2000);
+        
         showToast("Lütfen son teslim tarihini seçin!", "error"); 
         return; 
     }
     
     const topic = await customPrompt("Ne Hakkında Yazılsın?", "Örn: Tatilde ne yaptığını anlat...");
-    if (!topic) return; 
+    if (!topic) return; // Kullanıcı iptal ettiyse çık
     
     showToast("Gramer görevi hazırlanıyor, lütfen bekleyin...", "info");
     
@@ -2016,6 +2029,7 @@ window.openWritingModal = async function() {
         fetchDashboardStats(); // Kokpit paneli rakamlarını da günceller
     }
 };
+
 
 
 
