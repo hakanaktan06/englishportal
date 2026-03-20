@@ -1933,8 +1933,9 @@ window.openWritingModal = async function() {
     });
 }
 
-// YENİ: ÖĞRETMEN İÇİN İNCELEME MOTORU
-window.reviewWriting = function(hwId, studentId, descRaw) {
+
+// YENİ: ÖĞRETMEN İÇİN İNCELEME MOTORU (GÜNCELLENDİ)
+window.reviewWriting = function(hwId, studentId, descRaw, isCompleted = false) {
     const desc = unescape(descRaw);
     const parts = desc.split('[YAPAY ZEKA DEĞERLENDİRMESİ]');
     let studentText = parts[0].replace('[ÖĞRENCİ METNİ]', '').trim();
@@ -1943,10 +1944,17 @@ window.reviewWriting = function(hwId, studentId, descRaw) {
     document.getElementById('rwStudentText').innerText = studentText;
     document.getElementById('rwAiFeedback').innerText = aiFeedback;
     
-    document.getElementById('rwApproveBtn').onclick = () => {
-        approveHomework(hwId, studentId);
-        document.getElementById('reviewWritingModal').classList.add('hidden');
-    };
+    const approveBtn = document.getElementById('rwApproveBtn');
+    if (isCompleted) {
+        // Eğer ödev zaten onaylandıysa, hocanın karşısına bir daha "Onayla ve XP Ver" butonu çıkarma
+        approveBtn.style.display = 'none';
+    } else {
+        approveBtn.style.display = 'flex';
+        approveBtn.onclick = () => {
+            approveHomework(hwId, studentId);
+            document.getElementById('reviewWritingModal').classList.add('hidden');
+        };
+    }
 
     document.getElementById('reviewWritingModal').classList.remove('hidden');
 }
