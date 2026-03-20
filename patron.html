@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr" class="dark">
 <head>
     <meta charset="UTF-8">
@@ -42,7 +42,7 @@
         </div>
     </aside>
 
-            <main class="flex-1 flex flex-col h-[100dvh] overflow-y-auto overflow-x-hidden relative w-full bg-[#0f172a] pb-24" style="-webkit-overflow-scrolling: touch;">
+    <main class="flex-1 flex flex-col h-[100dvh] overflow-y-auto overflow-x-hidden relative w-full bg-[#0f172a] pb-24" style="-webkit-overflow-scrolling: touch;">
         
         <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 p-4 md:p-6 flex justify-between items-center sticky top-0 z-30 shrink-0">
             <div class="flex items-center gap-3">
@@ -51,13 +51,43 @@
                 </button>
                 <h2 class="text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 uppercase tracking-widest">God Panel</h2>
             </div>
-            </header>
+        </header>
 
         <div class="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6 md:space-y-8">
             
-            <div>
+            <div class="mb-2">
                 <h1 class="text-2xl md:text-3xl font-black text-white tracking-tight">Hoş Geldin, <span class="text-amber-500">Patron</span></h1>
-                <p class="text-sm text-slate-400 mt-1 font-medium">Tüm sistem kontrolü senin ellerinde.</p>
+                <p class="text-sm text-slate-400 mt-1 font-medium">Tüm sistem kontrolü ve metrikleri senin ellerinde.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-slate-800/50 border border-slate-700/50 p-6 rounded-[24px] shadow-lg flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Kayıtlı Eğitmen</p>
+                        <h3 class="text-3xl font-black text-white mt-1" id="godStatTeachers">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center border border-indigo-500/30">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/50 p-6 rounded-[24px] shadow-lg flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Sistemdeki Öğrenci</p>
+                        <h3 class="text-3xl font-black text-white mt-1" id="godStatStudents">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-full flex items-center justify-center border border-purple-500/30">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    </div>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/50 p-6 rounded-[24px] shadow-lg flex items-center justify-between relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
+                        <svg class="w-24 h-24 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <div class="relative z-10">
+                        <p class="text-xs font-bold text-emerald-500/80 uppercase tracking-widest">Sistemdeki Toplam Borç</p>
+                        <h3 class="text-3xl font-black text-emerald-400 mt-1" id="godStatDebt">₺0</h3>
+                    </div>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -102,7 +132,6 @@
                 </div>
 
                 <div class="space-y-6">
-                    
                     <div class="bg-slate-800/50 border border-slate-700/50 p-5 md:p-6 rounded-[24px] shadow-lg">
                         <div class="flex items-center gap-3 mb-4">
                             <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/30">
@@ -125,11 +154,10 @@
                             <h3 class="text-lg font-black text-white">Global Duyuru Sistemi</h3>
                         </div>
                         <div class="space-y-3">
-                            <input type="text" id="godAnnouncement" class="w-full bg-slate-900 border border-amber-500/50 text-amber-400 font-bold px-4 py-3 rounded-xl outline-none focus:border-amber-400 text-sm" placeholder="Sistem bu gece bakıma girecektir...">
+                            <input type="text" id="godAnnouncement" class="w-full bg-slate-900 border border-amber-500/50 text-amber-400 font-bold px-4 py-3 rounded-xl outline-none focus:border-amber-400 text-sm" placeholder="Herkese gidecek duyuruyu buraya yazın...">
                             <button id="saveAnnouncementBtn" class="w-full bg-amber-500 hover:bg-amber-400 text-black py-3.5 rounded-xl font-black text-sm uppercase tracking-widest transition">Duyuruyu Yayınla</button>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -141,7 +169,7 @@
                         </div>
                         <div>
                             <h3 class="text-lg font-black text-white">Öğretmen Yönetimi</h3>
-                            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Kayıtlı Öğretmenler ve VIP Yetkileri</p>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Kayıtlı Öğretmenler, VIP ve Özel Mesajlar</p>
                         </div>
                     </div>
                 </div>
@@ -153,7 +181,6 @@
         </div>
     </main>
 
-
     <div id="customConfirmModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center z-[9999] p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="customConfirmBox">
             <div class="p-6 text-center">
@@ -161,7 +188,7 @@
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 </div>
                 <h3 class="text-xl font-black text-white mb-2">Emin misin Patron?</h3>
-                <p class="text-sm text-slate-400 font-medium" id="customConfirmMessage">Bu işlemi yapmak istediğine emin misin?</p>
+                <p class="text-sm text-slate-400 font-medium" id="customConfirmMessage">Bu işlemi gerçekleştirmek istediğinizi onaylıyor musunuz?</p>
             </div>
             <div class="flex border-t border-slate-800">
                 <button id="customConfirmCancel" class="flex-1 py-4 text-slate-400 font-bold hover:bg-slate-800 transition border-r border-slate-800">İptal</button>
@@ -170,7 +197,7 @@
         </div>
     </div>
    
-        <div id="premiumDurationModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center z-[9999] p-4 opacity-0 transition-opacity duration-300">
+    <div id="premiumDurationModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center z-[9999] p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="premiumDurationBox">
             <div class="p-6 text-center border-b border-slate-800 bg-black/40">
                 <div class="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-3 border border-amber-500/20">
@@ -191,8 +218,6 @@
         </div>
     </div>
 
-    
-    
     <div id="toast-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
     <script src="patron.js"></script>
