@@ -235,7 +235,7 @@
                                 KELİME KARTI 
                             </button>
                             <button onclick="openWritingModal()" type="button" class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition flex items-center gap-1 shadow-sm border border-blue-200 dark:border-blue-800">
-                                 GRAMER ÖDEVİ
+                                ✍️ GRAMER ÖDEVİ
                             </button>
                         </div>
                     </div>
@@ -883,6 +883,50 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="customPromptModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[9999] p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 border border-transparent dark:border-slate-700" id="customPromptBox">
+            <div class="p-6">
+                <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </div>
+                <h3 class="text-xl font-black text-gray-800 dark:text-white mb-2 text-center" id="customPromptMessage">Konu Belirle</h3>
+                <input type="text" id="customPromptInput" class="w-full mt-4 p-4 rounded-2xl border-2 border-gray-100 dark:border-slate-600 bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white focus:border-blue-400 outline-none text-sm font-bold transition-all shadow-sm" placeholder="...">
+            </div>
+            <div class="flex border-t border-gray-100 dark:border-slate-700">
+                <button id="customPromptCancel" class="flex-1 py-4 text-gray-500 dark:text-gray-400 font-bold hover:bg-gray-50 dark:hover:bg-slate-700 transition border-r border-gray-100 dark:border-slate-700">İptal</button>
+                <button id="customPromptOk" class="flex-1 py-4 text-blue-600 font-black hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">Devam Et</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reviewWritingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[99999] p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden border border-transparent dark:border-slate-700 flex flex-col max-h-[90vh]">
+            <header class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-blue-50 dark:bg-blue-900/20 shrink-0">
+                <div>
+                    <h3 class="text-xl font-black text-blue-600 dark:text-blue-400">Yazma Görevi İncelemesi</h3>
+                    <p class="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">Öğrencinin metni ve yapay zeka analizi</p>
+                </div>
+                <button onclick="closeReviewWritingModal()" class="text-3xl text-gray-400 hover:text-red-500 transition">&times;</button>
+            </header>
+            <div class="p-6 overflow-y-auto flex-1 space-y-6 bg-slate-50 dark:bg-slate-900/50" style="-webkit-overflow-scrolling:touch">
+                <div>
+                    <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-200 dark:border-slate-700 pb-1">ÖĞRENCİNİN YAZDIĞI METİN</h4>
+                    <p id="rwStudentText" class="text-gray-800 dark:text-gray-200 font-medium leading-relaxed bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-slate-700"></p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-black text-purple-500 uppercase tracking-widest mb-2 border-b border-purple-200 dark:border-purple-900/50 pb-1 flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> AI DEĞERLENDİRMESİ</h4>
+                    <p id="rwAiFeedback" class="text-gray-700 dark:text-gray-300 font-medium leading-relaxed bg-purple-50 dark:bg-purple-900/10 p-4 rounded-xl border border-purple-100 dark:border-purple-800/50 whitespace-pre-wrap"></p>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0 flex gap-4">
+                <button onclick="closeReviewWritingModal()" class="flex-1 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 font-bold py-3 rounded-xl transition hover:bg-gray-200 dark:hover:bg-slate-600">Kapat</button>
+                <button id="rwApproveBtn" class="flex-[2] bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3 rounded-xl transition shadow-lg flex justify-center items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ONAYLA VE +100 XP VER
+                </button>
             </div>
         </div>
     </div>
