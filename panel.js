@@ -1918,10 +1918,11 @@ window.sendDebtReminder = function(lessonDate, price) {
     showToast("WhatsApp açılıyor...", "success");
 }
 
-// 2. WRITING (GRAMER) GÖREVİ MOTORU
 // ==========================================
-// ŞIK PROMPT (GİRDİ KUTUSU) MOTORU (KUSURSUZ VERSİYON)
+// 2. WRITING (GRAMER) GÖREVİ VE ŞIK PROMPT MOTORU
 // ==========================================
+
+// A. ÖZEL GİRDİ (PROMPT) KUTUSU MOTORU
 window.customPrompt = function(title, placeholder) {
     return new Promise((resolve) => {
         const modal = document.getElementById('customPromptModal');
@@ -1930,14 +1931,12 @@ window.customPrompt = function(title, placeholder) {
         let btnOk = document.getElementById('customPromptOk');
         let btnCancel = document.getElementById('customPromptCancel');
 
-        // Eğer HTML'de ekranı bulamazsa çökmesin, eski usul tarayıcı promptuna geçsin
         if(!modal) { resolve(prompt(title)); return; }
 
         document.getElementById('customPromptMessage').innerText = title;
         input.placeholder = placeholder;
         input.value = '';
         
-        // Bug'ı önlemek için butonların olay dinleyicilerini sıfırlıyoruz (Klonla ve Değiştir)
         const newBtnOk = btnOk.cloneNode(true);
         const newBtnCancel = btnCancel.cloneNode(true);
         btnOk.replaceWith(newBtnOk);
@@ -1956,7 +1955,6 @@ window.customPrompt = function(title, placeholder) {
         btnOk.addEventListener('click', () => { cleanup(); resolve(input.value.trim()); });
         btnCancel.addEventListener('click', () => { cleanup(); resolve(null); });
         
-        // Enter tuşu ile hızlı onaylama desteği
         input.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -1966,9 +1964,7 @@ window.customPrompt = function(title, placeholder) {
     });
 };
 
-// ==========================================
-// 2. YENİ NESİL WRITING (GRAMER) GÖREVİ MOTORU
-// ==========================================
+// B. GRAMER ÖDEVİ GÖNDERME MOTORU (ANİMASYONLU)
 window.openWritingModal = async function() {
     if (!isPremiumTeacher) { openPaywall("AI Gramer Asistanı VIP Bir Özelliktir"); return; }
     
@@ -2001,10 +1997,17 @@ window.openWritingModal = async function() {
     
     const topic = await customPrompt("Ne Hakkında Yazılsın?", "Örn: Tatilde ne yaptığını anlat...");
     if (!topic) return; 
+
+    // 🌟 GÖRSEL GERİ BİLDİRİM: Butonu Bul ve Değiştir
+    const writingBtn = document.querySelector('button[onclick="openWritingModal()"]');
+    let originalBtnHtml = '';
+    if(writingBtn) {
+        originalBtnHtml = writingBtn.innerHTML;
+        writingBtn.innerHTML = '<span class="animate-pulse font-black">⏳ GÖNDERİLİYOR...</span>';
+        writingBtn.classList.add('opacity-80', 'pointer-events-none');
+    }
     
-    // 🌟 FİX: Kutu kapandıktan sonra 300ms bekle ve ilk bildirimi at
     await new Promise(resolve => setTimeout(resolve, 300));
-    showToast("Yapay zeka görevi hazırlıyor...", "info");
     
     const { error } = await supabaseClient.from('homeworks').insert([{ 
         student_id: studentId, 
@@ -2015,18 +2018,36 @@ window.openWritingModal = async function() {
         teacher_id: currentTeacherId 
     }]);
 
-    // 🌟 FİX: Veritabanı ışık hızında cevap verse bile, insanın gözüyle görebilmesi için ekstra 600ms bekle
-    await new Promise(resolve => setTimeout(resolve, 600));
-
     if (error) { 
+        if(writingBtn) {
+            writingBtn.innerHTML = originalBtnHtml;
+            writingBtn.classList.remove('opacity-80', 'pointer-events-none');
+        }
         showToast("Görev atanamadı: " + error.message, "error"); 
     } else { 
-        showToast("Gramer görevi başarıyla atandı! 🚀", "success"); 
+        if(writingBtn) {
+            writingBtn.innerHTML = '✅ BAŞARILI!';
+            writingBtn.classList.remove('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-700', 'dark:text-blue-400');
+            writingBtn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600', 'shadow-lg');
+        }
+        
+        showToast("Gramer görevi başarıyla öğrencimize atandı!", "success"); 
+        
         document.getElementById('newHomeworkForm').reset(); 
         fetchHomeworks(); 
         fetchDashboardStats(); 
+
+        setTimeout(() => {
+            if(writingBtn) {
+                writingBtn.innerHTML = originalBtnHtml;
+                writingBtn.classList.remove('bg-emerald-500', 'text-white', 'border-emerald-600', 'shadow-lg');
+                writingBtn.classList.add('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-700', 'dark:text-blue-400');
+                writingBtn.classList.remove('opacity-80', 'pointer-events-none');
+            }
+        }, 2000);
     }
 };
+
 
 
 // YENİ: ÖĞRETMEN İÇİN İNCELEME MOTORU (GÜNCELLENDİ)
