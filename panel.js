@@ -1897,54 +1897,87 @@ window.sendDebtReminder = function(lessonDate, price) {
 
 // 2. WRITING (GRAMER) GÖREVİ MOTORU
 // ==========================================
-// ŞIK PROMPT (GİRDİ KUTUSU) MOTORU
+// ŞIK PROMPT (GİRDİ KUTUSU) MOTORU (KUSURSUZ VERSİYON)
 // ==========================================
-function customPrompt(title, placeholder) {
+window.customPrompt = function(title, placeholder) {
     return new Promise((resolve) => {
         const modal = document.getElementById('customPromptModal');
         const box = document.getElementById('customPromptBox');
         const input = document.getElementById('customPromptInput');
-        const btnOk = document.getElementById('customPromptOk');
-        const btnCancel = document.getElementById('customPromptCancel');
+        let btnOk = document.getElementById('customPromptOk');
+        let btnCancel = document.getElementById('customPromptCancel');
 
+        // Eğer HTML'de ekranı bulamazsa çökmesin, eski usul tarayıcı promptuna geçsin
         if(!modal) { resolve(prompt(title)); return; }
 
         document.getElementById('customPromptMessage').innerText = title;
         input.placeholder = placeholder;
         input.value = '';
         
+        // Bug'ı önlemek için butonların olay dinleyicilerini sıfırlıyoruz (Klonla ve Değiştir)
+        const newBtnOk = btnOk.cloneNode(true);
+        const newBtnCancel = btnCancel.cloneNode(true);
+        btnOk.replaceWith(newBtnOk);
+        btnCancel.replaceWith(newBtnCancel);
+        btnOk = newBtnOk;
+        btnCancel = newBtnCancel;
+
         modal.classList.remove('hidden');
         setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); input.focus(); }, 10);
 
         const cleanup = () => {
             modal.classList.add('opacity-0'); box.classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
-            btnOk.replaceWith(btnOk.cloneNode(true));
-            btnCancel.replaceWith(btnCancel.cloneNode(true));
         };
 
-        document.getElementById('customPromptOk').addEventListener('click', () => { cleanup(); resolve(input.value.trim()); });
-        document.getElementById('customPromptCancel').addEventListener('click', () => { cleanup(); resolve(null); });
+        btnOk.addEventListener('click', () => { cleanup(); resolve(input.value.trim()); });
+        btnCancel.addEventListener('click', () => { cleanup(); resolve(null); });
+        
+        // Enter tuşu ile hızlı onaylama desteği
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                btnOk.click();
+            }
+        });
     });
-}
+};
 
+// ==========================================
 // 2. YENİ NESİL WRITING (GRAMER) GÖREVİ MOTORU
+// ==========================================
 window.openWritingModal = async function() {
     if (!isPremiumTeacher) { openPaywall("AI Gramer Asistanı VIP Bir Özelliktir"); return; }
+    
     const studentId = document.getElementById('hwStudentSelect').value;
     if (!studentId) { showToast("Önce formdan bir öğrenci seçin!", "error"); return; }
+    
     const dueDate = document.getElementById('hwDueDate').value;
     if (!dueDate) { showToast("Lütfen son teslim tarihini seçin!", "error"); return; }
     
-    // Eski iğrenç prompt yerine jilet gibi şık ekranımızı kullanıyoruz!
     const topic = await customPrompt("Ne Hakkında Yazılsın?", "Örn: Tatilde ne yaptığını 50 kelimeyle anlat");
-    if (!topic) return;
+    if (!topic) return; 
     
-    showToast("Writing görevi atanıyor...", "info");
-    supabaseClient.from('homeworks').insert([{ student_id: studentId, title: `[WRITING] ${topic}`, description: "Yapay Zeka Gramer Koçu metninizi bekliyor...", due_date: dueDate, status: 'Bekliyor', teacher_id: currentTeacherId }]).then(({error}) => {
-        if (!error) { showToast("Gramer görevi atandı!", "success"); document.getElementById('newHomeworkForm').reset(); fetchHomeworks(); }
-    });
-}
+    showToast("Gramer görevi atanıyor...", "info");
+    
+    const { error } = await supabaseClient.from('homeworks').insert([{ 
+        student_id: studentId, 
+        title: `[WRITING] ${topic}`, 
+        description: "Yapay Zeka Gramer Koçu metninizi bekliyor...", 
+        due_date: dueDate, 
+        status: 'Bekliyor', 
+        teacher_id: currentTeacherId 
+    }]);
+
+    if (error) { 
+        showToast("Görev atanamadı: " + error.message, "error"); 
+    } else { 
+        showToast("Gramer görevi başarıyla atandı!", "success"); 
+        document.getElementById('newHomeworkForm').reset(); 
+        fetchHomeworks(); 
+    }
+};
+
 
 
 // YENİ: ÖĞRETMEN İÇİN İNCELEME MOTORU (GÜNCELLENDİ)
