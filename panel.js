@@ -1977,39 +1977,34 @@ window.openWritingModal = async function() {
     
     const studentId = studentSelect.value;
     if (!studentId) { 
-        // Kullanıcı seçmeyi unuttuysa kutuyu kırmızı yap ve titret
-        studentSelect.classList.remove('border-gray-300', 'dark:border-slate-600'); // Eski border'ı sil
+        studentSelect.classList.remove('border-gray-300', 'dark:border-slate-600');
         studentSelect.classList.add('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
-        
-        // 2 saniye sonra normale döndür
         setTimeout(() => {
             studentSelect.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
             studentSelect.classList.add('border-gray-300', 'dark:border-slate-600');
         }, 2000);
-        
         showToast("Lütfen kime ödev vereceğinizi seçin!", "error"); 
         return; 
     }
     
     const dueDate = dateInput.value;
     if (!dueDate) { 
-        // Tarih seçmeyi unuttuysa kırmızı yap
         dateInput.classList.remove('border-gray-300', 'dark:border-slate-600');
         dateInput.classList.add('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
-        
         setTimeout(() => {
             dateInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200', 'animate-pulse');
             dateInput.classList.add('border-gray-300', 'dark:border-slate-600');
         }, 2000);
-        
         showToast("Lütfen son teslim tarihini seçin!", "error"); 
         return; 
     }
     
     const topic = await customPrompt("Ne Hakkında Yazılsın?", "Örn: Tatilde ne yaptığını anlat...");
-    if (!topic) return; // Kullanıcı iptal ettiyse çık
+    if (!topic) return; 
     
-    showToast("Gramer görevi hazırlanıyor, lütfen bekleyin...", "info");
+    // 🌟 FİX: Kutu kapandıktan sonra 300ms bekle ve ilk bildirimi at
+    await new Promise(resolve => setTimeout(resolve, 300));
+    showToast("Yapay zeka görevi hazırlıyor...", "info");
     
     const { error } = await supabaseClient.from('homeworks').insert([{ 
         student_id: studentId, 
@@ -2020,18 +2015,18 @@ window.openWritingModal = async function() {
         teacher_id: currentTeacherId 
     }]);
 
+    // 🌟 FİX: Veritabanı ışık hızında cevap verse bile, insanın gözüyle görebilmesi için ekstra 600ms bekle
+    await new Promise(resolve => setTimeout(resolve, 600));
+
     if (error) { 
         showToast("Görev atanamadı: " + error.message, "error"); 
     } else { 
-        showToast("Gramer görevi başarıyla öğrencimize atandı!", "success"); 
+        showToast("Gramer görevi başarıyla atandı! 🚀", "success"); 
         document.getElementById('newHomeworkForm').reset(); 
         fetchHomeworks(); 
-        fetchDashboardStats(); // Kokpit paneli rakamlarını da günceller
+        fetchDashboardStats(); 
     }
 };
-
-
-
 
 
 // YENİ: ÖĞRETMEN İÇİN İNCELEME MOTORU (GÜNCELLENDİ)
