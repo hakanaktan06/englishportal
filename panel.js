@@ -724,28 +724,41 @@ async function fetchHomeworks() {
     if (completed.length === 0) {
         tbodyCompleted.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-400 dark:text-gray-500 italic text-sm">Henüz onaylanmış ödev yok.</td></tr>';
     } else {
-        completed.forEach(hw => {
+                completed.forEach(hw => {
             const date = new Date(hw.due_date).toLocaleDateString('tr-TR');
             
-            // GİZLİ KOD TEMİZLEME VE ROZET EKLEME
+            // ROZET KONTROLÜ
             let displayTitle = hw.title;
             if(displayTitle.includes('[KELİME_KARTI]')) {
                 displayTitle = `<span class="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded text-[10px] font-black mr-2 uppercase tracking-widest border border-purple-200 dark:border-purple-800">TELAFFUZ</span> ` + displayTitle.replace('[KELİME_KARTI]', '').trim();
+            } else if (displayTitle.includes('[WRITING]')) {
+                displayTitle = `<span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded text-[10px] font-black mr-2 uppercase tracking-widest border border-blue-200 dark:border-blue-800">GRAMER</span> ` + displayTitle.replace('[WRITING]', '').trim();
             }
+
+            let actionButtons = `<span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-200 dark:border-emerald-700 mr-2">ONAYLI</span>`;
+            
+            // EĞER GRAMER ÖDEVİYSE, "BEDAVA" İNCELE BUTONUNU EKLE
+            if (hw.title.includes('[WRITING]')) {
+                 const safeDesc = escape(hw.description);
+                 // isCompleted parametresini "true" gönderiyoruz ki içeride "Onayla" butonu çıkmasın!
+                 actionButtons += `<button onclick="reviewWriting('${hw.id}', '${hw.student_id}', '${safeDesc}', true)" class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-xl transition shadow-sm border border-blue-100 dark:border-blue-800 text-[10px] font-black mr-2">İNCELE ↗</button>`;
+            }
+
+            actionButtons += `<button onclick="deleteHomework('${hw.id}')" class="bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2 rounded-xl transition border border-gray-100 dark:border-slate-600" title="Kayıtlardan Sil">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>`;
 
             tbodyCompleted.innerHTML += `
                 <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-gray-50/50 dark:hover:bg-slate-800 transition">
                     <td class="p-4 font-bold text-gray-800 dark:text-white text-sm">${hw.profiles ? hw.profiles.full_name : 'Bilinmeyen'}</td>
-                    <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title.replace('[KELİME_KARTI] ', '')}">${displayTitle}</td>
+                    <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title.replace('[KELİME_KARTI] ', '').replace('[WRITING] ', '')}">${displayTitle}</td>
                     <td class="p-4 text-emerald-600 dark:text-emerald-400 font-bold text-xs">${date}</td>
-                    <td class="p-4 text-right flex items-center justify-end gap-2">
-                        <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-200 dark:border-emerald-700">ONAYLI</span>
-                        <button onclick="deleteHomework('${hw.id}')" class="bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2 rounded-xl transition border border-gray-100 dark:border-slate-600" title="Kayıtlardan Sil">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
+                    <td class="p-4 text-right flex items-center justify-end">
+                        ${actionButtons}
                     </td>
                 </tr>`;
         });
+
     }
 }
 
