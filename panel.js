@@ -1979,7 +1979,7 @@ if (btnAssignWriting) {
             btnAssignWriting.innerHTML = originalText;
             btnAssignWriting.disabled = false;
         } else { 
-            btnAssignWriting.innerHTML = '✅ BAŞARILI!';
+            btnAssignWriting.innerHTML = 'BAŞARILI!';
             btnAssignWriting.classList.remove('from-blue-600', 'to-indigo-600');
             btnAssignWriting.classList.add('from-emerald-500', 'to-green-500');
             
