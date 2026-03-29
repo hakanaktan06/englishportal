@@ -132,12 +132,14 @@ async function checkTeacherSecurity() {
             document.getElementById('lockIconKarne')?.classList.add('hidden');
             document.getElementById('lockIconSertifika')?.classList.add('hidden');
             document.getElementById('lockIconAI')?.classList.add('hidden');
+            document.getElementById('lockIconEksik')?.classList.add('hidden');
         } else {
             document.getElementById('premiumBadge')?.classList.add('hidden');
             document.getElementById('lockIconVeli')?.classList.remove('hidden');
             document.getElementById('lockIconKarne')?.classList.remove('hidden');
             document.getElementById('lockIconSertifika')?.classList.remove('hidden');
             document.getElementById('lockIconAI')?.classList.remove('hidden');
+            document.getElementById('lockIconEksik')?.classList.remove('hidden');
         }
 
         const welcomeNameEl = document.getElementById('welcomeTeacherName');
@@ -696,13 +698,13 @@ async function fetchStudents() {
                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Kayıt: ${dateStr}</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
                     ${badgeHtml}
-                    <button onclick="resetStudentPassword('${student.id}')" class="text-gray-300 dark:text-gray-600 hover:text-indigo-500 dark:hover:text-indigo-400 transition" title="Şifreyi Sıfırla">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4v-3l8.44-8.44A6 6 0 0115 7h0z"></path></svg>
+                    <button onclick="resetStudentPassword('${student.id}')" class="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-50 hover:bg-amber-50 dark:bg-slate-700/50 dark:hover:bg-amber-900/30 text-slate-400 hover:text-amber-500 transition-all border border-transparent hover:border-amber-200 dark:hover:border-amber-800 shadow-sm" title="Şifre Sıfırla">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4v-3l8.44-8.44A6 6 0 0115 7h0z"></path></svg>
                     </button>
-                    <button onclick="deleteStudent('${student.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 dark:hover:text-rose-400 transition" title="Öğrenciyi Sil">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    <button onclick="deleteStudent('${student.id}')" class="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-50 hover:bg-rose-50 dark:bg-slate-700/50 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-500 transition-all border border-transparent hover:border-rose-200 dark:hover:border-rose-800 shadow-sm" title="Sistemden Sil">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 </div>
             </div>
