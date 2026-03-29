@@ -1,0 +1,12 @@
+{
+  "name": "englishportalvip",
+  "version": "1.0.0",
+  "description": "English Portal VIP Backend Functions",
+  "main": "index.js",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
