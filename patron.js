@@ -35,8 +35,13 @@ function escapeHTML(str) {
 // UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
 // ==========================================
 function showToast(message, type = 'success') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none';
+        document.body.appendChild(container);
+    }
     const toast = document.createElement('div');
     const bgColor = type === 'success' ? 'bg-emerald-500' : (type === 'error' ? 'bg-rose-500' : 'bg-amber-500');
 
@@ -414,7 +419,12 @@ window.resetTeacherPassword = async function (id) {
             body: JSON.stringify({ targetUserId: id, newPassword: newPassword })
         });
 
-        const data = await res.json();
+        let data;
+        try {
+            data = await res.json();
+        } catch (e) {
+            throw new Error("Sunucu yanıt veremedi (Vercel API Hatası).");
+        }
 
         if (res.ok && data.success) {
             if (typeof showToast === "function") showToast("Şifre başarıyla güncellendi! Giriş yapabilirsiniz.", "success");
@@ -422,7 +432,7 @@ window.resetTeacherPassword = async function (id) {
             if (typeof showToast === "function") showToast("Hata: " + (data.error || "Bilinmeyen sunucu hatası"), "error");
         }
     } catch (err) {
-        if (typeof showToast === "function") showToast("Ağ bağlantısı hatası. Lütfen siteyi yerel dosyadan değil, Vercel üzerinden çalıştırın.", "error");
+        if (typeof showToast === "function") showToast("Ağ bağlantısı hatası: Sunucu geçici olarak meşgul veya kullanılamıyor.", "error");
     }
 }
 
