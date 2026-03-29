@@ -45,9 +45,9 @@ const errorBox = document.getElementById('errorBox');
 const loginBtn = document.getElementById('loginBtn');
 
 loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     errorBox.classList.add('hidden');
-    
+
     const originalBtnText = loginBtn.innerHTML;
     loginBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
     loginBtn.disabled = true;
@@ -80,10 +80,20 @@ loginForm.addEventListener('submit', async (e) => {
         return;
     }
 
-    if (profileData.role === 'teacher') window.location.href = 'panel.html';
-    else if (profileData.role === 'student') window.location.href = 'student.html';
-    else if (profileData.role === 'god') window.location.href = 'patron.html'; // PATRON PANELİ GİRİŞİ HAZIRLIĞI
-    else {
+    if (profileData.role === 'teacher') {
+        window.location.href = 'panel.html';
+    } else if (profileData.role === 'student') {
+        const loginRole = document.getElementById('loginRole').value;
+        if (loginRole === 'parent') {
+            localStorage.setItem('lastLoginRole', 'parent');
+            window.location.href = `veli.html?id=${userId}`;
+        } else {
+            localStorage.setItem('lastLoginRole', 'student');
+            window.location.href = 'student.html';
+        }
+    } else if (profileData.role === 'god') {
+        window.location.href = 'patron.html'; // PATRON PANELİ GİRİŞİ HAZIRLIĞI
+    } else {
         showError(errorBox, "Yetkiniz belirsiz.");
         resetButton(loginBtn, originalBtnText);
     }
@@ -99,7 +109,7 @@ const regBtn = document.getElementById('regBtn');
 registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     regErrorBox.classList.add('hidden');
-    
+
     const originalBtnText = regBtn.innerHTML;
     regBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
     regBtn.disabled = true;
@@ -122,13 +132,13 @@ registerForm.addEventListener('submit', async (e) => {
 
     if (authData.user) {
         // 2. Profiles tablosuna 'teacher' olarak ve limitsiz premium 'false' olarak ekle
-        const { error: profileError } = await supabaseClient.from('profiles').insert([{ 
-            id: authData.user.id, 
-            full_name: name, 
+        const { error: profileError } = await supabaseClient.from('profiles').insert([{
+            id: authData.user.id,
+            full_name: name,
             role: 'teacher',
             is_premium: false // Varsayılan olarak Freemium hesap
         }]);
-        
+
         if (profileError) {
             showError(regErrorBox, "Profil oluşturulamadı.");
             resetButton(regBtn, originalBtnText);
@@ -166,9 +176,16 @@ async function checkActiveSession() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
         const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
-        if (profile && profile.role === 'teacher') window.location.href = 'panel.html';
-        else if (profile && profile.role === 'student') window.location.href = 'student.html';
-        else if (profile && profile.role === 'god') window.location.href = 'patron.html';
+
+        if (profile && profile.role === 'teacher') {
+            window.location.href = 'panel.html';
+        } else if (profile && profile.role === 'student') {
+            const lastRole = localStorage.getItem('lastLoginRole');
+            if (lastRole === 'parent') window.location.href = `veli.html?id=${session.user.id}`;
+            else window.location.href = 'student.html';
+        } else if (profile && profile.role === 'god') {
+            window.location.href = 'patron.html';
+        }
     }
 }
 checkActiveSession();
