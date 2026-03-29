@@ -32,8 +32,13 @@ let currentQuizCount = 0;
 // UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
 // ==========================================
 function showToast(message, type = 'success') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none';
+        document.body.appendChild(container);
+    }
 
     const existingToasts = container.querySelectorAll('.toast-msg');
     for (let i = 0; i < existingToasts.length; i++) {
@@ -571,7 +576,13 @@ window.resetStudentPassword = async function (id) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ targetUserId: id, newPassword: newPassword })
         });
-        const data = await res.json();
+
+        let data;
+        try {
+            data = await res.json();
+        } catch (e) {
+            throw new Error("Sunucu yanıt veremedi (Vercel API Hatası).");
+        }
 
         if (res.ok && data.success) {
             showToast("Şifre başarıyla güncellendi!", "success");
