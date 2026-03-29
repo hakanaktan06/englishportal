@@ -498,6 +498,37 @@ window.deleteStudent = async function(id) {
     else { showToast("Öğrenci silindi.", "success"); fetchStudents(); fetchDashboardStats(); }
 };
 
+window.resetStudentPassword = async function(id) {
+    const newPassword = prompt("Öğrenci için yeni şifreyi giriniz (En az 6 karakter):");
+    if (!newPassword) return; // Kullanıcı iptal etti
+    if (newPassword.length < 6) {
+        showToast("Hata! Şifre en az 6 karakter olmalıdır.", "error");
+        return;
+    }
+
+    const onay = await customConfirm(`Öğrencinin şifresini "${newPassword}" olarak değiştirmek istediğinize emin misiniz?`, "Evet, Değiştir");
+    if (!onay) return;
+
+    showToast("Şifre sıfırlanıyor...", "info");
+
+    try {
+        const res = await fetch('/api/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetUserId: id, newPassword: newPassword })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            showToast("Şifre başarıyla güncellendi!", "success");
+        } else {
+            showToast("Hata: " + (data.error || "Bilinmeyen sunucu hatası"), "error");
+        }
+    } catch (err) {
+        showToast("Ağ bağlantısı hatası, lütfen tekrar deneyin.", "error");
+    }
+};
+
 // ===============================================
 // VIP KARTLAR VE METRİKLER 
 // ===============================================
@@ -600,6 +631,9 @@ async function fetchStudents() {
                 </div>
                 <div class="flex items-center gap-3">
                     ${badgeHtml}
+                    <button onclick="resetStudentPassword('${student.id}')" class="text-gray-300 dark:text-gray-600 hover:text-indigo-500 dark:hover:text-indigo-400 transition" title="Şifreyi Sıfırla">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4v-3l8.44-8.44A6 6 0 0115 7h0z"></path></svg>
+                    </button>
                     <button onclick="deleteStudent('${student.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 dark:hover:text-rose-400 transition" title="Öğrenciyi Sil">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
@@ -1531,7 +1565,8 @@ if (btnGenerateAI) {
         btnGenerateAI.innerHTML = '<svg class="animate-spin h-5 w-5 text-purple-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
         btnGenerateAI.disabled = true;
 
-        // 🌟 PATRONUN KASASINDAN GİZLİCE API KEY ÇEKME 🌟
+        // NOT: Artık API key önyüzde çekilmiyor.
+        /*
         const { data: godProfile, error: godErr } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
         if (godErr || !godProfile || !godProfile.openai_key) {
             showToast("Sistem hatası: API şifresi bulunamadı! Lütfen patrona bildirin.", "error");
@@ -1540,11 +1575,12 @@ if (btnGenerateAI) {
             return;
         }
         const apiKey = godProfile.openai_key;
+        */
 
         try {
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            const response = await fetch('/api/generate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     model: 'gpt-4o-mini',
                     messages: [
@@ -1689,7 +1725,8 @@ if (btnGenerateFlashcards) {
         btnGenerateFlashcards.innerHTML = 'Üretiliyor... Bekleyin ⏳';
         btnGenerateFlashcards.disabled = true;
 
-        // 🌟 PATRONUN KASASINDAN GİZLİCE API KEY ÇEKME 🌟
+        // NOT: API Key artık sunucuda gizli tutuluyor.
+        /*
         const { data: godProfile, error: godErr } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
         if (godErr || !godProfile || !godProfile.openai_key) {
             showToast("Sistem hatası: API şifresi bulunamadı! Lütfen patrona bildirin.", "error");
@@ -1698,11 +1735,12 @@ if (btnGenerateFlashcards) {
             return;
         }
         const apiKey = godProfile.openai_key;
+        */
 
         try {
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            const response = await fetch('/api/generate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     model: 'gpt-4o-mini',
                     messages: [
@@ -2109,19 +2147,22 @@ window.openAIReportModal = async function() {
         lessons.forEach(l => { if(!l.is_paid) debt += Number(l.price || 0); });
     }
 
+    // NOT: API şifresi backend tarafında tutuluyor.
+    /*
     const { data: godProfile } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
     if (!godProfile || !godProfile.openai_key) {
         textArea.placeholder = "API şifresi eksik. İşlem başarısız.";
         return;
     }
+    */
 
     // YZ'ye verdiğimiz o efsanevi komut
     const promptText = `Öğrencinin Adı: ${studentName}. İngilizce Sınav Ortalaması: %${avg}. Ödev Yapma Oranı: %${hwRate}. Son işlenen konular: ${recentTopics || 'Genel İngilizce'}. Sen profesyonel, VIP bir İngilizce öğretmenisin. Veliye WhatsApp üzerinden atılmak üzere, öğrencinin bu istatistiklerine dayanarak kibar, motive edici ve pedagojik bir durum değerlendirme raporu yaz. Veliye doğrudan hitap et. Çok uzun olmasın, maksimum 3-4 cümle. ${debt > 0 ? 'Not: Velinin sana ' + debt + ' TL ödenmemiş ders borcu var, bunu da metnin sonuna son derece kibar ve nazik bir dille "gecikmiş ödemeniz bulunuyor" gibi bir ifadeyle iliştir.' : 'Borç yok, paradan kesinlikle bahsetme.'} Sonuna da "Detaylı gelişim raporu ve canlı takip için linke tıklayın:" yazıp bırak (ben linki ekleyeceğim).`;
 
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch('/api/generate', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${godProfile.openai_key}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
                 messages: [
