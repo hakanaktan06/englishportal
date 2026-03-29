@@ -14,18 +14,18 @@ const sideOpenBtn = document.getElementById('openSidebarBtn');
 const sideCloseBtn = document.getElementById('closeSidebarBtn');
 
 function toggleMobileSidebar() {
-    if(sidebarMain) sidebarMain.classList.toggle('-translate-x-full');
-    if(sideOverlay) sideOverlay.classList.toggle('hidden');
+    if (sidebarMain) sidebarMain.classList.toggle('-translate-x-full');
+    if (sideOverlay) sideOverlay.classList.toggle('hidden');
 }
 
-if(sideOpenBtn) sideOpenBtn.addEventListener('click', toggleMobileSidebar);
-if(sideCloseBtn) sideCloseBtn.addEventListener('click', toggleMobileSidebar);
-if(sideOverlay) sideOverlay.addEventListener('click', toggleMobileSidebar);
+if (sideOpenBtn) sideOpenBtn.addEventListener('click', toggleMobileSidebar);
+if (sideCloseBtn) sideCloseBtn.addEventListener('click', toggleMobileSidebar);
+if (sideOverlay) sideOverlay.addEventListener('click', toggleMobileSidebar);
 
 // XSS KORUMASI
 function escapeHTML(str) {
     if (!str) return '';
-    return String(str).replace(/[&<>'"]/g, function(tag) {
+    return String(str).replace(/[&<>'"]/g, function (tag) {
         const charsToReplace = { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' };
         return charsToReplace[tag] || tag;
     });
@@ -36,22 +36,22 @@ function escapeHTML(str) {
 // ==========================================
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
-    if(!container) return;
+    if (!container) return;
     const toast = document.createElement('div');
     const bgColor = type === 'success' ? 'bg-emerald-500' : (type === 'error' ? 'bg-rose-500' : 'bg-amber-500');
-    
-    const iconSvg = type === 'success' 
-        ? `<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>` 
+
+    const iconSvg = type === 'success'
+        ? `<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
         : `<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
 
     toast.className = `${bgColor} text-white px-5 py-3.5 rounded-2xl shadow-xl font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0 border border-white/20`;
     toast.innerHTML = `<span class="flex-shrink-0">${iconSvg}</span> <span>${message}</span>`;
     container.appendChild(toast);
-    
+
     setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
     setTimeout(() => {
         toast.classList.add('translate-y-10', 'opacity-0');
-        setTimeout(() => toast.remove(), 300); 
+        setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
 
@@ -62,11 +62,11 @@ function customConfirm(message, btnText = "Evet, Onayla") {
         const btnOk = document.getElementById('customConfirmOk');
         const btnCancel = document.getElementById('customConfirmCancel');
 
-        if(!modal) { resolve(confirm(message)); return; }
+        if (!modal) { resolve(confirm(message)); return; }
 
         document.getElementById('customConfirmMessage').innerText = message;
-        btnOk.innerText = btnText; 
-        
+        btnOk.innerText = btnText;
+
         modal.classList.remove('hidden');
         setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); }, 10);
 
@@ -87,8 +87,8 @@ function customConfirm(message, btnText = "Evet, Onayla") {
 // ==========================================
 async function checkGodSecurity() {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) { window.location.href = 'index.html'; return; } 
-    
+    if (authError || !user) { window.location.href = 'index.html'; return; }
+
     const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
     if (!profile || profile.role !== 'god') {
         window.location.href = 'index.html';
@@ -101,7 +101,7 @@ checkGodSecurity();
 
 document.getElementById('godLogoutBtn').addEventListener('click', async () => {
     const onay = await customConfirm("God Panel oturumunu sonlandırmak istediğinizi onaylıyor musunuz?", "Evet, Çıkış Yap");
-    if(onay) {
+    if (onay) {
         await supabaseClient.auth.signOut();
         window.location.href = 'index.html';
     }
@@ -132,7 +132,7 @@ function timeAgo(dateString) {
     if (!dateString) return "<span class='text-slate-500'>Hiç giriş yapmadı</span>";
     const diff = new Date() - new Date(dateString);
     const minutes = Math.floor(diff / 60000);
-    
+
     if (minutes < 5) return "<span class='text-emerald-400 font-black animate-pulse'>Şu an Aktif 🟢</span>";
     if (minutes < 60) return `<span class='text-amber-400'>${minutes} dk önce</span>`;
     const hours = Math.floor(minutes / 60);
@@ -147,7 +147,7 @@ function timeAgo(dateString) {
     if (!dateString) return "<span class='text-slate-500'>Hiç giriş yapmadı</span>";
     const diff = new Date() - new Date(dateString);
     const minutes = Math.floor(diff / 60000);
-    
+
     if (minutes < 5) return "<span class='text-emerald-400 font-black animate-pulse'>Şu an Aktif 🟢</span>";
     if (minutes < 60) return `<span class='text-amber-400'>${minutes} dk önce</span>`;
     const hours = Math.floor(minutes / 60);
@@ -181,11 +181,11 @@ async function fetchTeachers() {
 
     if (error || !teachers || teachers.length === 0) {
         listContainer.innerHTML = '<div class="col-span-full text-center p-8 text-slate-500 font-bold border border-dashed border-slate-700 rounded-2xl">Sistemde henüz kayıtlı öğretmen bulunmuyor.</div>';
-        const godStat = document.getElementById('godStatTeachers'); if(godStat) godStat.innerText = "0";
+        const godStat = document.getElementById('godStatTeachers'); if (godStat) godStat.innerText = "0";
         return;
     }
 
-    const godStat = document.getElementById('godStatTeachers'); if(godStat) godStat.innerText = teachers.length;
+    const godStat = document.getElementById('godStatTeachers'); if (godStat) godStat.innerText = teachers.length;
     listContainer.innerHTML = '';
 
     teachers.forEach(teacher => {
@@ -199,7 +199,7 @@ async function fetchTeachers() {
         if (isVip && teacher.premium_until) {
             const expiryDate = new Date(teacher.premium_until);
             if (new Date() > expiryDate) {
-                isVip = false; 
+                isVip = false;
                 badgeHtml = `<div class="flex flex-col items-end"><span class="bg-slate-700/50 text-slate-400 border border-slate-600 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest whitespace-nowrap">Süresi Bitti</span></div>`;
             } else {
                 badgeHtml = `<div class="flex flex-col items-end"><span class="bg-amber-500/20 text-amber-500 border border-amber-500/50 px-2 py-1 rounded-md text-[9px] md:text-[10px] font-black uppercase tracking-widest shadow-[0_0_10px_rgba(245,158,11,0.2)] mb-1 whitespace-nowrap">VIP AKTİF</span><span class="text-[8px] md:text-[9px] text-amber-500/70 font-bold tracking-widest whitespace-nowrap">SON: ${expiryDate.toLocaleDateString('tr-TR')}</span></div>`;
@@ -209,7 +209,7 @@ async function fetchTeachers() {
         }
 
         const avatarColor = isVip ? 'from-amber-400 to-orange-500' : 'from-indigo-500 to-purple-600';
-        const radarStatus = timeAgo(teacher.last_login); 
+        const radarStatus = timeAgo(teacher.last_login);
 
         let actionUI = isVip ? `
             <div class="bg-slate-900/60 p-1.5 rounded-[14px] border border-slate-700/50 flex items-center justify-between mb-3 shadow-inner">
@@ -240,7 +240,7 @@ async function fetchTeachers() {
 
         const card = document.createElement('div');
         card.className = "bg-slate-800/40 border border-slate-700/50 p-5 rounded-[24px] flex flex-col gap-4 hover:border-indigo-500/50 transition-colors relative overflow-hidden shadow-sm";
-        
+
         card.innerHTML = `
             ${isVip ? '<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"></div>' : ''}
             <div class="flex justify-between items-start gap-2 mb-2">
@@ -266,32 +266,32 @@ async function fetchTeachers() {
 
 
 // VIP KURUMSAL GÜNCELLEME MOTORU
-window.updateTeacherVip = async function(id, months) {
+window.updateTeacherVip = async function (id, months) {
     let msg = "";
     if (months === 0) msg = "Öğretmenin VIP yetkisini iptal etmek ve standart pakete geçirmek istediğinizi onaylıyor musunuz?";
     else if (months < 0) msg = `Öğretmenin VIP aboneliğinden ${Math.abs(months)} ay eksiltilecektir. Onaylıyor musunuz?`;
     else msg = `Öğretmen hesabına ${months} aylık Premium VIP yetkisi tanımlanacaktır. Onaylıyor musunuz?`;
 
     const isConfirmed = await customConfirm(msg, "Evet, Onayla");
-    if(!isConfirmed) return;
+    if (!isConfirmed) return;
 
     if (typeof showToast === "function") showToast("İşlem başlatıldı...", "info");
 
     if (months === 0) {
         const { error } = await supabaseClient.from('profiles').update({ is_premium: false, premium_until: null }).eq('id', id);
-        if (error) { if (typeof showToast === "function") showToast("Sistem hatası oluştu.", "error"); } 
+        if (error) { if (typeof showToast === "function") showToast("Sistem hatası oluştu.", "error"); }
         else { if (typeof showToast === "function") showToast("Hesap standart pakete güncellendi.", "success"); fetchTeachers(); }
     } else {
         const { data: t } = await supabaseClient.from('profiles').select('premium_until').eq('id', id).single();
         let baseDate = new Date();
-        
+
         if (t && t.premium_until) {
             const currentExpiry = new Date(t.premium_until);
-            if (currentExpiry > baseDate) baseDate = currentExpiry; 
+            if (currentExpiry > baseDate) baseDate = currentExpiry;
         }
-        
+
         baseDate.setMonth(baseDate.getMonth() + months);
-        
+
         if (baseDate <= new Date()) {
             await supabaseClient.from('profiles').update({ is_premium: false, premium_until: null }).eq('id', id);
             if (typeof showToast === "function") showToast("Süre sona erdiği için hesap standart pakete alındı.", "success");
@@ -301,8 +301,8 @@ window.updateTeacherVip = async function(id, months) {
 
         const expiryStr = baseDate.toISOString();
         const { error } = await supabaseClient.from('profiles').update({ is_premium: true, premium_until: expiryStr }).eq('id', id);
-        
-        if (error) { if (typeof showToast === "function") showToast("Sistem hatası oluştu.", "error"); } 
+
+        if (error) { if (typeof showToast === "function") showToast("Sistem hatası oluştu.", "error"); }
         else {
             const toastMsg = months > 0 ? `Premium süre ${months} ay uzatıldı.` : `Premium süre ${Math.abs(months)} ay kısaltıldı.`;
             if (typeof showToast === "function") showToast(toastMsg, "success");
@@ -312,14 +312,14 @@ window.updateTeacherVip = async function(id, months) {
 }
 
 // 🌟 YENİ: KİŞİYE ÖZEL MESAJ MOTORU 🌟
-window.sendPersonalMessage = async function(teacherId) {
+window.sendPersonalMessage = async function (teacherId) {
     const inputEl = document.getElementById(`ann_${teacherId}`);
     if (!inputEl) return;
     const msg = inputEl.value;
-    
+
     showToast("Özel mesaj iletiliyor...", "info");
     const { error } = await supabaseClient.from('profiles').update({ announcement: msg }).eq('id', teacherId);
-    
+
     if (error) {
         showToast("Mesaj gönderilemedi: " + error.message, "error");
     } else {
@@ -328,44 +328,101 @@ window.sendPersonalMessage = async function(teacherId) {
 };
 
 // KURUMSAL SİLME MOTORU
-window.deleteTeacher = async function(id) {
+window.deleteTeacher = async function (id) {
     const isConfirmed = await customConfirm("Öğretmen kaydını sistemden kalıcı olarak silmek istediğinizi onaylıyor musunuz? Bu işlem geri alınamaz.", "Kalıcı Olarak Sil");
     if (!isConfirmed) return;
-    
+
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
-    if (error) { if (typeof showToast === "function") showToast("Silme işlemi başarısız oldu.", "error"); } 
+    if (error) { if (typeof showToast === "function") showToast("Silme işlemi başarısız oldu.", "error"); }
     else { if (typeof showToast === "function") showToast("Öğretmen kaydı başarıyla silindi.", "success"); fetchTeachers(); fetchGodMetrics(); }
 }
 
 // ŞİFRE SIFIRLAMA MOTORU
-window.resetTeacherPassword = async function(id) {
-    const newPassword = prompt("Öğretmen için yeni şifreyi giriniz (En az 6 karakter):");
-    if (!newPassword) return; 
+// 🌟 YENİ: GOD PANEL ÖZEL ŞIK ŞİFRE GİRİŞ ARAYÜZÜ 🌟
+function godPrompt(title, desc = "", placeholder = "Buraya yazın...") {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = "fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[9999] p-4 opacity-0 transition-all duration-300";
+
+        const box = document.createElement('div');
+        // God panel teması: Koyu Slate, Amber/Rose vurgular
+        box.className = "bg-slate-900 border border-slate-700 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-[24px] w-full max-w-sm p-6 transform scale-95 transition-all duration-400";
+
+        box.innerHTML = `
+            <div class="absolute -top-12 -left-12 w-32 h-32 bg-amber-500/20 rounded-full blur-[40px] pointer-events-none"></div>
+            <div class="relative z-10 mb-5">
+                <div class="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mb-4 text-amber-400 shadow-inner">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
+                </div>
+                <h3 class="text-xl font-black text-white leading-tight uppercase tracking-wide">${title}</h3>
+                ${desc ? `<p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">${desc}</p>` : ''}
+            </div>
+            <input type="text" class="w-full relative z-10 bg-slate-950/50 border border-slate-700 text-white px-4 py-3.5 rounded-xl focus:outline-none focus:border-amber-500 focus:shadow-[0_0_15px_rgba(245,158,11,0.2)] mb-6 font-black tracking-widest placeholder-slate-600 transition" placeholder="${placeholder}" autofocus autocomplete="off">
+            <div class="flex gap-3 relative z-10">
+                <button id="gpCancel" class="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-black uppercase text-[10px] tracking-widest transition">İptal</button>
+                <button id="gpOk" class="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(245,158,11,0.3)] transition">KİLİDİ AÇ</button>
+            </div>
+        `;
+
+        modal.appendChild(box);
+        document.body.appendChild(modal);
+
+        const input = box.querySelector('input');
+        const btnOk = box.querySelector('#gpOk');
+        const btnCancel = box.querySelector('#gpCancel');
+
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            box.classList.remove('scale-95');
+            input.focus();
+        }, 10);
+
+        const cleanup = (val) => {
+            modal.classList.add('opacity-0');
+            box.classList.add('scale-95');
+            setTimeout(() => { modal.remove(); resolve(val); }, 300);
+        };
+
+        btnOk.addEventListener('click', () => cleanup(input.value.trim()));
+        btnCancel.addEventListener('click', () => cleanup(null));
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') cleanup(input.value.trim()); if (e.key === 'Escape') cleanup(null); });
+    });
+}
+
+// ŞİFRE SIFIRLAMA MOTORU
+window.resetTeacherPassword = async function (id) {
+    const newPassword = await godPrompt("ŞİFREYİ SIFIRLIYORSUNUZ", "Sisteme giriş için yepyeni devasa bir anahtar belirleyin.", "Örn: sifre1234");
+    if (!newPassword) return;
     if (newPassword.length < 6) {
         if (typeof showToast === "function") showToast("Hata! Şifre en az 6 karakter olmalıdır.", "error");
         return;
     }
 
-    const onay = await customConfirm(`Öğretmenin şifresini "${newPassword}" olarak değiştirmek istediğinize emin misiniz?`, "Evet, Değiştir");
+    const onay = await customConfirm(`Öğretmenin şifresini devasa ve yepyeni olan "${newPassword}" olarak değiştirmek istediğinize emin misiniz?`, "Evet, Sistemi Kilidini Aç");
     if (!onay) return;
 
-    if (typeof showToast === "function") showToast("Şifre sıfırlanıyor...", "info");
+    if (typeof showToast === "function") showToast("Ağ sistemlerine müdahale ediliyor...", "info");
 
     try {
-        const res = await fetch('/api/reset-password', {
+        const apiUrl = window.location.protocol === 'file:'
+            ? 'https://englishportalvip.vercel.app/api/reset-password' // Yerel test için fallback
+            : '/api/reset-password';
+
+        const res = await fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ targetUserId: id, newPassword: newPassword })
         });
+
         const data = await res.json();
 
         if (res.ok && data.success) {
-            if (typeof showToast === "function") showToast("Şifre başarıyla güncellendi!", "success");
+            if (typeof showToast === "function") showToast("Şifre başarıyla güncellendi! Giriş yapabilirsiniz.", "success");
         } else {
             if (typeof showToast === "function") showToast("Hata: " + (data.error || "Bilinmeyen sunucu hatası"), "error");
         }
     } catch (err) {
-        if (typeof showToast === "function") showToast("Ağ bağlantısı hatası, lütfen tekrar deneyin.", "error");
+        if (typeof showToast === "function") showToast("Ağ bağlantısı hatası. Lütfen siteyi yerel dosyadan değil, Vercel üzerinden çalıştırın.", "error");
     }
 }
 
@@ -383,7 +440,7 @@ async function loadVipData() {
             document.getElementById('link1').value = parsed.l1 || "";
             document.getElementById('link3').value = parsed.l3 || "";
             document.getElementById('link12').value = parsed.l12 || "";
-        } catch(e) {}
+        } catch (e) { }
     }
 }
 loadVipData();
@@ -402,8 +459,8 @@ document.getElementById('vipPriceForm').addEventListener('submit', async (e) => 
     const { data: { user } } = await supabaseClient.auth.getUser();
     showToast("Güncelleniyor...", "info");
     const { error } = await supabaseClient.from('profiles').update({ vip_price: vipData }).eq('id', user.id);
-    
-    if(error) showToast("Hata oluştu!", "error");
+
+    if (error) showToast("Hata oluştu!", "error");
     else showToast("Fiyatlar ve Linkler Sisteme İşlendi!", "success");
 });
 
@@ -419,17 +476,17 @@ const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
 if (saveApiKeyBtn) {
     saveApiKeyBtn.addEventListener('click', async () => {
         const key = document.getElementById('openaiKeyInput').value.trim();
-        
-        if(!key || !key.startsWith('sk-')) { 
-            showToast("Lütfen 'sk-' ile başlayan geçerli bir OpenAI şifresi girin!", "error"); 
-            return; 
+
+        if (!key || !key.startsWith('sk-')) {
+            showToast("Lütfen 'sk-' ile başlayan geçerli bir OpenAI şifresi girin!", "error");
+            return;
         }
         showToast("Şifre sisteme gömülüyor...", "info");
         const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
 
         const { error } = await supabaseClient.from('profiles').update({ openai_key: key }).eq('id', user.id);
-        if(error) showToast("Kaydetme Hatası: " + error.message, "error");
+        if (error) showToast("Kaydetme Hatası: " + error.message, "error");
         else showToast("Yapay Zeka Motoru Aktif! Şifre başarıyla kaydedildi. 🚀", "success");
     });
 }
@@ -445,10 +502,10 @@ if (saveAnnouncementBtn) {
     saveAnnouncementBtn.addEventListener('click', async () => {
         const text = document.getElementById('godAnnouncement').value;
         const { data: { user } } = await supabaseClient.auth.getUser();
-        
+
         showToast("Yayınlanıyor...", "info");
         const { error } = await supabaseClient.from('profiles').update({ announcement: text }).eq('id', user.id);
-        
+
         if (error) showToast("Hata: " + error.message, "error");
         else showToast(text.trim() === "" ? "Duyuru kaldırıldı!" : "Duyuru tüm panellere gönderildi!", "success");
     });
