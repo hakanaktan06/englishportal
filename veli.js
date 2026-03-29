@@ -25,8 +25,8 @@ async function loadVeliPortal() {
         let totalDebt = 0;
         lessons.forEach(l => {
             const date = new Date(l.lesson_date).toLocaleDateString('tr-TR');
-            const time = l.lesson_time ? | ⏰ ${ l.lesson_time }: '';
-            const duration = l.duration_hours ? | ⏳ ${ l.duration_hours } Saat: '';
+            const time = l.lesson_time ? ` | ⏰ ${l.lesson_time}` : '';
+            const duration = l.duration_hours ? ` | ⏳ ${l.duration_hours} Saat` : '';
 
             if (!l.is_paid) totalDebt += Number(l.price || 0);
 
@@ -36,7 +36,7 @@ async function loadVeliPortal() {
                         <p class="text-[11px] font-black text-indigo-500 tracking-wider">📅 ${date} ${time} ${duration}</p>
                         <p class="text-sm font-bold text-gray-800 mt-1">${l.topic}</p>
                     </div>
-                    ${l.price ? <span class="text-xs font-black ${l.is_paid ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50'} px-3 py-1.5 rounded-lg whitespace-nowrap">${l.price} TL - ${l.is_paid ? 'ÖDENDİ' : 'ÖDENMEDİ'}</span> : ''}
+                    ${l.price ? `<span class="text-xs font-black ${l.is_paid ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50'} px-3 py-1.5 rounded-lg whitespace-nowrap">${l.price} TL - ${l.is_paid ? 'ÖDENDİ' : 'ÖDENMEDİ'}</span>` : ''}
                 </div>`;
         });
 
