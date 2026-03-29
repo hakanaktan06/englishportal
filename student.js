@@ -765,6 +765,8 @@ window.startListening = async function() {
     micStatus.innerText = "Sisteme Bağlanıyor...";
     micStatus.className = "text-xs text-indigo-200 font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm animate-pulse";
     
+    // NOT: Artık ön yüzde API key okuma mantığı yoruma alındı. Arkada hallediliyor.
+    /*
     const { data: godProfile, error: godErr } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
     if (godErr || !godProfile || !godProfile.openai_key) {
         stream.getTracks().forEach(t => t.stop());
@@ -772,6 +774,7 @@ window.startListening = async function() {
         return;
     }
     const apiKey = godProfile.openai_key;
+    */
 
     const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' :
                      MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' :
@@ -788,28 +791,32 @@ window.startListening = async function() {
         micStatus.className = "text-xs text-amber-200 font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm animate-pulse";
         ripple.classList.remove('animate-ping', 'opacity-100');
 
-        const ext = mimeType.includes('webm') ? 'webm' : mimeType.includes('mp4') ? 'mp4' : 'ogg';
         const audioBlob = new Blob(chunks, { type: mimeType });
+        const ext = mimeType.includes('webm') ? 'webm' : mimeType.includes('mp4') ? 'mp4' : 'ogg';
 
-        const formData = new FormData();
-        formData.append('file', audioBlob, `audio.${ext}`);
-        formData.append('model', 'whisper-1');
-        formData.append('language', 'en');
-        formData.append('prompt', targetWordOriginal);
+        // 🌟 Blob'u Base64 formatına çevirip asenkron olarak arka plana paslama 🌟
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async function() {
+            const base64Audio = reader.result.split(',')[1];
 
-        try {
-            const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${apiKey}` },
-                body: formData
-            });
+            try {
+                const response = await fetch('/api/transcribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        audioBase64: base64Audio, 
+                        ext: ext, 
+                        prompt: targetWordOriginal 
+                    })
+                });
 
-            const data = await response.json();
+                const data = await response.json();
 
-            if (data.error) {
-                resetMicUI("Yapay Zeka Hatası, tekrar dene.");
-                return;
-            }
+                if (data.error) {
+                    resetMicUI("Yapay Zeka Hatası, tekrar dene.");
+                    return;
+                }
 
             const spoken = (data.text || '').toLowerCase().replace(/[^\w\s]/gi, '').trim();
 
@@ -858,7 +865,8 @@ window.startListening = async function() {
         } catch(err) {
             resetMicUI("Bağlantı hatası, tekrar dene.");
         }
-    };
+    }; // reader.onloadend BİTİŞ
+    }; // recorder.onstop BİTİŞ
 
     recorder.start();
     micStatus.innerText = "Dinliyor... Konuşun! 🎤";
@@ -927,16 +935,19 @@ window.submitWritingTask = async function() {
     btn.innerHTML = 'Okunuyor ve Değerlendiriliyor... ⏳';
     btn.disabled = true;
 
+    // NOT: Artık ön yüzde direkt API Key almıyoruz.
+    /*
     const { data: godProfile } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
     if (!godProfile || !godProfile.openai_key) {
         showToast("Sistem hatası: Öğretmenine haber ver.", "error");
         btn.innerHTML = originalText; btn.disabled = false; return;
     }
+    */
 
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch('/api/generate', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${godProfile.openai_key}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
                 messages: [
@@ -948,7 +959,7 @@ window.submitWritingTask = async function() {
         });
 
         const data = await response.json();
-        const aiFeedback = data.choices[0].message.content.trim();
+        const aiFeedback = (data.choices && data.choices[0] && data.choices[0].message.content) ? data.choices[0].message.content.trim() : "Yapay Zeka şu an yanıt veremiyor.";
 
         // Sonucu öğretmenin görebilmesi için DB'ye açıklama olarak atıyoruz.
         // DURUMU "Tamamlandı" değil, "İnceleniyor" yapıyoruz. XP falan da vermiyoruz, hoca onaylayınca alacak!
