@@ -86,18 +86,20 @@
                     <h2 class="text-3xl font-black text-indigo-900 tracking-tighter drop-shadow-md">English Portal</h2>
                 </div>
 
-                <div id="loginSection" class="transition-opacity duration-300">
-                    <div class="mb-10 text-center lg:text-left">
-                        <h3 class="text-3xl font-black text-gray-800">Giriş Yap</h3>
-                        <p class="text-gray-500 font-bold mt-2 text-[10px] uppercase tracking-widest">Kullanıcı Adı veya
-                            E-Posta ile Giriş Yapın</p>
+                    <!-- SEKME SİSTEMİ -->
+                    <div class="flex items-center p-1.5 bg-gray-50 rounded-2xl mb-8 font-black text-sm mx-auto max-w-md shadow-inner border border-gray-100" id="loginTabs">
+                        <button type="button" onclick="switchLoginTab('student')" id="tabStudent" class="flex-1 py-3 text-center rounded-xl transition-all duration-300 shadow-md bg-white text-indigo-600 border border-gray-100 transform scale-100">ÖĞRENCİ</button>
+                        <button type="button" onclick="switchLoginTab('teacher')" id="tabTeacher" class="flex-1 py-3 text-center rounded-xl transition-all duration-300 text-gray-400 hover:text-gray-600 scale-95 border border-transparent">EĞİTMEN</button>
+                    </div>
+
+                    <div class="mb-8 text-center lg:text-left">
+                        <h3 class="text-3xl font-black text-gray-800" id="loginTitleText">Öğrenci Girişi</h3>
+                        <p class="text-gray-500 font-bold mt-2 text-[10px] uppercase tracking-widest" id="loginDescText">Okul Nu veya Kullanıcı Adı ile Giriş Yapın</p>
                     </div>
 
                     <form id="loginForm" class="space-y-5">
                         <div class="space-y-2 relative">
-                            <label
-                                class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Kullanıcı
-                                Adı / E-Posta</label>
+                            <label id="loginInputLabel" class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Kullanıcı Adı</label>
                             <div class="relative flex items-center">
                                 <svg class="w-5 h-5 absolute left-4 text-gray-400 pointer-events-none" fill="none"
                                     stroke="currentColor" viewBox="0 0 24 24">
@@ -152,7 +154,9 @@
                         </button>
                     </form>
 
-                    <div class="mt-8 text-center border-t border-gray-100 pt-6">
+                    </form>
+
+                    <div id="registerBlock" class="mt-8 text-center border-t border-gray-100 pt-6 hidden opacity-0 transition-all duration-500">
                         <p class="text-xs text-gray-500 font-bold mb-3">Öğretmen misiniz? Sisteme katılın.</p>
                         <button id="showRegisterBtn"
                             class="text-sm font-black text-indigo-600 hover:text-purple-600 uppercase tracking-widest transition flex items-center justify-center gap-1 mx-auto w-full border-2 border-indigo-100 hover:border-indigo-200 py-3 rounded-xl bg-indigo-50/50">
@@ -164,6 +168,46 @@
                         </button>
                     </div>
                 </div>
+
+                <script>
+                    function switchLoginTab(type) {
+                        const tStudent = document.getElementById('tabStudent');
+                        const tTeacher = document.getElementById('tabTeacher');
+                        const titleText = document.getElementById('loginTitleText');
+                        const descText = document.getElementById('loginDescText');
+                        const labelText = document.getElementById('loginInputLabel');
+                        const rBlock = document.getElementById('registerBlock');
+                        
+                        if(type === 'student') {
+                            // Active Style
+                            tStudent.className = "flex-1 py-3 text-center rounded-xl transition-all duration-300 shadow-md bg-white text-indigo-600 border border-gray-100 transform scale-100";
+                            // Inactive Style
+                            tTeacher.className = "flex-1 py-3 text-center rounded-xl transition-all duration-300 text-gray-400 hover:text-gray-600 scale-95 border border-transparent";
+                            
+                            // Text updates
+                            titleText.innerText = "Öğrenci Girişi";
+                            descText.innerText = "Okul No veya Kullanıcı Adı ile Giriş Yapın";
+                            labelText.innerText = "Kullanıcı Adı";
+                            
+                            // Hide Registration Prompt
+                            rBlock.classList.add('hidden', 'opacity-0');
+                        } else {
+                            // Active Style
+                            tTeacher.className = "flex-1 py-3 text-center rounded-xl transition-all duration-300 shadow-md bg-white text-indigo-600 border border-gray-100 transform scale-100";
+                            // Inactive Style
+                            tStudent.className = "flex-1 py-3 text-center rounded-xl transition-all duration-300 text-gray-400 hover:text-gray-600 scale-95 border border-transparent";
+                            
+                            // Text updates
+                            titleText.innerText = "Eğitmen Girişi";
+                            descText.innerText = "E-Posta veya Kullanıcı Adı ile Giriş Yapın";
+                            labelText.innerText = "Kullanıcı Adı / E-Posta";
+                            
+                            // Show Registration Prompt
+                            rBlock.classList.remove('hidden');
+                            setTimeout(() => rBlock.classList.remove('opacity-0'), 50);
+                        }
+                    }
+                </script>
 
                 <div id="registerSection" class="hidden transition-opacity duration-300 opacity-0">
                     <div class="mb-8 text-center lg:text-left">
