@@ -131,11 +131,13 @@ async function checkTeacherSecurity() {
             document.getElementById('lockIconVeli')?.classList.add('hidden');
             document.getElementById('lockIconKarne')?.classList.add('hidden');
             document.getElementById('lockIconSertifika')?.classList.add('hidden');
+            document.getElementById('lockIconAI')?.classList.add('hidden');
         } else {
             document.getElementById('premiumBadge')?.classList.add('hidden');
             document.getElementById('lockIconVeli')?.classList.remove('hidden');
             document.getElementById('lockIconKarne')?.classList.remove('hidden');
             document.getElementById('lockIconSertifika')?.classList.remove('hidden');
+            document.getElementById('lockIconAI')?.classList.remove('hidden');
         }
 
         const welcomeNameEl = document.getElementById('welcomeTeacherName');
