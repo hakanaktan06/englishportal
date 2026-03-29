@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gelişim Raporu - English Portal</title>
-            <link rel="icon" type="image/png" href="https://ui-avatars.com/api/?name=EP&background=4f46e5&color=fff&rounded=true&bold=true&size=128">
-    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=EP&background=4f46e5&color=fff&rounded=true&bold=true&size=128">
+    <link rel="icon" type="image/png"
+        href="https://ui-avatars.com/api/?name=EP&background=4f46e5&color=fff&rounded=true&bold=true&size=128">
+    <link rel="apple-touch-icon"
+        href="https://ui-avatars.com/api/?name=EP&background=4f46e5&color=fff&rounded=true&bold=true&size=128">
 
     <meta property="og:title" content="English Portal - VIP Eğitim">
     <meta property="og:description" content="Öğrenciler için interaktif ödev, sınav ve gelişim takip platformu.">
-    <meta property="og:image" content="https://placehold.co/1200x630/1e1b4b/ffffff.png?text=English+Portal%0AVIP+Ozel+Ders+Sistemi&font=Montserrat">
+    <meta property="og:image"
+        content="https://placehold.co/1200x630/1e1b4b/ffffff.png?text=English+Portal%0AVIP+Ozel+Ders+Sistemi&font=Montserrat">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:type" content="website">
-        <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#4f46e5">
 
@@ -21,46 +25,120 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overscroll-behavior-y: none; touch-action: pan-y; }
-    </style>
-    </head>
-<body class="text-gray-800 antialiased h-[100dvh] flex flex-col">
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overscroll-behavior-y: none;
+            touch-action: pan-y;
+        }
 
-    <div id="loadingScreen" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center transition-opacity duration-500">
+        /* Glassmorphism Classes */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .premium-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.4);
+        }
+    </style>
+</head>
+
+<body class="text-gray-800 antialiased h-[100dvh] flex flex-col bg-slate-50 relative">
+
+    <div class="fixed inset-0 z-0 pointer-events-none opacity-20">
+        <div
+            class="absolute top-0 right-0 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse">
+        </div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse"
+            style="animation-delay: 2s;"></div>
+    </div>
+
+    <div id="loadingScreen"
+        class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center transition-opacity duration-500">
         <div class="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
         <p class="text-sm font-bold text-indigo-500 animate-pulse uppercase tracking-widest">Kayıtlar Çekiliyor</p>
     </div>
 
-    <header class="bg-white border-b border-gray-200 p-5 sticky top-0 z-30 shrink-0 text-center shadow-sm">
-        <h1 class="text-xl font-black text-indigo-900 tracking-tighter">ENGLISH PORTAL</h1>
-        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Canlı Veli Bilgilendirme Sistemi</p>
+    <header class="glass-header p-5 sticky top-0 z-30 shrink-0 shadow-sm flex items-center justify-between">
+        <div>
+            <h1 class="text-xl font-black text-indigo-900 tracking-tight flex items-center gap-2">
+                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                ENGLISH PORTAL
+            </h1>
+            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-8">Veli Bilgilendirme Sistemi</p>
+        </div>
+        <button onclick="logoutVeli()"
+            class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition transform active:scale-95 border border-rose-100">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                </path>
+            </svg>
+            Çıkış
+        </button>
     </header>
 
-    <main class="flex-1 overflow-y-auto p-4 md:p-8" id="mainContent" style="display: none; -webkit-overflow-scrolling: touch;">
-        <div class="max-w-3xl mx-auto space-y-6 pb-10">
-            
-            <div class="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
-                <div class="absolute -right-4 -bottom-4 opacity-10"><svg class="w-40 h-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg></div>
-                <p class="text-indigo-100 text-xs font-bold uppercase tracking-widest mb-1 relative z-10">Öğrenci Profili</p>
+    <main class="flex-1 overflow-y-auto p-4 md:p-8" id="mainContent"
+        style="display: none; -webkit-overflow-scrolling: touch;">
+        <div class="max-w-4xl mx-auto space-y-6 pb-10 relative z-10 pt-4">
+
+            <div class="premium-card rounded-3xl p-6 md:p-8 text-white relative overflow-hidden border border-white/20">
+                <div class="absolute -right-10 -bottom-10 opacity-20 transform rotate-12"><svg class="w-64 h-64"
+                        fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z">
+                        </path>
+                    </svg></div>
+                <p class="text-indigo-100 text-xs font-bold uppercase tracking-widest mb-1 relative z-10">Öğrenci
+                    Profili</p>
                 <h2 class="text-3xl md:text-4xl font-black relative z-10" id="veliStudentName">Öğrenci Adı</h2>
-                
-                <div id="veliDebtBadge" class="mt-6 bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl p-4 inline-block relative z-10 hidden">
-                    <p class="text-[10px] font-bold text-indigo-50 uppercase tracking-widest mb-0.5">Bekleyen Ders Ücreti</p>
+
+                <div id="veliDebtBadge"
+                    class="mt-6 bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl p-4 inline-block relative z-10 hidden">
+                    <p class="text-[10px] font-bold text-indigo-50 uppercase tracking-widest mb-0.5">Bekleyen Ders
+                        Ücreti</p>
                     <p class="text-2xl font-black" id="veliDebtText">0 TL</p>
                 </div>
             </div>
 
-            <div class="bg-white rounded-3xl p-5 md:p-6 shadow-sm border border-gray-100">
-                <h3 class="font-black text-gray-800 mb-4 flex items-center gap-2"><span>📈</span> Sınav Gelişim Grafiği</h3>
-                <div class="w-full h-48 md:h-64 relative">
-                    <canvas id="veliChart"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-3xl p-5 md:p-6 shadow-sm border border-gray-100">
-                <h3 class="font-black text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-50 pb-3"><span>📚</span> İşlenen Dersler (Seanslar)</h3>
-                <div id="veliLessonList" class="space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div
+                    class="bg-white/80 backdrop-blur-xl rounded-3xl p-5 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                    <h3 class="font-black text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="p-2 bg-indigo-50 rounded-xl text-indigo-600"><svg class="w-5 h-5" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z">
+                                </path>
+                            </svg></span>
+                        Sınav Gelişim Grafiği
+                    </h3>
+                    <div class="w-full h-48 md:h-64 relative">
+                        <canvas id="veliChart"></canvas>
                     </div>
+                </div>
+
+                <div
+                    class="bg-white/80 backdrop-blur-xl rounded-3xl p-5 md:p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                    <h3 class="font-black text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-50 pb-3">
+                        <span class="p-2 bg-pink-50 rounded-xl text-pink-600"><svg class="w-5 h-5" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                                </path>
+                            </svg></span>
+                        İşlenen Dersler
+                    </h3>
+                    <div id="veliLessonList" class="space-y-4 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Dersler Buraya Dolar -->
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -69,9 +147,20 @@
     <div id="errorScreen" class="hidden flex-1 flex flex-col items-center justify-center p-6 text-center">
         <span class="text-6xl mb-4">⚠️</span>
         <h2 class="text-xl font-black text-gray-800 mb-2">Öğrenci Bulunamadı</h2>
-        <p class="text-gray-500 font-medium">Lütfen linkin doğru kopyalandığından emin olun veya öğretmeninizden yeni bir link isteyin.</p>
+        <p class="text-gray-500 font-medium">Lütfen linkin doğru kopyalandığından emin olun veya öğretmeninizden yeni
+            bir link isteyin.</p>
     </div>
 
+    <script>
+        async function logoutVeli() {
+            // Sadece çıkış yap ve index.html'e at. Supabase session'ı da kapat.
+            if (typeof supabaseClient !== 'undefined') {
+                await supabaseClient.auth.signOut();
+            }
+            window.location.href = 'index.html';
+        }
+    </script>
     <script src="veli.js"></script>
 </body>
+
 </html>
