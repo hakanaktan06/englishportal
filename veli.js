@@ -7,6 +7,54 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 const urlParams = new URLSearchParams(window.location.search);
 const studentId = urlParams.get('id');
 
+// Theme Initialization
+let themeIconDark, themeIconLight;
+
+document.addEventListener('DOMContentLoaded', () => {
+    themeIconDark = document.getElementById('themeIconDark');
+    themeIconLight = document.getElementById('themeIconLight');
+
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        if(themeIconDark) themeIconDark.classList.remove('hidden');
+        if(themeIconLight) themeIconLight.classList.add('hidden');
+    } else {
+        document.documentElement.classList.remove('dark');
+        if(themeIconLight) themeIconLight.classList.remove('hidden');
+        if(themeIconDark) themeIconDark.classList.add('hidden');
+    }
+});
+
+let veliChartInstance = null;
+
+window.toggleTheme = function() {
+    if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        if(themeIconLight) themeIconLight.classList.remove('hidden');
+        if(themeIconDark) themeIconDark.classList.add('hidden');
+        updateChartTheme(false);
+    } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        if(themeIconDark) themeIconDark.classList.remove('hidden');
+        if(themeIconLight) themeIconLight.classList.add('hidden');
+        updateChartTheme(true);
+    }
+}
+
+function updateChartTheme(isDark) {
+    if(!veliChartInstance) return;
+    const textColor = isDark ? '#9ca3af' : '#4b5563'; // gray-400 / gray-600
+    const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+    
+    veliChartInstance.options.scales.x.ticks.color = textColor;
+    veliChartInstance.options.scales.x.grid.color = gridColor;
+    veliChartInstance.options.scales.y.ticks.color = textColor;
+    veliChartInstance.options.scales.y.grid.color = gridColor;
+    veliChartInstance.update();
+}
+
 async function loadVeliPortal() {
     if (!studentId) { showError(); return; }
 
@@ -31,12 +79,12 @@ async function loadVeliPortal() {
             if (!l.is_paid) totalDebt += Number(l.price || 0);
 
             listEl.innerHTML += `
-                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                        <p class="text-[11px] font-black text-indigo-500 tracking-wider">📅 ${date} ${time} ${duration}</p>
-                        <p class="text-sm font-bold text-gray-800 mt-1">${l.topic}</p>
+                        <p class="text-[11px] font-black text-indigo-500 dark:text-indigo-400 tracking-wider">📅 ${date} ${time} ${duration}</p>
+                        <p class="text-sm font-bold text-gray-800 dark:text-gray-100 mt-1">${l.topic}</p>
                     </div>
-                    ${l.price ? `<span class="text-xs font-black ${l.is_paid ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50'} px-3 py-1.5 rounded-lg whitespace-nowrap">${l.price} TL - ${l.is_paid ? 'ÖDENDİ' : 'ÖDENMEDİ'}</span>` : ''}
+                    ${l.price ? `<span class="text-xs font-black ${l.is_paid ? 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/30' : 'text-red-500 bg-red-50 dark:text-red-400 dark:bg-red-900/30'} px-3 py-1.5 rounded-lg whitespace-nowrap">${l.price} TL - ${l.is_paid ? 'ÖDENDİ' : 'ÖDENMEDİ'}</span>` : ''}
                 </div>`;
         });
 
@@ -56,7 +104,11 @@ async function loadVeliPortal() {
         results.forEach(r => { labels.push(r.quizzes.title); scores.push(r.score); });
     }
 
-    new Chart(document.getElementById('veliChart').getContext('2d'), {
+    const isDark = document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#9ca3af' : '#4b5563';
+    const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+    veliChartInstance = new Chart(document.getElementById('veliChart').getContext('2d'), {
         type: 'line',
         data: {
             labels: labels,
@@ -71,7 +123,18 @@ async function loadVeliPortal() {
         },
         options: {
             responsive: true, maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true, max: 100 } },
+            scales: { 
+                y: { 
+                    beginAtZero: true, 
+                    max: 100,
+                    ticks: { color: textColor },
+                    grid: { color: gridColor }
+                },
+                x: {
+                    ticks: { color: textColor },
+                    grid: { color: gridColor }
+                }
+            },
             plugins: { legend: { display: false } }
         }
     });
