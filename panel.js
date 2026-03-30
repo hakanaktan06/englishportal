@@ -485,6 +485,7 @@ if (studentFormEl) {
             const { error: profileError } = await supabaseClient.from('profiles').insert([{
                 id: data.user.id,
                 full_name: name,
+                email: dummyEmail,
                 role: 'student',
                 parent_phone: parentPhone,
                 teacher_id: currentTeacherId
