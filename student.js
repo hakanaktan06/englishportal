@@ -13,6 +13,17 @@ let quizTimerInterval = null;
 document.querySelector('main')?.addEventListener('touchstart', function() {}, {passive: true});
 
 // ==========================================
+// 🛡️ GÜVENLİK: XSS KORUMA MOTORU (ÇELİK YELEK)
+// ==========================================
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, function (tag) {
+        const charsToReplace = { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' };
+        return charsToReplace[tag] || tag;
+    });
+}
+
+// ==========================================
 // UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
 // ==========================================
 function showToast(message, type = 'success') {
@@ -28,7 +39,7 @@ function showToast(message, type = 'success') {
             : `<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`);
 
     toast.className = `${bgColor} text-white px-5 py-3.5 rounded-2xl shadow-xl shadow-${bgColor}/30 font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
-    toast.innerHTML = `<span class="flex-shrink-0">${iconSvg}</span> <span>${message}</span>`;
+    toast.innerHTML = `<span class="flex-shrink-0">${iconSvg}</span> <span>${escapeHTML(message)}</span>`;
     container.appendChild(toast);
     
     setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 10);
@@ -264,13 +275,13 @@ async function fetchMyHomeworks() {
             <div class="bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition-all flex flex-col h-full relative overflow-hidden group">
                 ${isCompleted ? '<div class="absolute top-0 left-0 w-full h-1.5 bg-emerald-500"></div>' : (isReviewing ? '<div class="absolute top-0 left-0 w-full h-1.5 bg-blue-400"></div>' : (isFlashcard ? '<div class="absolute top-0 left-0 w-full h-1.5 bg-purple-500"></div>' : (isWriting ? '<div class="absolute top-0 left-0 w-full h-1.5 bg-blue-600"></div>' : '<div class="absolute top-0 left-0 w-full h-1.5 bg-amber-400"></div>')))}
                 
-                <h4 class="text-base font-black ${isFlashcard ? 'text-purple-600 dark:text-purple-400' : (isWriting ? 'text-blue-600 dark:text-blue-400' : 'text-gray-800 dark:text-white')} mb-2 mt-1 line-clamp-2 leading-tight">${cardTitle}</h4>
+                <h4 class="text-base font-black ${isFlashcard ? 'text-purple-600 dark:text-purple-400' : (isWriting ? 'text-blue-600 dark:text-blue-400' : 'text-gray-800 dark:text-white')} mb-2 mt-1 line-clamp-2 leading-tight">${escapeHTML(cardTitle)}</h4>
                 
                 ${isFlashcard 
                     ? `<p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-2xl font-medium border border-purple-100 dark:border-purple-800/50">Yapay zeka ile üretilmiş ${isCompleted ? 'tamamlanmış' : 'yeni'} kelime telaffuz görevi.</p>` 
                     : (isWriting 
-                        ? `<p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl font-medium border border-blue-100 dark:border-blue-800/50 line-clamp-4">${hw.description}</p>`
-                        : `<p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl leading-relaxed font-medium border border-gray-100 dark:border-slate-700/50 line-clamp-4">${hw.description}</p>`
+                        ? `<p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl font-medium border border-blue-100 dark:border-blue-800/50 line-clamp-4">${escapeHTML(hw.description)}</p>`
+                        : `<p class="text-gray-500 dark:text-gray-400 text-xs mb-5 flex-1 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl leading-relaxed font-medium border border-gray-100 dark:border-slate-700/50 line-clamp-4">${escapeHTML(hw.description)}</p>`
                     )
                 }
 
@@ -339,9 +350,9 @@ async function fetchActivities() {
                     <div class="bg-purple-50 dark:bg-purple-900/30 p-3.5 rounded-2xl text-2xl border border-purple-100 dark:border-purple-800 text-purple-600 dark:text-purple-400 shadow-inner group-hover:scale-110 transition transform">
                         ${icons[act.category] || '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>'}
                     </div>
-                    <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white flex-1 line-clamp-2 leading-tight group-hover:text-purple-600 dark:group-hover:text-purple-400 transition">${act.title}</h4>
+                    <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white flex-1 line-clamp-2 leading-tight group-hover:text-purple-600 dark:group-hover:text-purple-400 transition">${escapeHTML(act.title)}</h4>
                 </div>
-                <a href="${act.link}" target="_blank" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-purple-600 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-purple-600 transition font-black py-3 rounded-xl text-center text-xs tracking-widest uppercase shadow-sm flex justify-center items-center gap-2">
+                <a href="${escapeHTML(act.link)}" target="_blank" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-purple-600 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-purple-600 transition font-black py-3 rounded-xl text-center text-xs tracking-widest uppercase shadow-sm flex justify-center items-center gap-2">
                     AÇ VE İNCELE <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                 </a>
             </div>`;
@@ -406,9 +417,9 @@ async function fetchQuizzes() {
                     <div class="bg-red-50 dark:bg-red-900/30 p-3.5 rounded-2xl border border-red-100 dark:border-red-800 text-red-600 dark:text-red-400 shadow-inner group-hover:scale-110 transition transform">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                     </div>
-                    <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white flex-1 line-clamp-2 leading-tight group-hover:text-red-600 dark:group-hover:text-red-400 transition">${quiz.title}</h4>
+                    <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white flex-1 line-clamp-2 leading-tight group-hover:text-red-600 dark:group-hover:text-red-400 transition">${escapeHTML(quiz.title)}</h4>
                 </div>
-                <button onclick="startQuiz('${quiz.id}', '${quiz.title.replace(/'/g, "\\'")}')" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-red-500 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-red-500 transition font-black py-3 rounded-xl text-xs uppercase tracking-widest shadow-sm">SINAVA BAŞLA</button>
+                <button onclick="startQuiz('${quiz.id}', '${escapeHTML(quiz.title.replace(/'/g, "\\'"))}')" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-red-500 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-red-500 transition font-black py-3 rounded-xl text-xs uppercase tracking-widest shadow-sm">SINAVA BAŞLA</button>
             </div>`;
     });
 }
@@ -436,7 +447,7 @@ async function fetchMyResults() {
         container.innerHTML += `
             <div class="bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl transition flex flex-col justify-between">
                 <div class="flex justify-between items-start mb-4">
-                    <h4 class="text-sm font-black text-gray-800 dark:text-white line-clamp-2 pr-2">${res.quizzes ? res.quizzes.title : 'Silinmiş Sınav'}</h4>
+                    <h4 class="text-sm font-black text-gray-800 dark:text-white line-clamp-2 pr-2">${res.quizzes ? escapeHTML(res.quizzes.title) : 'Silinmiş Sınav'}</h4>
                     <span class="px-3 py-1 rounded-xl font-black text-lg border ${scoreColor} shrink-0">${res.score}</span>
                 </div>
                 <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
@@ -477,23 +488,23 @@ window.startQuiz = async function(quizId, quizTitle) {
     questions.forEach((q, index) => {
         container.innerHTML += `
             <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[30px] border border-gray-100 dark:border-slate-700 shadow-sm question-block" data-question-id="${q.id}" data-correct="${q.correct_option}">
-                <h4 class="text-base md:text-lg font-black text-gray-800 dark:text-white mb-6 leading-relaxed"><span class="text-indigo-500 mr-2">${index + 1}.</span> ${q.question_text}</h4>
+                <h4 class="text-base md:text-lg font-black text-gray-800 dark:text-white mb-6 leading-relaxed"><span class="text-indigo-500 mr-2">${index + 1}.</span> ${escapeHTML(q.question_text)}</h4>
                 <div class="space-y-3">
                     <label class="flex items-center p-4 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition group">
                         <input type="radio" name="q_${q.id}" value="A" class="w-5 h-5 text-indigo-600 mr-4" required>
-                        <span class="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">A) ${q.option_a}</span>
+                        <span class="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">A) ${escapeHTML(q.option_a)}</span>
                     </label>
                     <label class="flex items-center p-4 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition group">
                         <input type="radio" name="q_${q.id}" value="B" class="w-5 h-5 text-indigo-600 mr-4" required>
-                        <span class="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">B) ${q.option_b}</span>
+                        <span class="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">B) ${escapeHTML(q.option_b)}</span>
                     </label>
                     <label class="flex items-center p-4 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition group">
                         <input type="radio" name="q_${q.id}" value="C" class="w-5 h-5 text-indigo-600 mr-4" required>
-                        <span class="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">C) ${q.option_c}</span>
+                        <span class="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">C) ${escapeHTML(q.option_c)}</span>
                     </label>
                     <label class="flex items-center p-4 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition group">
                         <input type="radio" name="q_${q.id}" value="D" class="w-5 h-5 text-indigo-600 mr-4" required>
-                        <span class="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">D) ${q.option_d}</span>
+                        <span class="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">D) ${escapeHTML(q.option_d)}</span>
                     </label>
                 </div>
             </div>`;
@@ -586,15 +597,15 @@ window.renderAnalysisScreen = function(details, score) {
             <div class="p-6 rounded-[20px] border-2 mb-6 ${boxStyle} shadow-sm">
                 <div class="flex items-start gap-4 mb-4">
                     <span class="shrink-0">${iconInfo}</span>
-                    <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white pt-1"><span class="text-gray-400 mr-1">${detail.q_no}.</span> ${detail.q_text}</h4>
+                    <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white pt-1"><span class="text-gray-400 mr-1">${detail.q_no}.</span> ${escapeHTML(detail.q_text)}</h4>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pl-12 text-sm font-bold">
-                    <div class="p-3 rounded-xl ${detail.correct_opt === 'A' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">A) ${detail.optA}</div>
-                    <div class="p-3 rounded-xl ${detail.correct_opt === 'B' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">B) ${detail.optB}</div>
-                    <div class="p-3 rounded-xl ${detail.correct_opt === 'C' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">C) ${detail.optC}</div>
-                    <div class="p-3 rounded-xl ${detail.correct_opt === 'D' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">D) ${detail.optD}</div>
+                    <div class="p-3 rounded-xl ${detail.correct_opt === 'A' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">A) ${escapeHTML(detail.optA)}</div>
+                    <div class="p-3 rounded-xl ${detail.correct_opt === 'B' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">B) ${escapeHTML(detail.optB)}</div>
+                    <div class="p-3 rounded-xl ${detail.correct_opt === 'C' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">C) ${escapeHTML(detail.optC)}</div>
+                    <div class="p-3 rounded-xl ${detail.correct_opt === 'D' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-400' : 'bg-white dark:bg-slate-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-slate-700'}">D) ${escapeHTML(detail.optD)}</div>
                 </div>
-                ${!detail.is_correct ? `<div class="mt-4 pl-12 flex flex-col sm:flex-row gap-3"><span class="inline-block bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Senin Cevabın: ${detail.selected_opt}</span><span class="inline-block bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Doğru Cevap: ${detail.correct_opt}</span></div>` : ''}
+                ${!detail.is_correct ? `<div class="mt-4 pl-12 flex flex-col sm:flex-row gap-3"><span class="inline-block bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Senin Cevabın: ${escapeHTML(detail.selected_opt)}</span><span class="inline-block bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Doğru Cevap: ${escapeHTML(detail.correct_opt)}</span></div>` : ''}
             </div>`;
     });
     document.getElementById('analysisModal').classList.remove('hidden');
@@ -653,7 +664,7 @@ window.updateFlashcardUI = function() {
 
         const phEl = document.getElementById('fcWordPh');
         if (phEl) {
-            phEl.innerText = word.ph ? `/${word.ph}/` : '';
+            phEl.innerText = word.ph ? `/${escapeHTML(word.ph)}/` : '';
             phEl.style.display = word.ph ? 'block' : 'none';
         }
 
