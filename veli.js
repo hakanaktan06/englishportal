@@ -3,6 +3,9 @@ const supabaseUrl = 'https://vucpxabicxqfmmmqvkpv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1Y3B4YWJpY3hxZm1tbXF2a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDIwMDYsImV4cCI6MjA4ODkxODAwNn0.wYXmIDO4H7ml8nC9pQzRmW8tPK_ihtqFy3r4SqN3cTk';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+let globalTeacherIban = '';
+let globalStudentName = '';
+
 // URL'den ID'yi al
 const urlParams = new URLSearchParams(window.location.search);
 const studentId = urlParams.get('id');
@@ -58,10 +61,20 @@ function updateChartTheme(isDark) {
 async function loadVeliPortal() {
     if (!studentId) { showError(); return; }
 
-    // 1. Öğrenci Adını Çek
-    const { data: profile, error: profErr } = await supabaseClient.from('profiles').select('full_name').eq('id', studentId).single();
-    if (profErr || !profile) { showError(); return; }
-    document.getElementById('veliStudentName').innerText = profile.full_name;
+    // 1. Öğrenci Adını ve Öğretmen Bilgisini Çek
+    const { data: student, error: studErr } = await supabaseClient.from('profiles').select('full_name, teacher_id').eq('id', studentId).single();
+    if (studErr || !student) { showError(); return; }
+    
+    globalStudentName = student.full_name;
+    document.getElementById('veliStudentName').innerText = globalStudentName;
+
+    if (student.teacher_id) {
+        const { data: teacher } = await supabaseClient.from('profiles').select('bank_iban').eq('id', student.teacher_id).single();
+        if (teacher) {
+            globalTeacherIban = teacher.bank_iban || '';
+            document.getElementById('displayIbanText').innerText = globalTeacherIban || 'Öğretmen IBAN girmemiş.';
+        }
+    }
 
     // 2. Dersleri Çek ve Borcu Hesapla
     const { data: lessons } = await supabaseClient.from('private_lessons').select('*').eq('student_id', studentId).order('lesson_date', { ascending: false });
@@ -71,8 +84,19 @@ async function loadVeliPortal() {
         listEl.innerHTML = '<p class="text-gray-400 italic">Henüz işlenmiş bir özel ders kaydı bulunmuyor.</p>';
     } else {
         let totalDebt = 0;
+        let futureLessons = [];
+        const now = new Date();
+
         lessons.forEach(l => {
-            const date = new Date(l.lesson_date).toLocaleDateString('tr-TR');
+            const lessonDate = new Date(`${l.lesson_date}T${l.lesson_time || '00:00'}:00`);
+            
+            // Gelecek dersleri ayır
+            if (lessonDate > now) {
+                futureLessons.push({ ...l, dateObj: lessonDate });
+                return; // Listeye ekleme (isteğe bağlı, ama genelde "İşlenen Dersler" geçmişi gösterir)
+            }
+
+            const date = lessonDate.toLocaleDateString('tr-TR');
             const time = l.lesson_time ? ` | ⏰ ${l.lesson_time}` : '';
             const duration = l.duration_hours ? ` | ⏳ ${l.duration_hours} Saat` : '';
 
@@ -88,9 +112,17 @@ async function loadVeliPortal() {
                 </div>`;
         });
 
+        // Geri Sayım Motorunu Başlat
+        if (futureLessons.length > 0) {
+            // En yakın gelecek dersi bul (zaten lesson_date DESC olduğu için en sonu veya sort etmek daha güvenli)
+            futureLessons.sort((a, b) => a.dateObj - b.dateObj);
+            startNextLessonCountdown(futureLessons[0]);
+        }
+
         if (totalDebt > 0) {
             document.getElementById('veliDebtText').innerText = totalDebt + " TL";
-            document.getElementById('veliDebtBadge').classList.remove('hidden');
+            document.getElementById('veliDebtBadge').classList.remove('hidden', 'display-none');
+            document.getElementById('veliDebtBadge').style.display = 'inline-flex';
         }
     }
 
@@ -146,6 +178,91 @@ async function loadVeliPortal() {
         document.getElementById('mainContent').style.display = 'block';
     }, 500);
 }
+
+// 4. GERİ SAYIM VE DİĞER MODÜLLER
+function startNextLessonCountdown(lesson) {
+    const widget = document.getElementById('nextLessonWidget');
+    const titleEl = document.getElementById('nextLessonTitle');
+    const countdownEl = document.getElementById('nextLessonCountdown');
+    const dateEl = document.getElementById('nextLessonDate');
+
+    if (!widget) return;
+
+    widget.classList.remove('hidden');
+    titleEl.innerText = lesson.topic || "Özel Ders";
+    dateEl.innerText = new Date(lesson.dateObj).toLocaleString('tr-TR', { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' });
+
+    const timer = setInterval(() => {
+        const now = new Date().getTime();
+        const dist = lesson.dateObj.getTime() - now;
+
+        if (dist < 0) {
+            clearInterval(timer);
+            countdownEl.innerText = "DERS BAŞLADI / GEÇTİ";
+            return;
+        }
+
+        const days = Math.floor(dist / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((dist % (1000 * 60)) / 1000);
+
+        let countdownStr = "";
+        if (days > 0) countdownStr += `${days}g `;
+        countdownStr += `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        countdownEl.innerText = countdownStr;
+    }, 1000);
+}
+
+window.showIbanModal = function() {
+    const modal = document.getElementById('ibanModal');
+    modal.classList.remove('hidden');
+    setTimeout(() => modal.classList.remove('opacity-0'), 10);
+};
+
+window.hideIbanModal = function() {
+    const modal = document.getElementById('ibanModal');
+    modal.classList.add('opacity-0');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+};
+
+window.copyIban = function() {
+    if (!globalTeacherIban) {
+        alert("Kopyalanacak IBAN bulunamadı.");
+        return;
+    }
+    navigator.clipboard.writeText(globalTeacherIban).then(() => {
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = "✅ KOPYALANDI!";
+        btn.classList.replace('bg-indigo-600', 'bg-emerald-600');
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+            btn.classList.replace('bg-emerald-600', 'bg-indigo-600');
+        }, 2000);
+    });
+};
+
+window.downloadPDFReport = function() {
+    const element = document.getElementById('reportContent');
+    const opt = {
+        margin: 1,
+        filename: `${globalStudentName}_Gelisim_Raporu.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Geçici olarak dark moddan çıkarıp temiz görüntü alalım (opsiyonel ama daha iyi sonuç verir)
+    const isDark = document.documentElement.classList.contains('dark');
+    if (isDark) document.documentElement.classList.remove('dark');
+
+    // PDF Üret
+    html2pdf().set(opt).from(element).save().then(() => {
+        if (isDark) document.documentElement.classList.add('dark');
+    });
+};
 
 function showError() {
     document.getElementById('loadingScreen').style.display = 'none';
