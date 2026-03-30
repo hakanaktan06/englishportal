@@ -4,6 +4,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 let globalTeacherIban = '';
+let globalTeacherReceiver = '';
 let globalStudentName = '';
 
 // URL'den ID'yi al
@@ -69,10 +70,12 @@ async function loadVeliPortal() {
     document.getElementById('veliStudentName').innerText = globalStudentName;
 
     if (student.teacher_id) {
-        const { data: teacher } = await supabaseClient.from('profiles').select('bank_iban').eq('id', student.teacher_id).single();
+        const { data: teacher } = await supabaseClient.from('profiles').select('bank_iban, bank_receiver').eq('id', student.teacher_id).single();
         if (teacher) {
             globalTeacherIban = teacher.bank_iban || '';
+            globalTeacherReceiver = teacher.bank_receiver || '';
             document.getElementById('displayIbanText').innerText = globalTeacherIban || 'Öğretmen IBAN girmemiş.';
+            document.getElementById('displayReceiverText').innerText = globalTeacherReceiver || 'Öğretmen isim girmemiş.';
         }
     }
 
@@ -229,10 +232,11 @@ window.hideIbanModal = function() {
 
 window.copyIban = function() {
     if (!globalTeacherIban) {
-        alert("Kopyalanacak IBAN bulunamadı.");
+        showVeliToast("❌ Kopyalanacak IBAN bulunamadı.", "error");
         return;
     }
     navigator.clipboard.writeText(globalTeacherIban).then(() => {
+        showVeliToast("✅ IBAN Başarıyla Kopyalandı!", "success");
         const btn = event.currentTarget;
         const originalHtml = btn.innerHTML;
         btn.innerHTML = "✅ KOPYALANDI!";
@@ -243,6 +247,33 @@ window.copyIban = function() {
         }, 2000);
     });
 };
+
+function showVeliToast(message, type = "success") {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    const bgColor = type === "success" ? "bg-emerald-600" : "bg-rose-600";
+    
+    toast.className = `${bgColor} text-white px-6 py-3 rounded-2xl shadow-2xl font-black text-sm flex items-center gap-3 transform transition-all duration-500 translate-y-10 opacity-0`;
+    toast.innerHTML = `
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${type === 'success' ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'}"></path>
+        </svg>
+        ${message}
+    `;
+
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.remove('translate-y-10', 'opacity-0');
+    }, 10);
+
+    setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
+}
 
 window.downloadPDFReport = function() {
     const element = document.getElementById('reportContent');
