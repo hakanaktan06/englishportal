@@ -108,6 +108,16 @@
                 </svg>
                 <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Sonuçlar</span>
             </a>
+            <a href="#" id="btn-bank-settings" onclick="openBankSettings()"
+                class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
+                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
+                    </path>
+                </svg>
+                <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Banka Bilgilerim</span>
+            </a>
         </nav>
         <div class="px-4 mt-2 mb-2">
             <a href="https://wa.me/905350407265" target="_blank"
@@ -1667,6 +1677,43 @@
 
 
     <script src="panel.js"></script>
+    <div id="bankSettingsModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl border border-transparent dark:border-slate-700">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-2xl font-black text-gray-800 dark:text-white uppercase tracking-tight">Banka Bilgileri</h3>
+                    <p class="text-xs text-indigo-500 font-bold uppercase tracking-widest mt-1">Veli Paneli İçin IBAN</p>
+                </div>
+                <button onclick="document.getElementById('bankSettingsModal').classList.add('hidden')" class="text-gray-400 hover:text-red-500 text-3xl font-bold">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-800 mb-4">
+                    <p class="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase leading-relaxed">
+                        📖 Buraya gireceğiniz IBAN, velilerinizin profilinde "Ödeme Yap" butonuna tıklandığında görünecektir. Lütfen hatasız giriniz.
+                    </p>
+                </div>
+                
+                <div>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">TR IBAN NUMARANIZ</label>
+                    <input id="teacherIbanInput"
+                        class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-indigo-400 focus:border-indigo-500 outline-none transition-all font-mono font-bold tracking-widest"
+                        placeholder="TR00 0000 0000...">
+                </div>
+
+                <div class="pt-4">
+                    <button onclick="saveBankSettings()"
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 px-4 rounded-2xl shadow-lg shadow-indigo-500/30 transform active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        BİLGİLERİ KAYDET
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
