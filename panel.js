@@ -28,6 +28,7 @@ let isPremiumTeacher = false;
 let currentStudentCount = 0;
 let currentQuizCount = 0;
 let currentTeacherIban = '';
+let currentTeacherBankReceiver = '';
 
 // ==========================================
 // UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
@@ -103,7 +104,7 @@ async function checkTeacherSecurity() {
         if (authError || !user) { window.location.href = 'index.html'; return; }
 
         // 🌟 is_premium ve premium_until verisini çekiyoruz
-        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until, bank_iban').eq('id', user.id).single();
+        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until, bank_iban, bank_receiver').eq('id', user.id).single();
         if (profileError || !profile || profile.role !== 'teacher') {
             showToast("Erişim Engellendi! Yönetici yetkiniz yok.", "error");
             setTimeout(() => { window.location.href = 'student.html'; }, 1500);
@@ -113,6 +114,7 @@ async function checkTeacherSecurity() {
         currentTeacherId = user.id;
         currentTeacherName = profile.full_name;
         currentTeacherIban = profile.bank_iban || '';
+        currentTeacherBankReceiver = profile.bank_receiver || '';
 
         // 🌟 TARİH KONTROLÜ (SÜRESİ BİTMİŞ Mİ?) 🌟
         if (profile.is_premium && profile.premium_until) {
@@ -2281,29 +2283,38 @@ window.sendAiReportWhatsApp = function () {
 // ==========================================
 window.openBankSettings = function() {
     const modal = document.getElementById('bankSettingsModal');
-    const input = document.getElementById('teacherIbanInput');
-    if (modal && input) {
-        input.value = currentTeacherIban;
+    const inputIban = document.getElementById('teacherIbanInput');
+    const inputReceiver = document.getElementById('teacherBankReceiverInput');
+    if (modal) {
+        if (inputIban) inputIban.value = currentTeacherIban;
+        if (inputReceiver) inputReceiver.value = currentTeacherBankReceiver;
         modal.classList.remove('hidden');
     }
 }
 
 window.saveBankSettings = async function() {
     if (!currentTeacherId) return;
-    const input = document.getElementById('teacherIbanInput');
-    const newIban = input.value.trim().toUpperCase();
+    const inputIban = document.getElementById('teacherIbanInput');
+    const inputReceiver = document.getElementById('teacherBankReceiverInput');
+    
+    const newIban = inputIban.value.trim().toUpperCase();
+    const newReceiver = inputReceiver.value.trim();
 
     showToast("Bilgiler güncelleniyor...", "info");
 
     const { error } = await supabaseClient
         .from('profiles')
-        .update({ bank_iban: newIban })
+        .update({ 
+            bank_iban: newIban,
+            bank_receiver: newReceiver
+        })
         .eq('id', currentTeacherId);
 
     if (error) {
         showToast("Hata oluştu: " + error.message, "error");
     } else {
         currentTeacherIban = newIban;
+        currentTeacherBankReceiver = newReceiver;
         showToast("Banka bilgileriniz başarıyla kaydedildi.", "success");
         document.getElementById('bankSettingsModal').classList.add('hidden');
     }
