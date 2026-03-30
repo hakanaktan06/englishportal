@@ -27,6 +27,7 @@ let currentTeacherName = '';
 let isPremiumTeacher = false;
 let currentStudentCount = 0;
 let currentQuizCount = 0;
+let currentTeacherIban = '';
 
 // ==========================================
 // UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
@@ -102,7 +103,7 @@ async function checkTeacherSecurity() {
         if (authError || !user) { window.location.href = 'index.html'; return; }
 
         // 🌟 is_premium ve premium_until verisini çekiyoruz
-        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until').eq('id', user.id).single();
+        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until, bank_iban').eq('id', user.id).single();
         if (profileError || !profile || profile.role !== 'teacher') {
             showToast("Erişim Engellendi! Yönetici yetkiniz yok.", "error");
             setTimeout(() => { window.location.href = 'student.html'; }, 1500);
@@ -111,6 +112,7 @@ async function checkTeacherSecurity() {
 
         currentTeacherId = user.id;
         currentTeacherName = profile.full_name;
+        currentTeacherIban = profile.bank_iban || '';
 
         // 🌟 TARİH KONTROLÜ (SÜRESİ BİTMİŞ Mİ?) 🌟
         if (profile.is_premium && profile.premium_until) {
@@ -2274,3 +2276,37 @@ window.sendAiReportWhatsApp = function () {
     document.getElementById('aiReportModal').classList.add('hidden');
     showToast("WhatsApp açılıyor...", "success");
 }
+// ==========================================
+// 10. BANKA AYARLARI (IBAN YÖNETİMİ)
+// ==========================================
+window.openBankSettings = function() {
+    const modal = document.getElementById('bankSettingsModal');
+    const input = document.getElementById('teacherIbanInput');
+    if (modal && input) {
+        input.value = currentTeacherIban;
+        modal.classList.remove('hidden');
+    }
+}
+
+window.saveBankSettings = async function() {
+    if (!currentTeacherId) return;
+    const input = document.getElementById('teacherIbanInput');
+    const newIban = input.value.trim().toUpperCase();
+
+    showToast("Bilgiler güncelleniyor...", "info");
+
+    const { error } = await supabaseClient
+        .from('profiles')
+        .update({ bank_iban: newIban })
+        .eq('id', currentTeacherId);
+
+    if (error) {
+        showToast("Hata oluştu: " + error.message, "error");
+    } else {
+        currentTeacherIban = newIban;
+        showToast("Banka bilgileriniz başarıyla kaydedildi.", "success");
+        document.getElementById('bankSettingsModal').classList.add('hidden');
+    }
+}
+
+// EOF (End of File)
