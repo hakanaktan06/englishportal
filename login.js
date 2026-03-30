@@ -135,6 +135,7 @@ registerForm.addEventListener('submit', async (e) => {
         const { error: profileError } = await supabaseClient.from('profiles').insert([{
             id: authData.user.id,
             full_name: name,
+            email: email,
             role: 'teacher',
             is_premium: false // Varsayılan olarak Freemium hesap
         }]);
