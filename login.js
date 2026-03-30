@@ -154,8 +154,16 @@ registerForm.addEventListener('submit', async (e) => {
 // YARDIMCI FONKSİYONLAR
 // ==========================================
 function showError(boxElement, message) {
-    boxElement.innerHTML = `<svg class="w-4 h-4 mr-1.5 inline-block -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${message}`;
+    boxElement.innerHTML = `<svg class="w-4 h-4 mr-1.5 inline-block -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${escapeHTML(message)}`;
     boxElement.classList.remove('hidden');
+}
+
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, function (tag) {
+        const charsToReplace = { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' };
+        return charsToReplace[tag] || tag;
+    });
 }
 
 function resetButton(btnElement, originalText) {
