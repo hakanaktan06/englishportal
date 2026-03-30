@@ -31,6 +31,17 @@ let currentTeacherIban = '';
 let currentTeacherBankReceiver = '';
 
 // ==========================================
+// 🛡️ GÜVENLİK: XSS KORUMA MOTORU (ÇELİK YELEK)
+// ==========================================
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, function (tag) {
+        const charsToReplace = { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' };
+        return charsToReplace[tag] || tag;
+    });
+}
+
+// ==========================================
 // UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
 // ==========================================
 function showToast(message, type = 'success') {
@@ -58,7 +69,7 @@ function showToast(message, type = 'success') {
 
     toast.className = `${bgColor} text-white px-5 py-3.5 rounded-2xl shadow-xl shadow-${bgColor}/30 font-bold text-sm flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
 
-    toast.innerHTML = `<span class="flex-shrink-0">${iconSvg}</span> <span class="toast-msg">${message}</span>`;
+    toast.innerHTML = `<span class="flex-shrink-0">${iconSvg}</span> <span class="toast-msg">${escapeHTML(message)}</span>`;
     container.appendChild(toast);
 
     setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 10);
@@ -357,8 +368,8 @@ async function fetchAgenda() {
                 dateStr: l.lesson_date,
                 timeStr: l.lesson_time || 'Belirtilmedi',
                 dateObj: new Date(`${l.lesson_date}T${l.lesson_time || '00:00'}:00`),
-                title: `${l.profiles?.full_name || 'Öğrenci'} ile Özel Ders`,
-                desc: l.topic
+                title: `${escapeHTML(l.profiles?.full_name || 'Öğrenci')} ile Özel Ders`,
+                desc: escapeHTML(l.topic)
             });
         });
     }
@@ -436,8 +447,8 @@ async function fetchAgenda() {
                         ${dateBadge}
                         ${timeHtml}
                     </div>
-                    <h4 class="text-sm font-black text-gray-800 dark:text-white leading-tight group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition">${item.title}</h4>
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 truncate max-w-[250px] sm:max-w-md">${badgeHtml} ${item.desc}</p>
+                    <h4 class="text-sm font-black text-gray-800 dark:text-white leading-tight group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition">${escapeHTML(item.title)}</h4>
+                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 truncate max-w-[250px] sm:max-w-md">${badgeHtml} ${escapeHTML(item.desc)}</p>
                 </div>
             </div>`;
     });
@@ -758,7 +769,7 @@ async function fillStudentSelect() {
     const select = document.getElementById('hwStudentSelect');
     if (data && select) {
         select.innerHTML = '<option value="">Öğrenci Seçin...</option>';
-        data.forEach(s => { select.innerHTML += `<option value="${s.id}">${s.full_name}</option>`; });
+        data.forEach(s => { select.innerHTML += `<option value="${s.id}">${escapeHTML(s.full_name)}</option>`; });
     }
 }
 
@@ -841,8 +852,8 @@ async function fetchHomeworks() {
 
             tbodyPending.innerHTML += `
                 <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-gray-50/50 dark:hover:bg-slate-800 transition">
-                    <td class="p-4 font-bold text-gray-800 dark:text-white text-sm">${hw.profiles ? hw.profiles.full_name : 'Bilinmeyen'}</td>
-                    <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title.replace('[KELİME_KARTI] ', '').replace('[WRITING] ', '')}">${displayTitle}</td>
+                    <td class="p-4 font-bold text-gray-800 dark:text-white text-sm">${hw.profiles ? escapeHTML(hw.profiles.full_name) : 'Bilinmeyen'}</td>
+                    <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${escapeHTML(hw.title.replace('[KELİME_KARTI] ', '').replace('[WRITING] ', ''))}">${displayTitle}</td>
                     <td class="p-4 text-amber-600 dark:text-amber-400 font-bold text-xs">${date}</td>
                     <td class="p-4 text-right flex items-center justify-end gap-2">
                         ${actionButtons}
@@ -881,8 +892,8 @@ async function fetchHomeworks() {
 
             tbodyCompleted.innerHTML += `
                 <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-gray-50/50 dark:hover:bg-slate-800 transition">
-                    <td class="p-4 font-bold text-gray-800 dark:text-white text-sm">${hw.profiles ? hw.profiles.full_name : 'Bilinmeyen'}</td>
-                    <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${hw.title.replace('[KELİME_KARTI] ', '').replace('[WRITING] ', '')}">${displayTitle}</td>
+                    <td class="p-4 font-bold text-gray-800 dark:text-white text-sm">${hw.profiles ? escapeHTML(hw.profiles.full_name) : 'Bilinmeyen'}</td>
+                    <td class="p-4 text-gray-600 dark:text-gray-300 text-sm truncate max-w-[200px]" title="${escapeHTML(hw.title.replace('[KELİME_KARTI] ', '').replace('[WRITING] ', ''))}">${displayTitle}</td>
                     <td class="p-4 text-emerald-600 dark:text-emerald-400 font-bold text-xs">${date}</td>
                     <td class="p-4 text-right flex items-center justify-end">
                         ${actionButtons}
@@ -973,10 +984,10 @@ async function fetchActivities() {
             <div class="activity-card bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col justify-between hover:shadow-md transition" data-category="${act.category}">
                 <div>
                     <span class="text-indigo-500 dark:text-indigo-400 block mb-3">${icons[act.category] || '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>'}</span>
-                    <h4 class="font-black text-gray-800 dark:text-white uppercase text-xs tracking-widest">${act.title}</h4>
+                    <h4 class="font-black text-gray-800 dark:text-white uppercase text-xs tracking-widest">${escapeHTML(act.title)}</h4>
                 </div>
                 <div class="mt-5 flex justify-between items-center border-t border-gray-100 dark:border-slate-700 pt-3">
-                    <a href="${act.link}" target="_blank" class="text-indigo-600 dark:text-indigo-400 font-black text-[10px] hover:underline uppercase tracking-tighter flex items-center gap-1">AÇ <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>
+                    <a href="${escapeHTML(act.link)}" target="_blank" class="text-indigo-600 dark:text-indigo-400 font-black text-[10px] hover:underline uppercase tracking-tighter flex items-center gap-1">AÇ <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>
                     <button onclick="deleteActivity('${act.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 dark:hover:text-rose-400 transition" title="Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                 </div>
             </div>`;
@@ -1093,12 +1104,12 @@ async function fetchQuestionsForQuiz(quizId) {
                 <div class="flex items-start">
                     <span class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black mr-3 mt-1">${index + 1}</span>
                                         <div class="flex-1" lang="en">
-                        <p class="text-sm font-black text-gray-800 dark:text-white leading-tight mb-3">${q.question_text}</p>
+                        <p class="text-sm font-black text-gray-800 dark:text-white leading-tight mb-3">${escapeHTML(q.question_text)}</p>
                         <div class="grid grid-cols-2 gap-2 text-xs font-bold">
-                            <span class="p-2 rounded-xl ${q.correct_option === 'A' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">A: ${q.option_a}</span>
-                            <span class="p-2 rounded-xl ${q.correct_option === 'B' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">B: ${q.option_b}</span>
-                            <span class="p-2 rounded-xl ${q.correct_option === 'C' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">C: ${q.option_c}</span>
-                            <span class="p-2 rounded-xl ${q.correct_option === 'D' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">D: ${q.option_d}</span>
+                            <span class="p-2 rounded-xl ${q.correct_option === 'A' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">A: ${escapeHTML(q.option_a)}</span>
+                            <span class="p-2 rounded-xl ${q.correct_option === 'B' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">B: ${escapeHTML(q.option_b)}</span>
+                            <span class="p-2 rounded-xl ${q.correct_option === 'C' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">C: ${escapeHTML(q.option_c)}</span>
+                            <span class="p-2 rounded-xl ${q.correct_option === 'D' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-300'}">D: ${escapeHTML(q.option_d)}</span>
                         </div>
                     </div>
 
@@ -1162,7 +1173,7 @@ async function fetchQuizzes() {
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                     </div>
                     <div class="overflow-hidden">
-                        <h4 class="text-base md:text-lg font-black text-gray-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition truncate">${quiz.title}</h4>
+                        <h4 class="text-base md:text-lg font-black text-gray-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition truncate">${escapeHTML(quiz.title)}</h4>
                         <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Yayında
                         </p>
@@ -1196,7 +1207,7 @@ let currentResultsData = {};
 
 async function fetchResults() {
     const { data, error } = await supabaseClient.from('quiz_results')
-        .select(`*, profiles!inner(full_name, teacher_id), quizzes(title)`)
+        .select(`*, profiles!inner(id, full_name, teacher_id), quizzes(title)`)
         .eq('profiles.teacher_id', currentTeacherId)
         .order('created_at', { ascending: false });
 
@@ -1222,8 +1233,8 @@ async function fetchResults() {
 
         tbody.innerHTML += `
             <tr class="border-b border-gray-50 dark:border-slate-700/50 hover:bg-indigo-50/30 dark:hover:bg-slate-800 transition text-sm">
-                <td class="p-4 font-black text-gray-800 dark:text-white">${res.profiles ? res.profiles.full_name : 'Bilinmeyen Öğrenci'}</td>
-                <td class="p-4 text-gray-600 dark:text-gray-300 font-bold">${res.quizzes ? res.quizzes.title : 'Silinmiş Sınav'}</td>
+                <td class="p-4 font-black text-gray-800 dark:text-white">${res.profiles ? escapeHTML(res.profiles.full_name) : 'Bilinmeyen Öğrenci'}</td>
+                <td class="p-4 text-gray-600 dark:text-gray-300 font-bold">${res.quizzes ? escapeHTML(res.quizzes.title) : 'Silinmiş Sınav'}</td>
                 <td class="p-4 text-center"><span class="px-3 py-1 rounded-xl font-black text-xs uppercase tracking-wider border ${scoreColor}">${res.score} PUAN</span></td>
                 <td class="p-4 text-gray-400 dark:text-gray-500 text-xs font-bold">${date}</td>
                 <td class="p-4 text-right flex items-center justify-end space-x-2">
@@ -1265,10 +1276,10 @@ window.openTeacherAnalysis = function (resultId) {
                     <div class="p-4 md:p-6 rounded-[20px] md:rounded-[30px] border-2 mb-4 md:mb-6 ${boxStyle} shadow-sm">
                         <div class="flex items-start gap-3 md:gap-4 mb-3 md:mb-4">
                             <span class="shrink-0">${iconInfo}</span>
-                            <h4 class="text-sm md:text-lg font-black text-gray-800 dark:text-white pt-0.5 md:pt-1 leading-snug">${detail.q_no}. ${detail.q_text}</h4>
+                            <h4 class="text-sm md:text-lg font-black text-gray-800 dark:text-white pt-0.5 md:pt-1 leading-snug">${detail.q_no}. ${escapeHTML(detail.q_text)}</h4>
                         </div>
                         <div class="pl-9 md:pl-12 text-xs md:text-sm font-bold text-gray-500 dark:text-gray-400">
-                            Cevabı: ${detail.selected_opt} | Doğru: ${detail.correct_opt}
+                            Cevabı: ${escapeHTML(detail.selected_opt)} | Doğru: ${escapeHTML(detail.correct_opt)}
                         </div>
                     </div>`;
             });
@@ -1377,13 +1388,13 @@ async function fetchStudentLessons(studentId) {
                         </div>
                         <button onclick="deleteLesson('${l.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 transition ml-3" title="Kaydı Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                     </div>
-                    <p class="text-sm font-bold text-gray-700 dark:text-white mt-1 leading-snug">${l.topic}</p>
+                    <p class="text-sm font-bold text-gray-700 dark:text-white mt-1 leading-snug">${escapeHTML(l.topic)}</p>
                     <div class="mt-3 border-t border-gray-50 dark:border-slate-700 pt-2 flex justify-between items-center">
                         ${payBadge}
                     </div>
                 </div>`;
 
-            tempPdfLessonHtml += `<div class="mb-4 border-b border-gray-100 pb-3"><p class="text-xs font-black text-indigo-600 tracking-wider">${date}</p><p class="text-sm font-bold text-gray-800 mt-1">${l.topic}</p></div>`;
+            tempPdfLessonHtml += `<div class="mb-4 border-b border-gray-100 pb-3"><p class="text-xs font-black text-indigo-600 tracking-wider">${date}</p><p class="text-sm font-bold text-gray-800 mt-1">${escapeHTML(l.topic)}</p></div>`;
         });
 
         // Topladığımız HTML'i TEK SEFERDE ekrana basıyoruz!
@@ -1407,7 +1418,7 @@ async function fetchStudentLessons(studentId) {
         results.forEach(r => {
             labels.push(r.quizzes.title); scores.push(r.score);
             let color = r.score >= 80 ? 'text-emerald-600' : (r.score >= 50 ? 'text-yellow-600' : 'text-rose-600');
-            tempQuizHtml = `<div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-2"><span class="text-sm font-bold text-gray-700">${r.quizzes.title}</span><span class="text-sm font-black ${color}">${r.score} Puan</span></div>` + tempQuizHtml;
+            tempQuizHtml = `<div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-2"><span class="text-sm font-bold text-gray-700">${escapeHTML(r.quizzes.title)}</span><span class="text-sm font-black ${color}">${r.score} Puan</span></div>` + tempQuizHtml;
         });
         if (pdfQuizList) pdfQuizList.innerHTML = tempQuizHtml;
     }
