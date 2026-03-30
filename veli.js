@@ -7,6 +7,17 @@ let globalTeacherIban = '';
 let globalTeacherReceiver = '';
 let globalStudentName = '';
 
+// ==========================================
+// 🛡️ GÜVENLİK: XSS KORUMA MOTORU (ÇELİK YELEK)
+// ==========================================
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, function (tag) {
+        const charsToReplace = { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' };
+        return charsToReplace[tag] || tag;
+    });
+}
+
 // URL'den ID'yi al
 const urlParams = new URLSearchParams(window.location.search);
 const studentId = urlParams.get('id');
@@ -109,7 +120,7 @@ async function loadVeliPortal() {
                 <div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                         <p class="text-[11px] font-black text-indigo-500 dark:text-indigo-400 tracking-wider">📅 ${date} ${time} ${duration}</p>
-                        <p class="text-sm font-bold text-gray-800 dark:text-gray-100 mt-1">${l.topic}</p>
+                        <p class="text-sm font-bold text-gray-800 dark:text-gray-100 mt-1">${escapeHTML(l.topic)}</p>
                     </div>
                     ${l.price ? `<span class="text-xs font-black ${l.is_paid ? 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/30' : 'text-red-500 bg-red-50 dark:text-red-400 dark:bg-red-900/30'} px-3 py-1.5 rounded-lg whitespace-nowrap">${l.price} TL - ${l.is_paid ? 'ÖDENDİ' : 'ÖDENMEDİ'}</span>` : ''}
                 </div>`;
@@ -260,7 +271,7 @@ function showVeliToast(message, type = "success") {
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${type === 'success' ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'}"></path>
         </svg>
-        ${message}
+        ${escapeHTML(message)}
     `;
 
     container.appendChild(toast);
