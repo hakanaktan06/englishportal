@@ -11,31 +11,37 @@ const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 const loginSection = document.getElementById('loginSection');
 const registerSection = document.getElementById('registerSection');
 
-document.getElementById('showRegisterBtn').addEventListener('click', () => {
-    loginSection.classList.add('opacity-0');
-    setTimeout(() => {
-        loginSection.classList.add('hidden');
-        registerSection.classList.remove('hidden');
-        // Kutu yüksekliğinin adapte olması için çok kısa bir bekleme
-        setTimeout(() => {
-            registerSection.classList.remove('opacity-0');
-            registerSection.classList.add('opacity-100');
-        }, 50);
-    }, 300); // Fade-out süresi
-});
+const showRegisterBtn = document.getElementById('showRegisterBtn');
+const showLoginBtn = document.getElementById('showLoginBtn');
 
-document.getElementById('showLoginBtn').addEventListener('click', () => {
-    registerSection.classList.remove('opacity-100');
-    registerSection.classList.add('opacity-0');
-    setTimeout(() => {
-        registerSection.classList.add('hidden');
-        loginSection.classList.remove('hidden');
+if (showRegisterBtn) {
+    showRegisterBtn.addEventListener('click', () => {
+        loginSection.classList.add('opacity-0');
         setTimeout(() => {
-            loginSection.classList.remove('opacity-0');
-            loginSection.classList.add('opacity-100');
-        }, 50);
-    }, 300);
-});
+            loginSection.classList.add('hidden');
+            registerSection.classList.remove('hidden');
+            setTimeout(() => {
+                registerSection.classList.remove('opacity-0');
+                registerSection.classList.add('opacity-100');
+            }, 50);
+        }, 300);
+    });
+}
+
+if (showLoginBtn) {
+    showLoginBtn.addEventListener('click', () => {
+        registerSection.classList.remove('opacity-100');
+        registerSection.classList.add('opacity-0');
+        setTimeout(() => {
+            registerSection.classList.add('hidden');
+            loginSection.classList.remove('hidden');
+            setTimeout(() => {
+                loginSection.classList.remove('opacity-0');
+                loginSection.classList.add('opacity-100');
+            }, 50);
+        }, 300);
+    });
+}
 
 // ==========================================
 // 1.5 DİĞER GÖRSEL YARDIMCILAR (toggleAuth vb)
