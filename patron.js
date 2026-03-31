@@ -189,6 +189,7 @@ if (kurumForm) {
                     id: authData.user.id,
                     full_name: name,
                     school_name: name,
+                    school_id: authData.user.id, // 🌟 KRİTİK: B2B Kurum kendisinin tenant masterıdır
                     email: email,
                     role: 'kurum'
                 }]);
