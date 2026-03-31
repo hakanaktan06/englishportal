@@ -43,7 +43,7 @@
     <aside id="mainSidebar"
         class="w-64 bg-indigo-900 text-white flex flex-col transition-transform duration-300 shadow-2xl z-40 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 h-[100dvh]">
         <div class="p-4 md:p-6 flex justify-between items-center border-b border-indigo-800">
-            <span class="text-xl md:text-2xl font-bold tracking-wider">English Portal</span>
+            <span class="text-xl md:text-2xl font-bold tracking-wider school-name-display">English Portal</span>
             <button id="closeSidebarBtn"
                 class="md:hidden text-indigo-300 hover:text-white text-3xl leading-none">&times;</button>
         </div>
@@ -67,6 +67,16 @@
                     </path>
                 </svg>
                 <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Öğrenciler</span>
+            </a>
+            <a href="#" id="btn-classes"
+                class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
+                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m4 0h1m-5 4h1m4 0h1m-5 4h1m4 0h1">
+                    </path>
+                </svg>
+                <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Sınıflarım</span>
             </a>
             <a href="#" id="btn-homeworks"
                 class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
@@ -107,6 +117,16 @@
                     </path>
                 </svg>
                 <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">Sonuçlar</span>
+            </a>
+            <a href="#" id="btn-logs"
+                class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
+                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                </svg>
+                <span class="ml-3 font-medium text-indigo-100 group-hover:text-white transition">İşlem Geçmişi</span>
             </a>
             <a href="#" id="btn-bank-settings" onclick="openBankSettings()"
                 class="menu-btn flex items-center p-3 hover:bg-indigo-800 rounded-xl transition group">
@@ -222,6 +242,15 @@
                         class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium leading-relaxed transition-opacity duration-500">
                         Öğretmen paneline hoş geldiniz, veriler yükleniyor...</p>
                 </div>
+                <div class="flex gap-2">
+                    <button onclick="exportDataToCSV()" 
+                        class="bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-600 hover:bg-slate-50 transition flex items-center gap-2 shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Sistem Yedeği (CSV)
+                    </button>
+                </div>
             </header>
             <div class="p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div
@@ -307,10 +336,6 @@
                             <p class="text-sm font-bold uppercase tracking-widest">Ajanda Yükleniyor...</p>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
         <div id="section-students" class="page-section w-full hidden pb-10">
             <header
                 class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
@@ -358,7 +383,7 @@
                         <div class="absolute -right-2 -bottom-2 text-blue-50 dark:text-slate-700 pointer-events-none">
                             <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
                                 </path>
                             </svg>
                         </div>
@@ -406,7 +431,24 @@
             </div>
         </div>
 
-        <div id="section-homeworks" class="page-section w-full hidden pb-10">
+        <div id="section-classes" class="page-section w-full hidden pb-10">
+            <header
+                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">Sınıf Yönetimi</h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-widest font-bold">Öğrencileri Gruplandırın</p>
+                </div>
+                <button onclick="openAddClassModal()"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg transition flex items-center gap-2">
+                    <span class="text-lg leading-none">+</span> Sınıf Oluştur
+                </button>
+            </header>
+            <div class="p-4 md:p-6 max-w-7xl mx-auto w-full">
+                <div id="classList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="col-span-full text-center text-gray-400 italic py-10 animate-pulse">Sınıflar yükleniyor...</div>
+                </div>
+            </div>
+        </div>
             <header
                 class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
                 <div>
@@ -425,10 +467,12 @@
                         <div class="flex gap-2">
                             <button onclick="openFlashcardSihirbazi()" type="button"
                                 class="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition flex items-center gap-1 shadow-sm border border-purple-200 dark:border-purple-800">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                                 KELİME KARTI
                             </button>
                             <button onclick="openWritingModal()" type="button"
                                 class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition flex items-center gap-1 shadow-sm border border-blue-200 dark:border-blue-800">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                 GRAMER ÖDEVİ
                             </button>
                         </div>
@@ -636,20 +680,16 @@
             <header
                 class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 flex justify-between items-center border-b border-gray-100 dark:border-slate-700">
                 <div>
-                    <h2 class="text-xl md:text-2xl font-extrabold text-blue-600 dark:text-blue-400">Öğrenci Sınav
-                        Sonuçları</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Öğrencilerin çözdüğü sınavları ve aldıkları
-                        puanları takip et.</p>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-blue-600 dark:text-blue-400">Öğrenci Sınav Sonuçları</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Öğrencilerin çözdüğü sınavları takip edin.</p>
                 </div>
             </header>
             <div class="p-4 md:p-6 max-w-7xl mx-auto w-full">
-                <div
-                    class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+                <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left whitespace-nowrap">
                             <thead>
-                                <tr
-                                    class="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs uppercase border-b border-blue-100 dark:border-blue-800">
+                                <tr class="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs uppercase border-b border-blue-100 dark:border-blue-800">
                                     <th class="p-4 font-semibold">Öğrenci Adı</th>
                                     <th class="p-4 font-semibold">Çözdüğü Sınav</th>
                                     <th class="p-4 font-semibold">Aldığı Puan</th>
@@ -659,6 +699,23 @@
                             </thead>
                             <tbody id="resultsList"></tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-logs" class="page-section w-full hidden pb-10">
+            <header
+                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">Sistem İşlem Geçmişi</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Portal üzerindeki kritik hareketleri buradan takip edebilirsiniz.</p>
+                </div>
+            </header>
+            <div class="p-4 md:p-6 max-w-5xl mx-auto w-full">
+                <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden">
+                    <div id="logsContainer" class="divide-y divide-gray-50 dark:divide-slate-700 max-h-[70vh] overflow-y-auto">
+                        <div class="p-10 text-center text-gray-400 italic animate-pulse">Kayıtlar yükleniyor...</div>
                     </div>
                 </div>
             </div>
@@ -1376,44 +1433,79 @@
 
     <div
         style="position:absolute;left:-9999px;top:-9999px;width:1000px;height:500px;overflow:hidden;pointer-events:none;">
-        <div id="pdfTemplate" class="p-10 bg-white w-[800px] text-gray-800 font-sans relative">
-            <div class="absolute inset-0 opacity-5 flex items-center justify-center pointer-events-none">
-                <span class="text-[150px] font-black transform -rotate-45 text-indigo-900">ENGLISH PORTAL</span>
+        <div id="pdfTemplate" class="p-12 bg-white w-[850px] text-gray-800 font-sans relative shadow-2xl border-[12px] border-indigo-50">
+            <!-- Arka Plan Mührü -->
+            <div class="absolute inset-0 opacity-[0.03] flex items-center justify-center pointer-events-none">
+                <img src="assets/logo_premium.png" class="w-[500px] grayscale brightness-0">
             </div>
-            <div class="flex justify-between items-end border-b-4 border-indigo-600 pb-6 mb-8">
-                <div>
-                    <h1 class="text-4xl font-black text-indigo-900 tracking-tighter">GELİŞİM RAPORU</h1>
-                    <p class="text-lg font-bold text-gray-500 mt-1">VIP Özel Ders Eğitim Portalı</p>
+            
+            <div class="flex justify-between items-start border-b-8 border-indigo-600 pb-10 mb-10 relative z-10">
+                <div class="flex items-center gap-6">
+                    <img src="assets/logo_premium.png" class="w-32 h-32 object-contain drop-shadow-md">
+                    <div>
+                        <h1 class="text-5xl font-black text-indigo-950 tracking-tighter uppercase mb-1">GELİŞİM KUR KARNESİ</h1>
+                        <p class="text-xl font-bold text-indigo-500 uppercase tracking-[0.2em]">English Portal VIP Academy</p>
+                    </div>
                 </div>
-                <div class="text-right">
-                    <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">RAPOR TARİHİ</p>
-                    <p class="text-xl font-black text-indigo-600" id="pdfDate">12.10.2026</p>
-                </div>
-            </div>
-            <div class="bg-indigo-50 p-6 rounded-2xl mb-8 border border-indigo-100">
-                <p class="text-sm font-bold text-indigo-400 uppercase tracking-widest">ÖĞRENCİ BİLGİLERİ</p>
-                <h2 class="text-3xl font-black text-indigo-900 mt-1" id="pdfStudentName">Ahmet Yılmaz</h2>
-            </div>
-            <div class="grid grid-cols-2 gap-8">
-                <div>
-                    <h3 class="text-lg font-black text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">İşlenen Özel
-                        Dersler</h3>
-                    <div id="pdfLessonList" class="space-y-4"></div>
-                </div>
-                <div>
-                    <h3 class="text-lg font-black text-gray-800 border-b-2 border-gray-200 pb-2 mb-4">Sınav Başarı
-                        Grafiği & Sonuçlar</h3>
-                    <div class="mb-5"><canvas id="pdfChart" width="800" height="200"
-                            style="width: 800px; height: 200px;"></canvas></div>
-                    <div id="pdfQuizList" class="space-y-4"></div>
+                <div class="text-right pt-2">
+                    <p class="text-[10px] font-black text-indigo-300 uppercase tracking-[0.3em] mb-2">RAPOR KODU: #EP-2026-VIP</p>
+                    <div class="bg-indigo-600 text-white px-5 py-3 rounded-2xl shadow-lg">
+                        <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">RAPOR TARİHİ</p>
+                        <p class="text-xl font-black" id="pdfDate">12.10.2026</p>
+                    </div>
                 </div>
             </div>
-            <div
-                class="mt-16 pt-8 border-t-2 border-gray-100 flex justify-between items-center text-sm font-medium text-gray-500">
-                <p>Bu rapor sistem tarafından otomatik oluşturulmuştur.</p>
+
+            <div class="flex gap-8 mb-12 relative z-10">
+                <div class="flex-1 bg-gradient-to-br from-indigo-900 to-slate-900 p-8 rounded-[40px] text-white shadow-xl border-4 border-white/10">
+                    <p class="text-[10px] font-black text-indigo-300 uppercase tracking-[0.3em] mb-3">SAYIN ÖĞRENCİMİZ</p>
+                    <h2 class="text-4xl font-black tracking-tight" id="pdfStudentName">Ahmet Yılmaz</h2>
+                    <div class="mt-6 flex items-center gap-3">
+                        <div class="px-4 py-2 bg-white/10 rounded-xl border border-white/20 text-xs font-bold">PREMIUM LEVEL</div>
+                        <div class="px-4 py-2 bg-amber-500 text-black rounded-xl font-black text-xs">VIP STUDENT</div>
+                    </div>
+                </div>
+                <div class="w-1/3 bg-gray-50 p-6 rounded-[40px] border-2 border-gray-100 flex flex-col justify-center items-center text-center">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">BAŞARI DURUMU</p>
+                    <div class="w-20 h-20 rounded-full border-4 border-indigo-600 flex items-center justify-center">
+                        <span class="text-2xl font-black text-indigo-900">A+</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-12 relative z-10">
+                <div class="space-y-6">
+                    <div class="flex items-center gap-3 border-b-2 border-indigo-100 pb-3">
+                        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black">1</div>
+                        <h3 class="text-lg font-black text-indigo-900 uppercase tracking-tight">İŞLENEN ÖZEL DERSLER</h3>
+                    </div>
+                    <div id="pdfLessonList" class="space-y-4 pr-4"></div>
+                </div>
+                <div class="space-y-6">
+                    <div class="flex items-center gap-3 border-b-2 border-indigo-100 pb-3">
+                        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black">2</div>
+                        <h3 class="text-lg font-black text-indigo-900 uppercase tracking-tight">SINAV ANALİZLERİ</h3>
+                    </div>
+                    <div class="bg-gray-50 p-5 rounded-3xl border border-gray-100 mb-6">
+                        <canvas id="pdfChart" width="800" height="200" style="width: 100%; height: 200px;"></canvas>
+                    </div>
+                    <div id="pdfQuizList" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div class="mt-20 pt-10 border-t-4 border-gray-100 flex justify-between items-end relative z-10">
+                <div class="max-w-[400px]">
+                    <p class="text-[11px] font-bold text-gray-400 leading-relaxed italic">"Education is the most powerful weapon which you can use to change the world. You are on the right path."</p>
+                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-4">Sistem Onaylı Gelişim Raporu - EP-VIP-2026</p>
+                </div>
                 <div class="text-center">
-                    <p class="font-black text-gray-800 text-lg">Eğitmen İmzası</p>
-                    <p class="italic mt-2">English Portal Yönetimi</p>
+                    <div class="mb-4">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=EnglishPortalVIP-Verified" class="w-20 h-20 opacity-50 mx-auto">
+                    </div>
+                    <div class="w-64 border-b-2 border-indigo-900 pb-2 mb-2">
+                        <p class="text-2xl font-black text-indigo-950 italic" style="font-family:'Brush Script MT',cursive">English Portal Team</p>
+                    </div>
+                    <p class="text-xs font-black text-gray-400 uppercase tracking-widest">AKADEMİK DİREKTÖRLÜK</p>
                 </div>
             </div>
         </div>
@@ -1421,40 +1513,62 @@
         <div id="certificateTemplate"
             class="w-[1123px] h-[794px] bg-slate-900 relative flex flex-col items-center justify-center p-16 text-center font-sans overflow-hidden"
             style="background:radial-gradient(circle,#1e1b4b 0,#000 100%)">
-            <div class="absolute inset-5 border-8 border-[#d4af37] opacity-90 pointer-events-none"></div>
-            <div class="absolute inset-8 border-2 border-[#d4af37] opacity-50 pointer-events-none"></div>
-            <div
-                class="absolute opacity-5 text-[#d4af37] text-[400px] font-black transform -rotate-12 pointer-events-none">
-                EP</div>
-            <h1 class="text-7xl font-black text-[#d4af37] mb-6 tracking-widest uppercase relative z-10"
-                style="font-family:'Times New Roman',serif">Certificate of Achievement</h1>
-            <p class="text-2xl text-gray-300 font-light mb-16 tracking-widest uppercase relative z-10">This is proudly
-                presented to</p>
-            <h2 class="text-8xl font-bold text-white mb-12 italic border-b-4 border-[#d4af37] pb-6 px-16 relative z-10"
-                id="certStudentName" style="font-family:Georgia,serif">Öğrenci Adı</h2>
-            <p class="text-2xl text-gray-300 max-w-4xl leading-relaxed mb-20 font-light relative z-10">For outstanding
-                dedication, hard work, and exceptional progress in English language learning. Your commitment to
-                educational excellence is truly inspiring.</p>
-            <div class="flex justify-between items-end w-full max-w-5xl px-12 relative z-10">
-                <div class="text-center">
-                    <div id="certSignName"
-                        class="w-64 border-b-2 border-[#d4af37] mb-3 pb-2 text-white font-black text-4xl"
-                        style="font-family:'Brush Script MT',cursive">İmza</div>
-                    <p id="certTeacherName" class="text-lg text-[#d4af37] uppercase tracking-widest font-bold">Eğitmen
-                    </p>
-                    <p class="text-sm text-gray-400">English Portal Instructor</p>
+            
+            <!-- Altın Kenarlık Efekti -->
+            <div class="absolute inset-5 border-[12px] border-[#d4af37] opacity-90 pointer-events-none shadow-[inset_0_0_50px_rgba(212,175,55,0.3)]"></div>
+            <div class="absolute inset-10 border-2 border-[#d4af37] opacity-30 pointer-events-none"></div>
+            
+            <!-- Köşe Dekorasyonları -->
+            <div class="absolute top-0 left-0 w-48 h-48 border-t-[20px] border-l-[20px] border-[#d4af37] m-10"></div>
+            <div class="absolute bottom-0 right-0 w-48 h-48 border-b-[20px] border-r-[20px] border-[#d4af37] m-10"></div>
+            
+            <!-- Arka Plan Logo -->
+            <div class="absolute opacity-[0.05] w-[800px] pointer-events-none grayscale brightness-200 contrast-125">
+                 <img src="assets/logo_premium.png" class="w-full">
+            </div>
+
+            <div class="relative z-10 flex flex-col items-center">
+                <img src="assets/logo_premium.png" class="w-48 h-48 mb-6 drop-shadow-[0_0_30px_rgba(212,175,55,0.5)]">
+                
+                <h1 class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-[#ffe55c] via-[#d4af37] to-[#aa7c11] mb-6 tracking-[0.1em] uppercase"
+                    style="font-family:'Times New Roman',serif">CERTIFICATE OF ACHIEVEMENT</h1>
+                
+                <p class="text-2xl text-amber-500/80 font-bold mb-14 tracking-[0.3em] uppercase">This Professional Achievement is Proudly Presented to</p>
+                
+                <h2 class="text-8xl font-black text-white mb-10 italic drop-shadow-2xl px-16"
+                    id="certStudentName" style="font-family:'Georgia',serif; text-shadow: 0 0 20px rgba(255,255,255,0.2)">Öğrenci Adı</h2>
+                
+                <div class="w-full max-w-4xl h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent mb-12"></div>
+                
+                <p class="text-2xl text-gray-300 max-w-4xl leading-relaxed mb-20 font-medium italic opacity-90">"For demonstrating exceptional dedication, advanced linguistic proficiency, and consistent academic excellence in the English Portal VIP Academy program."</p>
+                
+                <div class="flex justify-between items-center w-full max-w-5xl px-12">
+                    <div class="text-center w-64">
+                         <div class="border-b-2 border-[#d4af37] mb-3 pb-2 text-white font-black text-5xl"
+                            style="font-family:'Brush Script MT',cursive">English Portal</div>
+                        <p class="text-lg text-[#d4af37] uppercase tracking-widest font-black">Official Institute</p>
+                        <p class="text-xs text-gray-500 font-bold">Authorized Certification</p>
+                    </div>
+
+                    <div class="relative">
+                        <div class="w-44 h-44 bg-gradient-to-br from-[#d4af37] via-[#ffe55c] to-[#aa7c11] rounded-full flex flex-col items-center justify-center shadow-[0_0_60px_rgba(212,175,55,0.6)] border-4 border-white rotate-12 transform hover:scale-110 transition duration-500">
+                            <span class="text-indigo-950 font-black text-5xl tracking-tighter leading-none">VIP</span>
+                            <span class="text-indigo-900 font-black text-[10px] tracking-[.3em] mt-1 border-t border-indigo-900/30 pt-1">TITANIUM</span>
+                        </div>
+                        <div class="absolute -inset-4 border-2 border-dashed border-amber-500/30 rounded-full animate-spin-slow"></div>
+                    </div>
+
+                    <div class="text-center w-64">
+                         <div class="border-b-2 border-[#d4af37] mb-3 pb-2 text-white font-black text-2xl" id="certDate">01.01.2026</div>
+                        <p class="text-lg text-[#d4af37] uppercase tracking-widest font-black" id="certTeacherName">Eğitmen</p>
+                        <p class="text-xs text-gray-500 font-bold">Course Director</p>
+                    </div>
                 </div>
-                <div
-                    class="w-40 h-40 bg-gradient-to-br from-[#d4af37] to-[#aa7c11] rounded-full flex flex-col items-center justify-center shadow-[0_0_40px_rgba(212,175,55,0.4)] border-4 border-[#ffe55c] transform -translate-y-4">
-                    <span class="text-white font-black text-4xl tracking-tighter leading-none">VIP</span>
-                    <span class="text-white font-bold text-sm tracking-widest mt-1">STAR</span>
-                </div>
-                <div class="text-center">
-                    <div class="w-64 border-b-2 border-[#d4af37] mb-3 pb-2 text-white font-black text-2xl"
-                        id="certDate">Tarih</div>
-                    <p class="text-lg text-[#d4af37] uppercase tracking-widest font-bold">Date of Award</p>
-                    <p class="text-sm text-gray-400">English Portal System</p>
-                </div>
+            </div>
+            
+            <!-- Dekoratif Mühür Linki -->
+            <div class="absolute bottom-10 left-10 text-[10px] font-black text-[#d4af37]/20 uppercase tracking-[0.5em] rotate-90 origin-left">
+                VERIFIED ACADEMIC CREDENTIAL ID: EP-VIP-992
             </div>
         </div>
     </div>
@@ -1676,7 +1790,72 @@
     </div>
 
 
-    <script src="panel.js"></script>
+        <div id="section-whiteboard" class="page-section w-full hidden pb-10">
+            <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-6 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
+                <div>
+                    <h2 class="text-2xl font-black text-gray-800 dark:text-white">Dijital Beyaz Tahta</h2>
+                    <p class="text-xs text-indigo-500 font-bold uppercase tracking-widest mt-1">Öğrencilere Anlık Notlar Paylaşın</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="saveWhiteboard()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg transition transform active:scale-95 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        YAYINLA
+                    </button>
+                </div>
+            </header>
+
+            <div class="p-6 max-w-7xl mx-auto w-full space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- BEYAZ TAHTA ALANI -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="bg-white dark:bg-slate-800 rounded-[35px] shadow-sm border border-gray-100 dark:border-slate-700 p-6 md:p-8">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                </div>
+                                <h4 class="font-black text-gray-800 dark:text-white uppercase tracking-tight">Aktif Not Alanı</h4>
+                            </div>
+                            <textarea id="whiteboardInput" rows="12" 
+                                class="w-full p-6 rounded-[25px] border-2 border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-white focus:border-indigo-500 outline-none transition-all font-medium text-lg leading-relaxed shadow-inner resize-none"
+                                placeholder="Öğrencilerinizin ekranında anında görünecek notları buraya yazın..."></textarea>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-4 flex items-center gap-2">
+                                <svg class="w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"></path></svg>
+                                Notlarınız Supabase Realtime ile anlık olarak aktarılır.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- CANLI DERS YÖNETİMİ -->
+                    <div class="space-y-6">
+                        <div class="bg-white dark:bg-slate-800 rounded-[35px] shadow-sm border border-gray-100 dark:border-slate-700 p-6 md:p-8">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 bg-rose-50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 rounded-xl flex items-center justify-center">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                </div>
+                                <h4 class="font-black text-gray-800 dark:text-white uppercase tracking-tight">Canlı Ders Linki</h4>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">ZOOM / MEET / SKYPE URL</label>
+                                    <input id="lessonUrlInput" 
+                                        class="w-full px-4 py-4 rounded-2xl border-2 border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 focus:border-indigo-500 outline-none font-bold text-xs" 
+                                        placeholder="https://zoom.us/j/...">
+                                </div>
+                                <button onclick="saveLessonUrl()" class="w-full bg-slate-800 dark:bg-slate-700 text-white font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest shadow-lg hover:bg-slate-900 transition transform active:scale-95">LİNKİ GÜNCELLE</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-indigo-600 rounded-[35px] p-8 text-white relative overflow-hidden shadow-xl">
+                            <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                            <h4 class="text-lg font-black mb-2 relative z-10">Hibrit Eğitim</h4>
+                            <p class="text-indigo-100 text-xs font-medium leading-relaxed relative z-10">Canlı ders linkini güncellediğinizde öğrencilerin panelinde "Canlı Derse Katıl" butonu aktif olacaktır.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="panel.js"></script>
     <div id="bankSettingsModal"
         class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div
@@ -1721,6 +1900,31 @@
             </div>
         </div>
     </div>
+    <div id="addClassModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 w-full max-w-lg shadow-2xl border border-transparent dark:border-slate-700">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white">Sınıf Oluştur</h3>
+                <button onclick="closeAddClassModal()" class="text-gray-400 hover:text-red-500 text-3xl font-bold">&times;</button>
+            </div>
+            <form id="addClassForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Sınıf Adı</label>
+                    <input id="className"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white outline-none"
+                        placeholder="Örn: 11-A Sayısal" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Sınıfa Öğrenci Ekle (Seçmeli)</label>
+                    <div id="classStudentChoices" class="max-h-48 overflow-y-auto space-y-2 border border-gray-100 dark:border-slate-700 p-2 rounded-xl">
+                        <!-- Öğrenciler buraya gelecek -->
+                    </div>
+                </div>
+                <button type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl mt-4 transition shadow-lg">Sınıfı Kaydet</button>
+            </form>
+        </div>
+    </div>
 </body>
-
 </html>
