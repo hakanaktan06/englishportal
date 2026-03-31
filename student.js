@@ -262,8 +262,9 @@ async function loadExtendedStudentProfile(userId) {
 
         // 🌟 STAGE 3: BEYAZ TAHTA VE CANLI DERS 🌟
         if (profile.teacher_id) {
-            if (typeof initWhiteboardRealtime === 'function') initWhiteboardRealtime(profile.teacher_id);
-            if (typeof checkLiveLesson === 'function') checkLiveLesson(profile.teacher_id);
+            console.log("Hoca ID Tespit Edildi, Beyaz Tahta ve Canlı Ders Başlatılıyor ID:", profile.teacher_id);
+            initWhiteboardRealtime(profile.teacher_id);
+            checkLiveLesson(profile.teacher_id);
         }
 
         // 🌟 BAŞLANGIÇ SEKİMESİNİ YÜKLE
@@ -1244,25 +1245,32 @@ window.submitWritingTask = async function() {
 window.initWhiteboardRealtime = async function(teacherId) {
     const display = document.getElementById('whiteboardDisplay');
     const container = document.getElementById('whiteboard-container');
-    if (!display || !container) return;
+    if (!display || !container) {
+        console.error("Beyaz tahta elementleri bulunamadı!");
+        return;
+    }
 
     const fetchWhiteboard = async () => {
-        const { data, error } = await supabaseClient.from('profiles').select('whiteboard_notes').eq('id', teacherId).single();
-        if (data && data.whiteboard_notes) {
-            const cleanNotes = data.whiteboard_notes.trim();
-            if (cleanNotes !== "") {
-                display.innerText = cleanNotes;
-                container.classList.remove('hidden');
+        try {
+            const { data, error } = await supabaseClient.from('profiles').select('whiteboard_notes').eq('id', teacherId).single();
+            if (data && data.whiteboard_notes) {
+                const cleanNotes = data.whiteboard_notes.trim();
+                if (cleanNotes !== "") {
+                    display.innerText = cleanNotes;
+                    container.classList.remove('hidden');
+                } else {
+                    container.classList.add('hidden');
+                }
             } else {
                 container.classList.add('hidden');
             }
-        } else {
-            container.classList.add('hidden');
+        } catch (err) {
+            console.error("Whiteboard fetch error:", err);
         }
     };
 
     fetchWhiteboard();
-    setInterval(fetchWhiteboard, 10000); // 10 saniyede bir kontrol et (Şık ve hafif)
+    setInterval(fetchWhiteboard, 5000); // 5 saniyede bir kontrol et (Hızlı senkron)
 }
 
 window.checkLiveLesson = async function(teacherId) {
@@ -1270,15 +1278,19 @@ window.checkLiveLesson = async function(teacherId) {
     if (!btn) return;
 
     const fetchLiveStatus = async () => {
-        const { data, error } = await supabaseClient.from('profiles').select('lesson_url').eq('id', teacherId).single();
-        if (data && data.lesson_url) {
-            btn.href = data.lesson_url;
-            btn.classList.remove('hidden');
-        } else {
-            btn.classList.add('hidden');
+        try {
+            const { data, error } = await supabaseClient.from('profiles').select('lesson_url').eq('id', teacherId).single();
+            if (data && data.lesson_url) {
+                btn.href = data.lesson_url;
+                btn.classList.remove('hidden');
+            } else {
+                btn.classList.add('hidden');
+            }
+        } catch (err) {
+            console.error("Live lesson check error:", err);
         }
     };
 
     fetchLiveStatus();
-    setInterval(fetchLiveStatus, 15000); // 15 saniyede bir kontrol et
+    setInterval(fetchLiveStatus, 10000); // 10 saniyede bir kontrol et
 }
