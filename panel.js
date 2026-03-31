@@ -187,6 +187,28 @@ async function loadExtendedTeacherProfile(userId) {
             isPremiumTeacher = profile.is_premium;
         }
 
+        // 4. KURUMLAR İÇİN VIP KONTROLÜ (GÜNCELLENDİ: Kurum VIP mirası)
+        if (profile.school_id && !isPremiumTeacher) {
+            // Eğer hoca kendisi VIP değilse ama bir kuruma bağlıysa, kurumun durumuna bakıyoruz
+            const { data: schoolProfile } = await supabaseClient.from('profiles').select('is_premium').eq('id', profile.school_id).single();
+            if (schoolProfile && schoolProfile.is_premium) {
+                isPremiumTeacher = true; // Kurum VIP ise hoca da VIP'dir!
+            }
+        }
+
+        if (isPremiumTeacher) {
+            const logo = document.getElementById('panelLogo');
+            if (logo) {
+                logo.src = 'assets/logo_premium.png';
+                logo.classList.remove('grayscale', 'brightness-0');
+            }
+            // VIP olanlarda kilitleri kaldır
+            document.querySelectorAll('.vip-lock').forEach(el => el.classList.add('hidden'));
+        } else {
+            // Standart olanlarda kilitleri göster
+            document.querySelectorAll('.vip-lock').forEach(el => el.classList.remove('hidden'));
+        }
+
         // Kilitleri yönet
         updatePremiumUI();
 
