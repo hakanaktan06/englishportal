@@ -459,15 +459,27 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
         console.log("FLOW_STUDENT_IDS:", studentIds);
 
         const loadInitialLogs = async () => {
+            // 🌟 GELİŞMİŞ SORGU: RLS (Yetki) sorunlarını aşmak için JOIN (birleştirme) kullanıyoruz
+            // audit_logs -> profiles -> teacher_id kontrolü
             const { data: logs, error } = await supabaseClient.from('audit_logs')
-                .select('*')
-                .in('user_id', studentIds)
+                .select('*, profiles!inner(teacher_id, full_name)')
+                .eq('profiles.teacher_id', currentTeacherId)
                 .order('created_at', { ascending: false })
                 .limit(containerId === 'studentLiveLogs' ? 10 : 50);
 
-            console.log("FLOW_LOGS_QUERY_RESULT:", { logs, error, containerId });
+            console.log("FLOW_LOGS_QUERY_RESULT (JOIN):", { logs, error, containerId });
 
-            if (error || !logs || logs.length === 0) {
+            if (error) {
+                console.error("FLOW_DB_ERROR:", error);
+                container.innerHTML = `<div class="p-10 text-center text-red-500 font-bold uppercase tracking-widest text-[10px]">Veritabanı Hatası: ${error.message}</div>`;
+                return;
+            }
+
+            if (!logs || logs.length === 0) {
+                // Eğer veri yoksa, gerçekten mi yok yoksa çekemiyor muyuz anlamak için bir test yapalım
+                const { count } = await supabaseClient.from('audit_logs').select('*', { count: 'exact', head: true }).limit(1);
+                console.log("FLOW_TABLE_TOTAL_COUNT_CHECK:", count);
+                
                 container.innerHTML = `<div class="p-10 text-center text-gray-400 font-bold uppercase tracking-widest opacity-50 italic text-[10px]">Henüz bir hareket sinyali gelmedi.</div>`;
                 return;
             }
@@ -478,7 +490,8 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
         const renderLogs = (logs) => {
             container.innerHTML = logs.map(log => {
                 const date = new Date(log.created_at).toLocaleString('tr-TR');
-                const studentName = studentMap[log.user_id] || 'Bilinmeyen Öğrenci';
+                // JOIN sorgusundan gelen ismi kullan veya eşleşmezse eski öğrenciden al
+                const studentName = log.profiles?.full_name || studentMap[log.user_id] || 'Bilinmeyen Öğrenci';
                 
                 let icon = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
                 let iconColor = 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30';
