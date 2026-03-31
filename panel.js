@@ -101,23 +101,45 @@ function customConfirm(message, btnText = "Evet, İşlemi Yap") {
 // GÜVENLİK (FEDAİ) MOTORU VE SÜRE KONTROLÜ
 // ==========================================
 // ==========================================
-// 15. VIP PLATFORM REHBERİ (ONBOARDING TOUR)
+// 15. VIP PLATFORM REHBERİ (PREMIUM TOUR)
 // ==========================================
-window.startPlatformTour = function () {
+window.startTeacherTour = function () {
     const driver = window.driver.js.driver;
     const tour = driver({
         showProgress: true,
         animate: true,
         allowClose: true,
-        doneBtnText: 'Bitir',
-        nextBtnText: 'İleri',
+        smoothScroll: true,
+        popoverClass: 'vip-tour-popover',
+        stagePadding: 10,
+        doneBtnText: 'Başlıyoruz! 🚀',
+        nextBtnText: 'Sonraki',
         prevBtnText: 'Geri',
+        onHighlightStarted: (element) => {
+            if (element?.id === 'mainSidebar' && typeof confetti === 'function') {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#4f46e5', '#fbbf24', '#ffffff']
+                });
+            }
+        },
         steps: [
+            { 
+                element: '#btnTour', 
+                popover: { 
+                    title: 'Hoş Geldiniz! 🎩', 
+                    description: 'Türkiye\'nin en prestijli eğitim portalı VIP Rehber\'e hoş geldiniz. Şimdi tüm sistemi 1 dakikada keşfedelim.', 
+                    side: "bottom", 
+                    align: 'end' 
+                } 
+            },
             { 
                 element: '#mainSidebar', 
                 popover: { 
-                    title: 'VIP Menü Navigasyonu', 
-                    description: 'Tüm modüllere (Öğrenci, Ödev, Sınav, Finans) buradan ulaşabilirsiniz. VIP özellikler bu menüde gizlidir.', 
+                    title: 'Her Şey Elinizin Altında', 
+                    description: 'Bu yan menü sizin komuta merkeziniz. Öğrenciler, Ödevler, Sınavlar ve Finans modülleri burada. VIP özelliklerin tamamına buradan ulaşırsınız.', 
                     side: "right", 
                     align: 'start' 
                 } 
@@ -125,17 +147,17 @@ window.startPlatformTour = function () {
             { 
                 element: '#premiumBadge', 
                 popover: { 
-                    title: 'VIP Statüsü', 
-                    description: 'Abone durumunuzu ve kurumsal VIP mirasını buradan takip edebilirsiniz. Logo parlıyorsa VIP aktif demektir!', 
+                    title: 'VIP Ayrıcalığı', 
+                    description: 'Bu logo parladığı sürece VIP özellikleriniz aktif demektir. Kurumsal veya bireysel abonelik durumunuzu buradan anlık takip edin.', 
                     side: "bottom", 
                     align: 'start' 
                 } 
             },
             { 
-                element: '#section-dashboard', 
+                element: '.grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-4', 
                 popover: { 
-                    title: 'Kokpit (Dashboard)', 
-                    description: 'Sınıf ortalaması, bekleyen tahsilat ve kayıtlı öğrenci sayısı gibi kritik verilere buradan göz atın.', 
+                    title: 'Canlı Kokpit Verileri', 
+                    description: 'Toplam öğrenci sayısı, ortalama başarı grafiği ve tahsilat durumlarını saniyeler içinde analiz edin.', 
                     side: "bottom", 
                     align: 'start' 
                 } 
@@ -143,8 +165,8 @@ window.startPlatformTour = function () {
             { 
                 element: '#agendaList', 
                 popover: { 
-                    title: 'Yaklaşan Program', 
-                    description: 'Bugün ve yarın için planlanan dertleriniz ve ödevleriniz burada otomatik listelenir.', 
+                    title: 'Zeki Ajanda', 
+                    description: 'Bugün ve yarın için olan tüm programınız, bitmesi gereken ödevler ve hatırlatıcılar burada sizi bekliyor.', 
                     side: "top", 
                     align: 'start' 
                 } 
@@ -152,8 +174,17 @@ window.startPlatformTour = function () {
             { 
                 element: '#btn-whiteboard', 
                 popover: { 
-                    title: 'Dijital Beyaz Tahta', 
-                    description: 'Öğrencilerinizle gerçek zamanlı notlarınızı buradan paylaşabilirsiniz. Her yazdığınız anında ekranlarına düşer.', 
+                    title: 'Gerçek Zamanlı Tahta', 
+                    description: 'Öğrencilerinizle anlık notlarınızı paylaşın. Siz yazdığınız anda binlerce kilometre ötedeki öğrencinin ekranında belirir!', 
+                    side: "right", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#btn-homeworks', 
+                popover: { 
+                    title: 'Ödev Takip Merkezi', 
+                    description: 'Tek tıkla ödev verin, AI desteğiyle raporlarını görün ve PDF olarak velilere sunun.', 
                     side: "right", 
                     align: 'start' 
                 } 
@@ -161,8 +192,8 @@ window.startPlatformTour = function () {
             { 
                 element: '#darkModeToggle', 
                 popover: { 
-                    title: 'Görünüm Ayarları', 
-                    description: 'Gözünüz yorulmasın diye Karanlık Mod (Dark Mode) her zaman elinizin altında.', 
+                    title: 'VIP Konforu', 
+                    description: 'Gece çalışmaları için göz yormayan Karanlık Mod platformun her köşesinde aktif.', 
                     side: "bottom", 
                     align: 'end' 
                 } 
@@ -170,8 +201,8 @@ window.startPlatformTour = function () {
             { 
                 element: 'a[href*="wa.me"]', 
                 popover: { 
-                    title: '7/24 VIP Destek', 
-                    description: 'Bir sorunuz olduğunda doğrudan kurucularımıza WhatsApp üzerinden ulaşın.', 
+                    title: 'Özel Asistanınız', 
+                    description: 'VIP bir kullanıcı olarak her zaman yanınızdayız. WhatsApp destek hattımızdan bize 7/24 ulaşabilirsiniz.', 
                     side: "top", 
                     align: 'end' 
                 } 
@@ -180,14 +211,14 @@ window.startPlatformTour = function () {
     });
 
     tour.drive();
-    localStorage.setItem('ep_tour_v1', 'completed');
+    localStorage.setItem('ep_tour_v19', 'completed');
 };
 
 // İlk girişte otomatik başlat
 window.addEventListener('load', () => {
     setTimeout(() => {
-        if (!localStorage.getItem('ep_tour_v1')) {
-            startPlatformTour();
+        if (!localStorage.getItem('ep_tour_v19')) {
+            startTeacherTour();
         }
     }, 2500);
 });
