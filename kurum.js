@@ -167,11 +167,14 @@ document.getElementById('newTeacherForm').onsubmit = async (e) => {
         full_name: name,
         email: email,
         role: 'teacher',
-        school_id: currentSchoolId,
-        created_by: currentSchoolId
+        school_id: currentSchoolId
+        // 🌟 'created_by' kaldırıldı çünkü Foreign Key (FKEY) kısıtlamasına takılıyor
     }]);
 
-    if (pError) { showToast(pError.message, 'error'); }
+    if (pError) { 
+        console.error("Eğitmen Profil Kayıt Hatası:", pError);
+        showToast("Hata: " + pError.message, 'error'); 
+    } 
     else {
         showToast("Eğitmen başarıyla eklendi!", 'success');
         saveKurumLog("Eğitmen Eklendi", `${name} sisteme dahil edildi.`);
@@ -224,10 +227,13 @@ document.getElementById('schoolSettingsForm').onsubmit = async (e) => {
     const { error } = await supabaseClient.from('profiles').update({
         school_name: name,
         school_logo: logo,
-        school_id: user.id // Kenidisini root tenant olarak mühürle
+        school_id: user.id // Kendisini root tenant olarak mühürle
     }).eq('id', user.id); // 🌟 Kendi profilini güncelle
 
-    if (error) showToast(error.message, 'error');
+    if (error) {
+        console.error("Logo/Okul Güncelleme Hatası:", error);
+        showToast("Hata: " + error.message, 'error');
+    }
     else {
         showToast("Okul bilgileri güncellendi!", "success");
         currentSchoolName = name;
