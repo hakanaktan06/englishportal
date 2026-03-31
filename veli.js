@@ -71,6 +71,9 @@ function updateChartTheme(isDark) {
 }
 
 async function loadVeliPortal() {
+    // 🌟 REDIRECT LOOP BREAK: Sayfa açılırken 700ms bekle (Supabase uyanışı için)
+    await new Promise(r => setTimeout(r, 700));
+
     if (!studentId) { showError(); return; }
 
     const { data: { user } } = await supabaseClient.auth.getUser();
