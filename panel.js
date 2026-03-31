@@ -1218,28 +1218,6 @@ if (saveQuizTitleBtn) {
         const title = titleInput ? titleInput.value : '';
         const timeLimitVal = document.getElementById('finalQuizTime') ? document.getElementById('finalQuizTime').value : '0';
         
-        const fetchWhiteboard = async () => {
-            try {
-                console.log("Beyaz Tahta Güncelleniyor... Hoca ID:", teacherId);
-                const { data, error } = await supabaseClient.from('profiles').select('whiteboard_notes').eq('id', teacherId).single();
-                
-                if (data) {
-                    console.log("Beyaz Tahta Verisi Geldi:", data.whiteboard_notes ? "Veri Var" : "Veri Boş");
-                    if (data.whiteboard_notes && data.whiteboard_notes.trim() !== "") {
-                        display.innerText = data.whiteboard_notes.trim();
-                        container.classList.remove('hidden');
-                    } else {
-                        container.classList.add('hidden');
-                    }
-                } else {
-                    console.log("Beyaz Tahta Sorgusu Sonuç Döndürmedi.");
-                    container.classList.add('hidden');
-                }
-            } catch (err) {
-                console.error("Whiteboard fetch error:", err);
-            }
-        };
-        
         let timeLimit = 0;
 
         if (timeLimitVal === 'custom') {
