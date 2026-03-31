@@ -175,6 +175,14 @@ async function initStudentPortal() {
     if (authError || !user) { window.location.href = 'index.html'; return; }
 
     currentStudentId = user.id;
+    
+    // 🌟 PROFİL VERİLERİNİ ÇEK (Ekrana yazdırmak için şart!)
+    const { data: profile, error: pError } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+
+    if (pError || !profile) {
+        console.error("Profil yüklenemedi:", pError);
+        // Hata olsa bile kullanıcıyı içeride tutalım ama splash'i kapatalım
+    }
 
     if (profile) { 
         // 🌟 KURUMSAL MARKALAMA (White-labeling)
