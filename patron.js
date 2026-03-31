@@ -113,14 +113,22 @@ document.getElementById('godLogoutBtn').addEventListener('click', async () => {
 });
 
 // ==========================================
-// 🌟 YENİ: GOD PANEL METRİKLERİ (TÜM SİSTEM) 🌟
+// GOD PANEL METRİKLERİ (TÜM SİSTEM)
 // ==========================================
 async function fetchGodMetrics() {
     // 1. Toplam Öğrenci Sayısı
     const { count: studentCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student');
     document.getElementById('godStatStudents').innerText = studentCount || 0;
 
-    // 2. Sistemdeki Toplam Borç (Tüm hocaların alacakları)
+    // 2. Toplam Kurum Sayısı
+    const { count: kurumCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'kurum');
+    document.getElementById('godStatKurum').innerText = kurumCount || 0;
+
+    // 3. Toplam Eğitmen Sayısı
+    const { count: teacherCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'teacher');
+    document.getElementById('godStatTeachers').innerText = teacherCount || 0;
+
+    // 4. Sistemdeki Toplam Borç
     const { data: unpaidLessons } = await supabaseClient.from('private_lessons').select('price').eq('is_paid', false);
     let totalDebt = 0;
     if (unpaidLessons) {
@@ -138,7 +146,7 @@ function timeAgo(dateString) {
     const diff = new Date() - new Date(dateString);
     const minutes = Math.floor(diff / 60000);
 
-    if (minutes < 5) return "<span class='text-emerald-400 font-black animate-pulse'>Şu an Aktif 🟢</span>";
+    if (minutes < 5) return "<span class='text-emerald-400 font-black animate-pulse text-[10px] uppercase'>Çevrimiçi</span>";
     if (minutes < 60) return `<span class='text-amber-400'>${minutes} dk önce</span>`;
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `<span class='text-slate-300'>${hours} saat önce</span>`;
@@ -146,33 +154,29 @@ function timeAgo(dateString) {
 }
 
 // ==========================================
-// ÖĞRETMEN YÖNETİM MOTORU, İSTİHBARAT VE GÖRÜNMEZ RADAR
+// SEKMELER ARASI GEÇİŞ (GOD STİLE)
 // ==========================================
-function timeAgo(dateString) {
-    if (!dateString) return "<span class='text-slate-500'>Hiç giriş yapmadı</span>";
-    const diff = new Date() - new Date(dateString);
-    const minutes = Math.floor(diff / 60000);
+const sections = {
+    teachers: document.getElementById('teacherList').parentElement,
+    kurum: document.getElementById('section-kurum')
+};
 
-    if (minutes < 5) return "<span class='text-emerald-400 font-black animate-pulse'>Şu an Aktif 🟢</span>";
-    if (minutes < 60) return `<span class='text-amber-400'>${minutes} dk önce</span>`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `<span class='text-slate-300'>${hours} saat önce</span>`;
-    return `<span class='text-slate-400'>${Math.floor(hours / 24)} gün önce</span>`;
+function switchTab(target) {
+    for (const key in sections) {
+        if(sections[key]) sections[key].classList.add('hidden');
+    }
+    if(sections[target]) sections[target].classList.remove('hidden');
+
+    document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('bg-amber-500/10', 'text-amber-500', 'border-amber-500/20', 'active-menu'));
+    const activeBtn = document.getElementById(`btn-${target}`);
+    if(activeBtn) activeBtn.classList.add('bg-amber-500/10', 'text-amber-500', 'border-amber-500/20', 'active-menu');
+
+    if(target === 'teachers') fetchTeachers();
+    if(target === 'kurum') fetchKurumlar();
 }
 
-// ==========================================
-// ÖĞRETMEN YÖNETİM MOTORU, İSTİHBARAT VE GÖRÜNMEZ RADAR
-// ==========================================
-function timeAgo(dateString) {
-    if (!dateString) return "<span class='text-slate-500'>Hiç giriş yapmadı</span>";
-    const diff = new Date() - new Date(dateString);
-    const minutes = Math.floor(diff / 60000);
-    if (minutes < 5) return "<span class='text-emerald-400 font-black animate-pulse'>Şu an Aktif 🟢</span>";
-    if (minutes < 60) return `<span class='text-amber-400'>${minutes} dk önce</span>`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `<span class='text-slate-300'>${hours} saat önce</span>`;
-    return `<span class='text-slate-400'>${Math.floor(hours / 24)} gün önce</span>`;
-}
+document.getElementById('btn-teachers').onclick = (e) => { e.preventDefault(); switchTab('teachers'); };
+document.getElementById('btn-kurum').onclick = (e) => { e.preventDefault(); switchTab('kurum'); };
 
 async function fetchTeachers() {
     const listContainer = document.getElementById('teacherList');
@@ -428,14 +432,67 @@ window.resetTeacherPassword = async function (id) {
         }
 
         if (res.ok && data.success) {
-            if (typeof showToast === "function") showToast("Şifre başarıyla güncellendi! Giriş yapabilirsiniz.", "success");
+            if (typeof showToast === "function") showToast("Şifre başarıyla güncellendi!", "success");
         } else {
-            if (typeof showToast === "function") showToast("Hata: " + (data.error || "Bilinmeyen sunucu hatası"), "error");
+            if (typeof showToast === "function") showToast("Hata: " + (data.error || "Sunucu hatası"), "error");
         }
     } catch (err) {
-        if (typeof showToast === "function") showToast("Ağ bağlantısı hatası: Sunucu geçici olarak meşgul veya kullanılamıyor.", "error");
+        if (typeof showToast === "function") showToast("Ağ bağlantısı hatası: Sunucu meşgul.", "error");
     }
 }
+
+// ==========================================
+// KURUM YÖNETİM MOTORU
+// ==========================================
+async function fetchKurumlar() {
+    const list = document.getElementById('kurumList');
+    list.innerHTML = '<p class="col-span-full text-center text-slate-500 py-10 font-bold animate-pulse uppercase tracking-[0.2em] text-[10px]">Kurumsal Veritabanı Taranıyor...</p>';
+
+    const { data: kurumlar, error } = await supabaseClient.from('profiles').select('*').eq('role', 'kurum').order('created_at', { ascending: false });
+
+    if(error || !kurumlar || kurumlar.length === 0) {
+        list.innerHTML = '<p class="col-span-full text-center text-slate-500 py-10">Henüz B2B kayıtlı kurum bulunmuyor.</p>';
+        return;
+    }
+
+    list.innerHTML = kurumlar.map(k => `
+        <div class="bg-slate-800/40 border border-slate-700/50 p-5 rounded-[24px] flex flex-col gap-4 hover:border-amber-500/50 transition-colors relative overflow-hidden shadow-sm">
+            <div class="flex justify-between items-start">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                        <img src="${k.school_logo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(k.school_name || k.full_name) + '&background=f59e0b&color=fff'}" class="w-full h-full object-cover rounded-xl">
+                    </div>
+                    <div>
+                        <h4 class="font-black text-white text-base leading-tight">${k.school_name || k.full_name}</h4>
+                        <p class="text-[10px] text-amber-500 font-bold uppercase mt-0.5 tracking-tighter">${k.email}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                ${timeAgo(k.last_login)}
+            </div>
+
+            <div class="flex gap-2 mt-auto">
+                <button onclick="resetTeacherPassword('${k.id}')" class="flex-1 py-3 bg-slate-900 border border-slate-700 text-[9px] font-black uppercase text-slate-400 hover:text-white rounded-xl transition">ŞİFRE</button>
+                <button onclick="deleteKurum('${k.id}', '${k.school_name || k.full_name}')" class="flex-1 py-3 bg-rose-500/10 text-[9px] font-black uppercase text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition">SİL</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.deleteKurum = async (id, name) => {
+    const onay = await customConfirm(`"${name}" kurumunu ve bağlı verilerini silmek istediğinize emin misiniz?`, "SİSTEMDEN KALDIR");
+    if(!onay) return;
+    
+    const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
+    if(error) showToast(error.message, 'error');
+    else {
+        showToast("Kurum sistemden kaldırıldı.", "success");
+        fetchKurumlar();
+        fetchGodMetrics();
+    }
+};
 
 // ==========================================
 // AYAR KAYIT MOTORLARI
@@ -498,7 +555,7 @@ if (saveApiKeyBtn) {
 
         const { error } = await supabaseClient.from('profiles').update({ openai_key: key }).eq('id', user.id);
         if (error) showToast("Kaydetme Hatası: " + error.message, "error");
-        else showToast("Yapay Zeka Motoru Aktif! Şifre başarıyla kaydedildi. 🚀", "success");
+        else showToast("Yapay Zeka Motoru Aktif! Şifre başarıyla kaydedildi.", "success");
     });
 }
 
