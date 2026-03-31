@@ -293,6 +293,7 @@ async function fetchTeachers() {
     listContainer.innerHTML = '<p class="text-slate-400 text-sm animate-pulse col-span-full text-center py-5">Öğretmen radarı ve istihbarat verileri taranıyor...</p>';
 
     const { data: teachers, error } = await supabaseClient.from('profiles').select('*, last_login, announcement').eq('role', 'teacher').order('created_at', { ascending: false });
+    const { data: allInstitutions } = await supabaseClient.from('profiles').select('id, school_name, full_name, is_premium').eq('role', 'kurum');
     const { data: allStudents } = await supabaseClient.from('profiles').select('id, teacher_id').eq('role', 'student');
     const { data: unpaidLessons } = await supabaseClient.from('private_lessons').select('teacher_id, price').eq('is_paid', false);
 
@@ -310,16 +311,35 @@ async function fetchTeachers() {
         let myUnpaidDebt = 0;
         if (unpaidLessons) unpaidLessons.filter(l => l.teacher_id === teacher.id).forEach(l => myUnpaidDebt += Number(l.price || 0));
 
-        let isVip = teacher.is_premium;
+        let myInst = allInstitutions ? allInstitutions.find(i => i.id === teacher.school_id) : null;
+        let isVip = teacher.is_premium || (myInst && myInst.is_premium);
         let badgeHtml = "";
 
-        if (isVip && teacher.premium_until) {
-            const expiryDate = new Date(teacher.premium_until);
-            if (new Date() > expiryDate) {
-                isVip = false;
-                badgeHtml = `<div class="flex flex-col items-end"><span class="bg-slate-700/50 text-slate-400 border border-slate-600 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest whitespace-nowrap">Süresi Bitti</span></div>`;
+        if (isVip) {
+            let label = "VIP AKTİF";
+            let subLabel = "";
+
+            if (teacher.is_premium && teacher.premium_until) {
+                const expiryDate = new Date(teacher.premium_until);
+                if (new Date() > expiryDate) {
+                    isVip = false; // Süresi bitmiş bireysel VIP ise standarda düşebilir (eğer kurumu da VIP değilse)
+                    if (! (myInst && myInst.is_premium)) {
+                        label = "Süresi Bitti";
+                    } else {
+                        label = "VIP (Kurumsal)"; // Kurum hala VIP ise süresi biten bireysel hoca kurtarıldı!
+                        isVip = true;
+                    }
+                } else {
+                    subLabel = `SON: ${expiryDate.toLocaleDateString('tr-TR')}`;
+                }
+            } else if (myInst && myInst.is_premium) {
+                label = "VIP (Kurumsal)";
+            }
+
+            if (isVip) {
+                badgeHtml = `<div class="flex flex-col items-end"><span class="bg-amber-500/20 text-amber-500 border border-amber-500/50 px-2 py-1 rounded-md text-[9px] md:text-[10px] font-black uppercase tracking-widest shadow-[0_0_10px_rgba(245,158,11,0.2)] mb-1 whitespace-nowrap">${label}</span>${subLabel ? '<span class="text-[8px] md:text-[9px] text-amber-500/70 font-bold tracking-widest whitespace-nowrap">'+subLabel+'</span>' : ''}</div>`;
             } else {
-                badgeHtml = `<div class="flex flex-col items-end"><span class="bg-amber-500/20 text-amber-500 border border-amber-500/50 px-2 py-1 rounded-md text-[9px] md:text-[10px] font-black uppercase tracking-widest shadow-[0_0_10px_rgba(245,158,11,0.2)] mb-1 whitespace-nowrap">VIP AKTİF</span><span class="text-[8px] md:text-[9px] text-amber-500/70 font-bold tracking-widest whitespace-nowrap">SON: ${expiryDate.toLocaleDateString('tr-TR')}</span></div>`;
+                badgeHtml = `<div class="flex flex-col items-end"><span class="bg-slate-700/50 text-slate-400 border border-slate-600 px-2 py-1 rounded-md text-[9px] md:text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Standart</span></div>`;
             }
         } else {
             badgeHtml = `<div class="flex flex-col items-end"><span class="bg-slate-700/50 text-slate-400 border border-slate-600 px-2 py-1 rounded-md text-[9px] md:text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Standart</span></div>`;
@@ -356,10 +376,11 @@ async function fetchTeachers() {
             </div>`;
 
         const isInstTeacher = !!teacher.school_id;
+        const mySchoolName = (myInst && (myInst.school_name || myInst.full_name)) || teacher.school_name || 'Özel Kurum';
         const instBadge = isInstTeacher ? `
             <div class="mt-1 flex items-center gap-1.5 bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-md border border-indigo-500/20 w-fit">
                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m4 0h1m-5 4h1m4 0h1m-5 4h1m4 0h1"></path></svg>
-                <span class="text-[9px] font-black uppercase tracking-tighter">${escapeHTML(teacher.school_name || 'Kurum Öğretmeni')}</span>
+                <span class="text-[9px] font-black uppercase tracking-tighter">${escapeHTML(mySchoolName)}</span>
             </div>` : `
             <div class="mt-1 flex items-center gap-1.5 bg-slate-700/30 text-slate-500 px-2 py-0.5 rounded-md border border-slate-700/50 w-fit">
                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
