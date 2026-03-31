@@ -308,22 +308,15 @@ window.switchLoginTab = function(type) {
     const rBlock = document.getElementById('registerBlock');
     const regTitle = document.getElementById('regTitle');
 
-    const activeClass = "flex-1 py-3 text-center rounded-xl transition-all duration-300 shadow-md bg-white border border-gray-100 transform scale-100";
-    const inactiveClass = "flex-1 py-3 text-center rounded-xl transition-all duration-300 scale-95 border border-transparent text-gray-400";
+    const activeClass = "flex-1 py-2.5 text-center rounded-xl transition-all duration-300 shadow-sm bg-white text-[#4f46e5]";
+    const inactiveClass = "flex-1 py-2.5 text-center rounded-xl transition-all duration-300 text-gray-400 hover:text-indigo-600";
 
     for (const key in tabs) {
         if (!tabs[key]) continue;
         if (key === type) {
-            let colorClass = ' text-indigo-600';
-            if(key === 'parent') colorClass = ' text-pink-600';
-            if(key === 'teacher') colorClass = ' text-indigo-900';
-            if(key === 'kurum') colorClass = ' text-amber-600';
-            tabs[key].className = activeClass + colorClass;
+            tabs[key].className = activeClass;
         } else {
-            let hoverClass = ' hover:text-gray-600';
-            if(key === 'parent') hoverClass = ' hover:text-pink-600';
-            if(key === 'kurum') hoverClass = ' hover:text-amber-600';
-            tabs[key].className = inactiveClass + hoverClass;
+            tabs[key].className = inactiveClass;
         }
     }
 
@@ -332,17 +325,17 @@ window.switchLoginTab = function(type) {
 
     if (type === 'student') {
         if(titleText) titleText.innerText = "Öğrenci Girişi";
-        if(descText) descText.innerText = "Okul No veya Kullanıcı Adı ile Giriş Yapın";
+        if(descText) descText.innerText = "OKUL NU VEYA KULLANICI ADI İLE GİRİŞ YAPIN";
     } else if (type === 'parent') {
         if(titleText) titleText.innerText = "Veli Girişi";
-        if(descText) descText.innerText = "Çocuğunuzun Kullanıcı Adı veya No'su ile Giriş Yapın";
+        if(descText) descText.innerText = "ÇOCUĞUNUZUN KULLANICI ADI VEYA NO'SU İLE GİRİŞ YAPIN";
         if(loginRoleInput) loginRoleInput.value = 'parent';
     } else if (type === 'teacher') {
         if(titleText) titleText.innerText = "Eğitmen Girişi";
-        if(descText) descText.innerText = "E-Posta veya Kullanıcı Adı ile Giriş Yapın";
+        if(descText) descText.innerText = "E-POSTA VEYA KULLANICI ADI İLE GİRİŞ YAPIN";
     } else if (type === 'kurum') {
         if(titleText) titleText.innerText = "Kurum Girişi";
-        if(descText) descText.innerText = "Dil Okulu / Akademi Paneline Giriş Yapın";
+        if(descText) descText.innerText = "DİL OKULU / AKADEMİ PANELİNE GİRİŞ YAPIN";
         if(rBlock) {
             rBlock.classList.remove('hidden');
             if(regTitle) regTitle.innerText = "Kurum Kaydı";
