@@ -147,7 +147,11 @@ document.getElementById('newTeacherForm').onsubmit = async (e) => {
     const name = document.getElementById('regName').value;
     const username = document.getElementById('regUsername').value;
     const pass = document.getElementById('regPassword').value;
-    const email = `${username.toLowerCase().replace(/\s+/g, '')}@${currentSchoolId.substring(0,8)}.com`;
+    
+    // 🌟 AKILLI DÜZELTME: Eğer kullanıcı zaten bir email girdiyse onu kullan, yoksa otomatik oluştur
+    const email = username.includes('@') 
+        ? username.toLowerCase().trim() 
+        : `${username.toLowerCase().replace(/\s+/g, '')}@${currentSchoolId.substring(0,8)}.com`;
 
     // 1. Auth Kaydı
     const { data: authData, error: authError } = await supabaseClient.auth.signUp({ email, password: pass });
