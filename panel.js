@@ -191,22 +191,8 @@ async function loadExtendedTeacherProfile(userId) {
         // Kilitleri yönet
         updatePremiumUI();
 
-        // 🌟 TEK SEFERLİK PREMİUM KUTLAMASI (Ayrı bir adım olarak)
-        if (isPremiumTeacher) {
-            const isCelebrated = localStorage.getItem('premium_celebrated_' + userId);
-            if (!isCelebrated) {
-                const modal = document.getElementById('premiumCelebrationModal');
-                const box = document.getElementById('premiumCelebrationBox');
-                if (modal) {
-                    modal.classList.remove('hidden');
-                    setTimeout(() => {
-                        modal.classList.remove('opacity-0');
-                        box.classList.remove('scale-95');
-                    }, 50);
-                    localStorage.setItem('premium_celebrated_' + userId, 'true');
-                }
-            }
-        }
+        // 🌟 PANELİ BAŞLAT (Kokpit Sekmesini Aç)
+        switchTab('dashboard');
 
     } catch (e) { 
         console.error("Profil detay yükleme hatası:", e); 
@@ -275,6 +261,14 @@ const btnResults = document.getElementById('btn-results');
 const btnLogs = document.getElementById('btn-logs');
 const btnClasses = document.getElementById('btn-classes');
 const btnWhiteboard = document.getElementById('btn-whiteboard');
+
+// SEKSİYONLAR (PANEL SAYFALARI)
+const sectionDashboard = document.getElementById('section-dashboard');
+const sectionStudents = document.getElementById('section-students');
+const sectionHomeworks = document.getElementById('section-homeworks');
+const sectionActivities = document.getElementById('section-activities');
+const sectionQuizzes = document.getElementById('section-quizzes');
+const sectionResults = document.getElementById('section-results');
 const sectionLogs = document.getElementById('section-logs');
 const sectionClasses = document.getElementById('section-classes');
 const sectionWhiteboard = document.getElementById('section-whiteboard');
