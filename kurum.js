@@ -16,8 +16,16 @@ async function initKurumPortal() {
     // 🌟 STABILIZATION: Supabase'in tam oturması için kısa bekleme
     await new Promise(r => setTimeout(r, 700));
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) { window.location.href = 'index.html'; return; }
+    let { data: { user } } = await supabaseClient.auth.getUser();
+    
+    // 🌟 REFRESH FIX: Eğer kullanıcı gelmediyse bir kez daha dene (Anlık oturum senkronizasyonu için)
+    if(!user) {
+        await new Promise(r => setTimeout(r, 800));
+        const retry = await supabaseClient.auth.getUser();
+        user = retry.data.user;
+    }
+
+    if (!user) { window.location.href = 'index.html'; return; }
 
     const { data: profile, error: pError } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
 
