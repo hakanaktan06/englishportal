@@ -160,7 +160,18 @@ async function initStudentPortal() {
 
     currentStudentId = user.id;
 
-    const { data: profile } = await supabaseClient.from('profiles').select('full_name, xp').eq('id', currentStudentId).single();
+    const { data: profile } = await supabaseClient.from('profiles').select('full_name, xp, role').eq('id', currentStudentId).single();
+    
+    if (!profile || (profile.role !== 'student' && profile.role !== 'god')) {
+        if (profile && profile.role === 'teacher') {
+            window.location.href = 'panel.html';
+            return;
+        }
+        await supabaseClient.auth.signOut();
+        window.location.href = 'index.html';
+        return;
+    }
+
     if (profile) { 
         const nameEl = document.getElementById('studentNameDisplay');
         if(nameEl) nameEl.innerText = profile.full_name; 
