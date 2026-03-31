@@ -1237,3 +1237,48 @@ window.submitWritingTask = async function() {
     }
     btn.innerHTML = originalText; btn.disabled = false;
 }
+
+// ==========================================
+// 10. CANLI DERS VE BEYAZ TAHTA MOTORLARI
+// ==========================================
+window.initWhiteboardRealtime = async function(teacherId) {
+    const display = document.getElementById('whiteboardDisplay');
+    const container = document.getElementById('whiteboard-container');
+    if (!display || !container) return;
+
+    const fetchWhiteboard = async () => {
+        const { data, error } = await supabaseClient.from('profiles').select('whiteboard_notes').eq('id', teacherId).single();
+        if (data && data.whiteboard_notes) {
+            const cleanNotes = data.whiteboard_notes.trim();
+            if (cleanNotes !== "") {
+                display.innerText = cleanNotes;
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        } else {
+            container.classList.add('hidden');
+        }
+    };
+
+    fetchWhiteboard();
+    setInterval(fetchWhiteboard, 10000); // 10 saniyede bir kontrol et (Şık ve hafif)
+}
+
+window.checkLiveLesson = async function(teacherId) {
+    const btn = document.getElementById('btnLiveLesson');
+    if (!btn) return;
+
+    const fetchLiveStatus = async () => {
+        const { data, error } = await supabaseClient.from('profiles').select('lesson_url').eq('id', teacherId).single();
+        if (data && data.lesson_url) {
+            btn.href = data.lesson_url;
+            btn.classList.remove('hidden');
+        } else {
+            btn.classList.add('hidden');
+        }
+    };
+
+    fetchLiveStatus();
+    setInterval(fetchLiveStatus, 15000); // 15 saniyede bir kontrol et
+}
