@@ -13,7 +13,7 @@ let quizTimerInterval = null;
 document.querySelector('main')?.addEventListener('touchstart', function() {}, {passive: true});
 
 // ==========================================
-// 🛡️ GÜVENLİK: XSS KORUMA MOTORU (ÇELİK YELEK)
+// GÜVENLİK: XSS KORUMA MOTORU (ÇELİK YELEK)
 // ==========================================
 function escapeHTML(str) {
     if (!str) return '';
@@ -151,6 +151,22 @@ window.toggleSubMenu = function(menuId, iconId) {
     }
 }
 
+// LOG MOTORU (CIHAZ BILGISI ILE)
+async function saveLog(action, details = "") {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+        const device = navigator.userAgent;
+        const enrichedDetails = `${details}${details ? ' | ' : ''}Cihaz: ${device}`;
+        await supabaseClient.from('audit_logs').insert([{
+            user_id: user.id,
+            action: action,
+            details: enrichedDetails,
+            created_at: new Date().toISOString()
+        }]);
+    } catch (e) { console.error("Log hatası:", e); }
+}
+
 // ==========================================
 // 2. OTURUM KONTROLÜ VE SPLASH EKRANI KAPATMA
 // ==========================================
@@ -160,19 +176,15 @@ async function initStudentPortal() {
 
     currentStudentId = user.id;
 
-    const { data: profile } = await supabaseClient.from('profiles').select('full_name, xp, role').eq('id', currentStudentId).single();
-    
-    if (!profile || (profile.role !== 'student' && profile.role !== 'god')) {
-        if (profile && profile.role === 'teacher') {
-            window.location.href = 'panel.html';
-            return;
-        }
-        await supabaseClient.auth.signOut();
-        window.location.href = 'index.html';
-        return;
-    }
-
     if (profile) { 
+        // 🌟 KURUMSAL MARKALAMA (White-labeling)
+        if (profile.school_name) {
+            document.querySelectorAll('.school-name-display').forEach(el => el.innerText = profile.school_name);
+        }
+        if (profile.school_logo) {
+            document.querySelectorAll('.school-logo-display').forEach(el => el.src = profile.school_logo);
+        }
+
         const nameEl = document.getElementById('studentNameDisplay');
         if(nameEl) nameEl.innerText = profile.full_name; 
         
@@ -183,13 +195,29 @@ async function initStudentPortal() {
         }
 
         const currentXp = profile.xp || 0;
+        const currentCoins = profile.coins || 0;
         const currentLevel = Math.floor(currentXp / 500) + 1;
         
         const elXp = document.getElementById('studentXpText');
         const elLevel = document.getElementById('studentLevelText');
+        const elCoins = document.getElementById('studentCoinText');
+        const elShopCoins = document.getElementById('shopCoinDisplay');
         
         if(elXp) elXp.innerText = currentXp;
         if(elLevel) elLevel.innerText = currentLevel;
+        if(elCoins) elCoins.innerText = currentCoins;
+        if(elShopCoins) elShopCoins.innerText = currentCoins;
+
+        // Avatarını Yükle
+        if (profile.avatar_config) {
+            applyAvatarConfig(profile.avatar_config);
+        }
+
+        // 🌟 STAGE 3: BEYAZ TAHTA VE CANLI DERS BAŞLATMA 🌟
+        if (profile.teacher_id) {
+            initWhiteboardRealtime(profile.teacher_id);
+            checkLiveLesson(profile.teacher_id);
+        }
     }
 
     switchTab('homeworks');
@@ -241,11 +269,169 @@ function switchTab(target) {
     if (target === 'activities') fetchActivities();
     if (target === 'quizzes') fetchQuizzes();
     if (target === 'results') fetchMyResults();
+    if (target === 'shop') initShop();
 }
 
 document.getElementById('btn-homeworks')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('homeworks'); });
 document.getElementById('btn-quizzes')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('quizzes'); });
 document.getElementById('btn-results')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('results'); });
+document.getElementById('btn-shop')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('shop'); });
+
+// ==========================================
+// 3.1 SES EFEKTLERİ YARDIMCISI
+// ==========================================
+function playSound(type) {
+    const sounds = {
+        'success': 'https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3',
+        'click': 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
+        'error': 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
+        'buy': 'https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'
+    };
+    if (sounds[type]) {
+        const audio = new Audio(sounds[type]);
+        audio.volume = 0.5;
+        audio.play().catch(() => {}); // Autoplay blokajı için catch
+    }
+}
+
+// ==========================================
+// 4. AVATAR & SHOP (RPG SİSTEMİ)
+// ==========================================
+let currentAvatarConfig = { base: 0, hat: -1, pet: -1, inventory: [] };
+
+const SHOP_DATA = {
+    bases: [
+        { id: 0, name: "Kâşif", price: 0, pos: "0% 0%" },
+        { id: 1, name: "Savaşçı", price: 50, pos: "20% 0%" },
+        { id: 2, name: "Büyücü", price: 100, pos: "40% 0%" },
+        { id: 3, name: "Robot", price: 150, pos: "60% 0%" },
+        { id: 4, name: "Ninja", price: 200, pos: "80% 0%" },
+        { id: 5, name: "Kral", price: 500, pos: "100% 0%" }
+    ],
+    hats: [
+        { id: 10, name: "Kırmızı Şapka", price: 30, color: "bg-red-500" },
+        { id: 11, name: "Sihirbaz Şapkası", price: 60, color: "bg-purple-900" },
+        { id: 12, name: "Altın Tac", price: 200, color: "bg-yellow-400" }
+    ],
+    pets: [
+        { id: 20, name: "Yavru Ejderha", price: 300, color: "text-emerald-500" },
+        { id: 21, name: "Robot Kuş", price: 400, color: "text-blue-400" }
+    ]
+};
+
+function applyAvatarConfig(config) {
+    if(!config) return;
+    currentAvatarConfig = { ...currentAvatarConfig, ...config };
+    
+    // Base Layer (Grid position)
+    const baseLayer = document.getElementById('avatarBaseLayer');
+    if (baseLayer) {
+        const baseItem = SHOP_DATA.bases.find(b => b.id == currentAvatarConfig.base);
+        if (baseItem) {
+            baseLayer.style.backgroundPosition = baseItem.pos;
+            document.getElementById('avatarNameDisplay').innerText = baseItem.name;
+        }
+    }
+
+    // Level Display
+    const xp = parseInt(document.getElementById('studentXpText').innerText) || 0;
+    const level = Math.floor(xp / 500) + 1;
+    const levelNames = ["Çaylak", "Girişken", "Usta", "Efsane", "VIP Star"];
+    document.getElementById('avatarLevelDisplay').innerText = levelNames[Math.min(level-1, 4)] + " Seviye";
+}
+
+async function initShop() {
+    renderShopItems('bases');
+    
+    // Tab eventleri
+    document.querySelectorAll('.shop-filter-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.shop-filter-btn').forEach(b => b.classList.remove('active-shop-tab', 'bg-indigo-100', 'text-indigo-900'));
+            btn.classList.add('active-shop-tab', 'bg-indigo-100', 'text-indigo-900');
+            renderShopItems(btn.dataset.category);
+            playSound('click');
+        };
+    });
+}
+
+function renderShopItems(category) {
+    const container = document.getElementById('shopItemsContainer');
+    if(!container) return;
+    container.innerHTML = '';
+
+    let items = category === 'inventory' ? currentAvatarConfig.inventory : SHOP_DATA[category];
+    if(!items) {
+        container.innerHTML = '<p class="col-span-full text-center text-gray-400 py-10 font-bold">Henüz bu kategoride eşyan yok :(</p>';
+        return;
+    }
+
+    items.forEach(item => {
+        const isOwned = category === 'inventory' || currentAvatarConfig.inventory.includes(item.id) || item.price === 0;
+        const isActive = currentAvatarConfig.base == item.id || currentAvatarConfig.hat == item.id || currentAvatarConfig.pet == item.id;
+
+        const card = document.createElement('div');
+        card.className = `shop-item-card bg-white dark:bg-slate-800 rounded-3xl p-5 border-2 ${isActive ? 'border-indigo-500 shadow-lg' : 'border-gray-50 dark:border-slate-700'} flex flex-col items-center group hover:scale-[1.02] transition cursor-pointer`;
+        
+        card.innerHTML = `
+            <div class="w-full aspect-square bg-slate-50 dark:bg-slate-900 rounded-2xl mb-4 p-4 flex items-center justify-center overflow-hidden relative">
+                ${category === 'bases' ? `<img src="assets/avatars/bases.png" style="width:500%; max-width:none; position:absolute; left:-${SHOP_DATA.bases.indexOf(item)*100}%" class="${!isOwned ? 'grayscale opacity-30' : ''}">` : `<div class="w-12 h-12 ${item.color || 'bg-gray-400'} rounded-full animate-bounce"></div>`}
+            </div>
+            <h5 class="font-black text-gray-800 dark:text-white text-sm mb-1">${item.name}</h5>
+            <p class="text-[10px] font-bold text-amber-600 mb-3">${isOwned ? 'SAHİPSİN' : item.price + ' EP-COIN'}</p>
+            <button onclick="${isOwned ? `selectItem('${category}', ${item.id})` : `buyItem('${category}', ${item.id})`}" 
+                class="w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition ${isOwned ? (isActive ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-500 hover:bg-indigo-500 hover:text-white') : 'bg-amber-500 text-white hover:bg-amber-600 shadow-md'}">
+                ${isOwned ? (isActive ? 'SEÇİLDİ' : 'GİRESENE') : 'SATIN AL'}
+            </button>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function selectItem(category, itemId) {
+    if (category === 'bases') currentAvatarConfig.base = itemId;
+    if (category === 'hat') currentAvatarConfig.hat = itemId;
+    if (category === 'pet') currentAvatarConfig.pet = itemId;
+    
+    applyAvatarConfig(currentAvatarConfig);
+    renderShopItems(document.querySelector('.active-shop-tab').dataset.category);
+    playSound('click');
+}
+
+async function buyItem(category, itemId) {
+    const item = SHOP_DATA[category].find(i => i.id === itemId);
+    const balance = parseInt(document.getElementById('shopCoinDisplay').innerText);
+
+    if (balance < item.price) {
+        showToast("Yeterli EP-COIN bakiyen yok! Ödev yaparak kazanabilirsin.", "error");
+        playSound('error');
+        return;
+    }
+
+    const { error } = await supabaseClient.from('profiles').update({ 
+        coins: balance - item.price,
+        avatar_config: { ...currentAvatarConfig, inventory: [...currentAvatarConfig.inventory, itemId] }
+    }).eq('id', currentStudentId);
+
+    if (error) {
+        showToast("Satın alma sırasında bir hata oluştu.", "error");
+    } else {
+        currentAvatarConfig.inventory.push(itemId);
+        document.getElementById('shopCoinDisplay').innerText = balance - item.price;
+        document.getElementById('studentCoinText').innerText = balance - item.price;
+        showToast(`${item.name} başarıyla satın alındı!`, "success");
+        playSound('buy');
+        renderShopItems(category);
+    }
+}
+
+async function saveAvatarConfig() {
+    const { error } = await supabaseClient.from('profiles').update({ avatar_config: currentAvatarConfig }).eq('id', currentStudentId);
+    if (error) showToast("Hata oluştu!", "error");
+    else {
+        showToast("Avatar görünümü başarıyla kaydedildi!", "success");
+        playSound('success');
+    }
+}
 
 // ==========================================
 // 4. ÖDEVLER
@@ -302,7 +488,7 @@ async function fetchMyHomeworks() {
                     ${isCompleted 
                         ? '<span class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ONAYLANDI</span>' 
                         : (isReviewing
-                            ? '<span class="text-[10px] font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 flex items-center gap-1">İNCELEMEDE ⏳</span>'
+                            ? '<span class="text-[10px] font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 flex items-center gap-1">İNCELEMEDE</span>'
                             : (isFlashcard 
                                 ? `<button onclick="startFlashcardTask('${hw.id}', '${flashcardDataStr}', '${hw.title.replace(/'/g, "\\'")}')" class="text-[10px] font-black text-white bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 px-4 py-2 rounded-lg shadow-md transform active:scale-95 transition flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> BAŞLA</button>`
                                 : (isWriting 
@@ -583,11 +769,13 @@ if(quizFormEl) {
             return; 
         }
 
-        const { data: prof } = await supabaseClient.from('profiles').select('xp').eq('id', currentStudentId).single();
+        const { data: prof } = await supabaseClient.from('profiles').select('xp, coins').eq('id', currentStudentId).single();
         const newXp = (prof.xp || 0) + score;
-        await supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentStudentId);
+        const newCoins = (prof.coins || 0) + 20; // Sınav bitirme ödülü Fix: +20 Coin
+        await supabaseClient.from('profiles').update({ xp: newXp, coins: newCoins }).eq('id', currentStudentId);
 
-        showToast(`Tebrikler! ${score} Puan ve +${score} XP kazandın!`, "success");
+        showToast(`Tebrikler! ${score} Puan, +${score} XP ve +20 EP-Coin kazandın! 🪙`, "success");
+        saveLog("Sınav Tamamlandı", `Puan: ${score}`);
         
         document.getElementById('quizTakingModal').classList.add('hidden');
         window.renderAnalysisScreen(examDetails, score);
@@ -910,13 +1098,15 @@ window.finishFlashcardTask = async function() {
     const { error } = await supabaseClient.from('homeworks').update({ status: 'Tamamlandı' }).eq('id', currentFcTaskId);
     if (error) { showToast("Hata: " + error.message, "error"); return; }
 
-    const { data: prof } = await supabaseClient.from('profiles').select('xp').eq('id', currentStudentId).single();
+    const { data: prof } = await supabaseClient.from('profiles').select('xp, coins').eq('id', currentStudentId).single();
     if (prof) {
         const newXp = (prof.xp || 0) + 50;
-        await supabaseClient.from('profiles').update({ xp: newXp }).eq('id', currentStudentId);
+        const newCoins = (prof.coins || 0) + 10;
+        await supabaseClient.from('profiles').update({ xp: newXp, coins: newCoins }).eq('id', currentStudentId);
     }
 
-    showToast("Tebrikler! +50 XP kazandın!", "success");
+    showToast("Tebrikler! +50 XP ve +10 EP-Coin kazandın! 🪙", "success");
+    saveLog("Telaffuz Görevi Tamamlandı", "Flashcard serisi bitirildi.");
     window.closeFlashcardModal();
     initStudentPortal();
 }
