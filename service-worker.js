@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ep-vip-v1';
+const CACHE_NAME = 'ep-vip-v2'; // Versiyon Atlatıldı (Force Update)
 const urlsToCache = [
   '/',
   '/index.html',
@@ -10,6 +10,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Eski SW'yi beklemeden hemen devreye gir
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -18,14 +19,23 @@ self.addEventListener('install', event => {
   );
 });
 
+self.addEventListener('activate', event => {
+    // Eski cache'leri temizle
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.filter(name => name !== CACHE_NAME)
+                          .map(name => caches.delete(name))
+            );
+        })
+    );
+});
+
 self.addEventListener('fetch', event => {
+  // 🔥 NETWORK-FIRST STRATEJİSİ: Önce internetten en günceli çek, yoksa cache'i kullan.
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
+    fetch(event.request).catch(() => {
+      return caches.match(event.request);
+    })
   );
 });
