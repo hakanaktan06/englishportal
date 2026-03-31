@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="tr" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>English Portal - Kurumsal Panel</title>
+    <link rel="icon" type="image/png"
+        href="https://ui-avatars.com/api/?name=EP&background=4f46e5&color=fff&rounded=true&bold=true&size=128">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: "class" }</script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body
+    class="bg-gray-50 dark:bg-slate-900 transition-colors duration-300 flex h-[100dvh] overflow-hidden text-gray-800 dark:text-gray-100 relative">
+
+    <!-- SPLASH SCREEN -->
+    <div id="splashScreen"
+        class="fixed inset-0 bg-slate-50 dark:bg-slate-900 z-[99999] flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="relative flex items-center justify-center mb-4">
+            <div class="w-20 h-20 border-4 border-indigo-100 dark:border-indigo-900 border-t-indigo-600 rounded-full animate-spin"></div>
+            <span class="absolute text-xl font-black text-indigo-900 dark:text-indigo-400 tracking-tighter">EP</span>
+        </div>
+        <p class="text-xs font-black text-indigo-400 uppercase tracking-widest animate-pulse">Kurumsal Sistem Yükleniyor</p>
+    </div>
+
+    <!-- SIDEBAR OVERLAY -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="mainSidebar"
+        class="w-64 bg-slate-900 text-white flex flex-col transition-transform duration-300 shadow-2xl z-40 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 h-[100dvh]">
+        <div class="p-4 md:p-6 flex justify-between items-center border-b border-slate-800">
+            <div class="flex flex-col">
+                <span class="text-xl font-black tracking-tighter text-amber-500">KURUMSAL</span>
+                <span class="text-[8px] font-black tracking-[0.3em] uppercase opacity-50">English Portal VIP</span>
+            </div>
+            <button id="closeSidebarBtn" class="md:hidden text-indigo-300 hover:text-white text-3xl leading-none">&times;</button>
+        </div>
+        <nav class="flex-1 overflow-y-auto p-2 md:p-4 space-y-2 mt-4" id="sidebarMenu">
+            <a href="#" id="btn-dashboard" class="menu-btn active-menu flex items-center p-3 bg-amber-600/20 text-amber-500 rounded-xl transition shadow-inner border border-amber-500/20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                <span class="ml-3 font-bold text-sm">Genel Bakış</span>
+            </a>
+            <a href="#" id="btn-teachers" class="menu-btn flex items-center p-3 hover:bg-slate-800 rounded-xl transition group">
+                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <span class="ml-3 font-medium text-slate-300 group-hover:text-white transition text-sm">Eğitmen Yönetimi</span>
+            </a>
+            <a href="#" id="btn-settings" class="menu-btn flex items-center p-3 hover:bg-slate-800 rounded-xl transition group">
+                <svg class="w-6 h-6 opacity-60 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span class="ml-3 font-medium text-slate-300 group-hover:text-white transition text-sm">Okul Ayarları</span>
+            </a>
+        </nav>
+        <div class="mt-auto p-6 border-t border-slate-800">
+            <button id="logoutBtn" class="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white p-3 rounded-xl transition-all font-black text-xs tracking-widest uppercase">
+                GÜVENLİ ÇIKIŞ
+            </button>
+        </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="flex-1 flex flex-col h-[100dvh] overflow-y-auto overflow-x-hidden relative w-full">
+        <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 p-4 flex justify-between items-center sticky top-0 z-20">
+            <div class="flex items-center">
+                <button id="openSidebarBtn" class="md:hidden text-indigo-900 dark:text-indigo-400 mr-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <div class="flex flex-col">
+                    <h1 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest" id="headerSchoolName">Kurumsal Yönetim</h1>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest" id="headerAdminName">...</span>
+                </div>
+            </div>
+            <div id="schoolLogo" class="hidden md:block w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <img id="schoolLogoImg" src="" class="w-full h-full object-cover">
+            </div>
+        </header>
+
+        <!-- GENEL BAKIŞ SECTION -->
+        <div id="section-dashboard" class="page-section w-full p-6 md:p-8 max-w-7xl mx-auto space-y-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- STAT CARD 1 -->
+                <div class="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-[35px] shadow-xl text-white relative overflow-hidden group transition hover:-translate-y-1">
+                    <div class="absolute -right-6 -bottom-6 text-white/10 group-hover:scale-110 transition-transform">
+                        <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path></svg>
+                    </div>
+                    <p class="text-amber-100 text-xs font-black uppercase tracking-widest mb-1">Toplam Eğitmen</p>
+                    <h3 class="text-5xl font-black" id="statTeacherCount">0</h3>
+                </div>
+                <!-- STAT CARD 2 -->
+                <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-[35px] shadow-xl text-white relative overflow-hidden group transition hover:-translate-y-1">
+                    <div class="absolute -right-6 -bottom-6 text-white/10 group-hover:scale-110 transition-transform">
+                        <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3.005 3.005 0 013.75-2.906z"></path></svg>
+                    </div>
+                    <p class="text-indigo-100 text-xs font-black uppercase tracking-widest mb-1">Toplam Öğrenci</p>
+                    <h3 class="text-5xl font-black" id="statStudentCount">0</h3>
+                </div>
+                <!-- STAT CARD 3 -->
+                <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-[35px] shadow-xl text-white relative overflow-hidden group transition hover:-translate-y-1">
+                    <div class="absolute -right-6 -bottom-6 text-white/10 group-hover:scale-110 transition-transform">
+                        <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000-16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <p class="text-emerald-100 text-xs font-black uppercase tracking-widest mb-1">Tamamlanan Ödevler</p>
+                    <h3 class="text-5xl font-black" id="statHwCount">0</h3>
+                </div>
+            </div>
+
+            <!-- SON İŞLEMLER TABLOSU -->
+            <div class="bg-white dark:bg-slate-800 rounded-[40px] p-8 shadow-sm border border-gray-100 dark:border-slate-700">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-black text-slate-800 dark:text-white">Kurum Hareketleri</h3>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Son 20 İşlem</span>
+                </div>
+                <div id="kurumLogsList" class="space-y-4">
+                    <!-- Logs will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- EĞİTMEN YÖNETİMİ SECTION -->
+        <div id="section-teachers" class="page-section w-full hidden p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-800 dark:text-white">Eğitmen Listesi</h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-widest font-bold">Kadro ve Yetkilendirme</p>
+                </div>
+                <button onclick="openAddTeacherModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-500/20 transition transform active:scale-95">
+                    + YENİ EĞİTMEN EKLE
+                </button>
+            </div>
+
+            <div id="teacherList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
+                <!-- Teacher cards will be loaded here -->
+            </div>
+        </div>
+
+        <!-- OKUL AYARLARI SECTION -->
+        <div id="section-settings" class="page-section w-full hidden p-6 md:p-8 max-w-2xl mx-auto space-y-8">
+            <h2 class="text-2xl font-black text-slate-800 dark:text-white border-b border-gray-100 dark:border-slate-700 pb-4">Okul Bilgileri & Markalama</h2>
+            
+            <form id="schoolSettingsForm" class="space-y-6">
+                <div>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Okul Adı</label>
+                    <input type="text" id="setSchoolName" class="w-full px-5 py-4 rounded-2xl border-2 border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-amber-500 outline-none transition font-bold" placeholder="Akademinizin Adı">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Okul Logosu (URL)</label>
+                    <input type="url" id="setSchoolLogo" class="w-full px-5 py-4 rounded-2xl border-2 border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-amber-500 outline-none transition font-bold" placeholder="https://... (PNG/JPG)">
+                </div>
+                <!-- Preview -->
+                <div class="p-6 bg-slate-50 dark:bg-slate-900 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Logo Önizleme</p>
+                    <div class="w-32 h-32 rounded-3xl bg-white dark:bg-slate-800 shadow-xl flex items-center justify-center overflow-hidden border-4 border-white dark:border-slate-700">
+                        <img id="previewLogo" src="https://ui-avatars.com/api/?name=OKUL&background=f59e0b&color=fff&size=256" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl transition-all transform active:scale-95 tracking-widest uppercase">
+                    AYARLARI KAYDET
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- MODALLAR -->
+    <!-- Eğitmen Ekleme Modalı -->
+    <div id="addTeacherModal" class="fixed inset-0 bg-slate-900/90 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-[40px] shadow-2xl p-8 md:p-10 border border-gray-100 dark:border-slate-700">
+            <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-2">Yeni Eğitmen Kaydı</h3>
+            <p class="text-xs text-gray-500 font-bold mb-8 uppercase tracking-widest">Otomatik olarak kurumunuza bağlanacaktır.</p>
+            
+            <form id="newTeacherForm" class="space-y-4">
+                <input type="text" id="regName" placeholder="Eğitmen Adı Soyadı" class="w-full px-5 py-3.5 rounded-2xl border-2 border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 focus:border-amber-500 outline-none font-bold" required>
+                <input type="text" id="regUsername" placeholder="Kullanıcı Adı" class="w-full px-5 py-3.5 rounded-2xl border-2 border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 focus:border-amber-500 outline-none font-bold" required>
+                <input type="password" id="regPassword" placeholder="Şifre" class="w-full px-5 py-3.5 rounded-2xl border-2 border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 focus:border-amber-500 outline-none font-bold" required>
+                
+                <div class="flex gap-3 mt-8">
+                    <button type="button" onclick="closeAddTeacherModal()" class="flex-1 py-4 text-gray-400 font-black tracking-widest uppercase text-[10px] hover:bg-gray-100 dark:hover:bg-slate-700 rounded-2xl transition">İPTAL</button>
+                    <button type="submit" class="flex-[2] py-4 bg-amber-500 text-white font-black tracking-widest uppercase text-[10px] rounded-2xl shadow-xl shadow-amber-500/30 hover:bg-amber-600 transition transform active:scale-95">EĞİTMENİ EKLE</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script src="kurum.js"></script>
+</body>
+</html>
