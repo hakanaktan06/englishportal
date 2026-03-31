@@ -578,3 +578,12 @@ if (saveAnnouncementBtn) {
         else showToast(text.trim() === "" ? "Duyuru kaldırıldı!" : "Duyuru tüm panellere gönderildi!", "success");
     });
 }
+
+// ==========================================
+// SİSTEMİ BAŞLAT
+// ==========================================
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkGodSecurity);
+} else {
+    checkGodSecurity();
+}
