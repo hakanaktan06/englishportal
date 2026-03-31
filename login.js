@@ -370,19 +370,38 @@ window.switchLoginTab = function(type) {
 };
 
 async function checkActiveSession() {
-    // 🌟 REDIRECT LOOP BREAK: Küçük bir bekleme ekleyelim ki Supabase tam uyansın
+    // 🌟 LOOP BREAKER (DÖNGÜ KIRICI): Sürekli içeri-dışarı atılmayı engelle
+    const redirectCount = parseInt(sessionStorage.getItem('ep_redirect_count' || '0'));
+    if (redirectCount > 3) {
+        console.error("Döngü tespit edildi! Otomatik yönlendirme durduruldu.");
+        showError(errorBox, "Yönlendirme döngüsü tespit edildi. Lütfen sayfayı yenileyin.");
+        sessionStorage.removeItem('ep_redirect_count');
+        return;
+    }
+
     setTimeout(async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
-            const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+            // Yönlendirme yapıyoruz, sayacı artır
+            sessionStorage.setItem('ep_redirect_count', (redirectCount + 1).toString());
+            
+            const { data: profile, error } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
 
-            if (profile && profile.role === 'teacher') window.location.href = 'panel.html';
-            else if (profile && profile.role === 'kurum') window.location.href = 'kurum.html';
-            else if (profile && profile.role === 'student') {
+            if (error || !profile) {
+                console.error("Profil doğrulama hatası:", error);
+                return;
+            }
+
+            if (profile.role === 'teacher') window.location.href = 'panel.html';
+            else if (profile.role === 'kurum') window.location.href = 'kurum.html';
+            else if (profile.role === 'student') {
                 const lastRole = localStorage.getItem('lastLoginRole');
                 window.location.href = (lastRole === 'parent') ? `veli.html?id=${session.user.id}` : 'student.html';
-            } else if (profile && profile.role === 'god') window.location.href = 'patron.html';
+            } else if (profile.role === 'god') window.location.href = 'patron.html';
+        } else {
+            // Oturum yoksa sayacı sıfırla
+            sessionStorage.removeItem('ep_redirect_count');
         }
-    }, 500); // 500ms bekleme session'ın oturması için kritiktir.
+    }, 1000); // 1 saniyelik bekleme session stabilizasyonu için şart.
 }
 checkActiveSession();
