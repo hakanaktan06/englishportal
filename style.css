@@ -1,38 +1,172 @@
-/* TÜM SİTENİN TEMEL AYARLARI */
+/* 
+  English Portal VIP - Master Design System (Stage 4)
+  "Stunning Aesthetics & Mobile-First Excellence"
+*/
+
+:root {
+    --primary: #4f46e5;
+    --primary-glow: rgba(79, 70, 229, 0.4);
+    --gold: #fbbf24;
+    --gold-glow: rgba(251, 191, 36, 0.5);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --dark-glass-bg: rgba(15, 23, 42, 0.7);
+    --dark-glass-border: rgba(255, 255, 255, 0.05);
+}
+
 body {
-    /* Genel font ailesi */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    overscroll-behavior-y: none;
+    touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 🌟 PREMIUM MİKRO-ANİMASYONLAR 🌟 */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes pulse-gold {
+    0% { box-shadow: 0 0 0 0 var(--gold-glow); }
+    70% { box-shadow: 0 0 0 10px rgba(251, 191, 36, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+}
+
+@keyframes slide-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-pulse-gold { animation: pulse-gold 2s infinite; }
+.animate-slide-up { animation: slide-in 0.5s ease-out forwards; }
+
+/* 🌟 GLASSMORPHISM 2.0 🌟 */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+}
+
+.dark .glass-card {
+    background: var(--dark-glass-bg);
+    border: 1px solid var(--dark-glass-border);
+}
+
+/* 🌟 MOBİL TABLO -> KART DÖNÜŞÜM MOTORU 🌟 
+   Bu CSS, mobil ekranlarda (max-768px) tabloları otomatik olarak 
+   modern, şık kart yapılarına dönüştürür.
+*/
+@media (max-width: 768px) {
+    /* Tabloyu gizle ama veriyi tut */
+    .mobile-card-system thead {
+        display: none;
+    }
     
-    /* MOBIL SCROLL FIX BAŞLANGIÇ */
-    overscroll-behavior-y: none; /* iOS'taki aşağı çekip yenileme / zıplama efektini kapatır */
-    touch-action: pan-y; /* Sadece dikey kaydırmaya izin verir */
-    /* MOBIL SCROLL FIX BİTİŞ */
+    .mobile-card-system tr {
+        display: flex;
+        flex-direction: column;
+        background: white;
+        margin-bottom: 1.5rem;
+        padding: 1.25rem;
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        position: relative;
+    }
+
+    .dark .mobile-card-system tr {
+        background: #1e293b;
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .mobile-card-system td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+        text-align: left;
+    }
+
+    .dark .mobile-card-system td {
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .mobile-card-system td:last-child {
+        border-bottom: none;
+        justify-content: flex-end;
+        padding-top: 1rem;
+    }
+
+    /* Hücre Başlıklarını Ekle (Data-Label üzerinden) */
+    .mobile-card-system td::before {
+        content: attr(data-label);
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        color: #64748b;
+    }
+
+    .dark .mobile-card-system td::before {
+        color: #94a3b8;
+    }
+
+    /* Özel İşlem Sütunu Fix */
+    .mobile-card-system td:last-child::before {
+        display: none;
+    }
 }
 
-/* BUZLU CAM (GLASSMORPHISM) EFEKTİ
-  Not: Sadece belirli yerlerde (Giriş kutusu vb.) kullanmak için.
-  Arka plan görseli artık index.html'de Tailwind ile gömüldü. 
-*/
-.glass-panel {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+/* 🌟 RPG AVATAR SİSTEMİ ÖZEL STİLLERİ 🌟 */
+#avatarBaseLayer {
+    background-image: url('assets/avatars/bases.png');
+    background-size: 600% 100%; /* 6 ana karakter */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Özel Scrollbar Tasarımı (Telefonda ve PC'de şık dursun) 
-*/
+.shop-item-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shop-item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* 🌟 SCROLLBAR ULTRA CUSTOM 🌟 */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05); 
+    background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(79, 70, 229, 0.3); 
-    border-radius: 10px;
+    background: var(--primary);
+    border-radius: 100px;
+    opacity: 0.3;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(79, 70, 229, 0.6); 
+    background: #4338ca;
+}
+
+/* 🌟 TAB BUTONLARI (STUDENT) 🌟 */
+.active-tab-glow {
+    position: relative;
+}
+.active-tab-glow::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 20%;
+    right: 20%;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 10px;
+    box-shadow: 0 0 10px var(--primary-glow);
 }
