@@ -175,9 +175,19 @@ async function loadExtendedTeacherProfile(userId) {
         const agendaNameEl = document.getElementById('agendaTeacherName');
         if (agendaNameEl) agendaNameEl.innerText = currentTeacherName + " Öğretmenim, şimdi kafa dinleme vakti!";
 
-        // Markalama
-        if (profile.school_name) document.querySelectorAll('.school-name-display').forEach(el => el.innerText = profile.school_name);
-        if (profile.school_logo) document.querySelectorAll('.school-logo-display').forEach(el => el.src = profile.school_logo);
+        // Markalama (B2B Kurumsal Yapı)
+        if (profile.school_id) {
+            // Eğer hoca bir kuruma bağlıysa, kurumun logosunu ve adını çek
+            const { data: schoolData } = await supabaseClient.from('profiles').select('school_name, school_logo').eq('id', profile.school_id).single();
+            if (schoolData) {
+                if (schoolData.school_name) document.querySelectorAll('.school-name-display').forEach(el => el.innerText = schoolData.school_name);
+                if (schoolData.school_logo) document.querySelectorAll('.school-logo-display').forEach(el => el.src = schoolData.school_logo);
+            }
+        } else {
+            // Bağımsız hoca ise kendi verilerini kullan
+            if (profile.school_name) document.querySelectorAll('.school-name-display').forEach(el => el.innerText = profile.school_name);
+            if (profile.school_logo) document.querySelectorAll('.school-logo-display').forEach(el => el.src = profile.school_logo);
+        }
 
         // Premium Kontrolü
         if (profile.is_premium && profile.premium_until) {
