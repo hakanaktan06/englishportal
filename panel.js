@@ -100,128 +100,6 @@ function customConfirm(message, btnText = "Evet, İşlemi Yap") {
 // ==========================================
 // GÜVENLİK (FEDAİ) MOTORU VE SÜRE KONTROLÜ
 // ==========================================
-// ==========================================
-// 15. VIP PLATFORM REHBERİ (PREMIUM TOUR)
-// ==========================================
-window.startTeacherTour = function () {
-    const driver = window.driver.js.driver;
-    const tour = driver({
-        showProgress: true,
-        animate: true,
-        allowClose: true,
-        smoothScroll: true,
-        popoverClass: 'vip-tour-popover',
-        stagePadding: 10,
-        doneBtnText: 'Başlıyoruz! 🚀',
-        nextBtnText: 'Sonraki',
-        prevBtnText: 'Geri',
-        onHighlightStarted: (element) => {
-            if (element?.id === 'mainSidebar' && typeof confetti === 'function') {
-                confetti({
-                    particleCount: 150,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#4f46e5', '#fbbf24', '#ffffff']
-                });
-            }
-        },
-        steps: [
-            { 
-                element: '#btnTour', 
-                popover: { 
-                    title: 'Hoş Geldiniz! 🎩', 
-                    description: 'Türkiye\'nin en prestijli eğitim portalı VIP Rehber\'e hoş geldiniz. Şimdi tüm sistemi 1 dakikada keşfedelim.', 
-                    side: "bottom", 
-                    align: 'end' 
-                } 
-            },
-            { 
-                element: '#mainSidebar', 
-                popover: { 
-                    title: 'Her Şey Elinizin Altında', 
-                    description: 'Bu yan menü sizin komuta merkeziniz. Öğrenciler, Ödevler, Sınavlar ve Finans modülleri burada. VIP özelliklerin tamamına buradan ulaşırsınız.', 
-                    side: "right", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#premiumBadge', 
-                popover: { 
-                    title: 'VIP Ayrıcalığı', 
-                    description: 'Bu logo parladığı sürece VIP özellikleriniz aktif demektir. Kurumsal veya bireysel abonelik durumunuzu buradan anlık takip edin.', 
-                    side: "bottom", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '.grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-4', 
-                popover: { 
-                    title: 'Canlı Kokpit Verileri', 
-                    description: 'Toplam öğrenci sayısı, ortalama başarı grafiği ve tahsilat durumlarını saniyeler içinde analiz edin.', 
-                    side: "bottom", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#agendaList', 
-                popover: { 
-                    title: 'Zeki Ajanda', 
-                    description: 'Bugün ve yarın için olan tüm programınız, bitmesi gereken ödevler ve hatırlatıcılar burada sizi bekliyor.', 
-                    side: "top", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#btn-whiteboard', 
-                popover: { 
-                    title: 'Gerçek Zamanlı Tahta', 
-                    description: 'Öğrencilerinizle anlık notlarınızı paylaşın. Siz yazdığınız anda binlerce kilometre ötedeki öğrencinin ekranında belirir!', 
-                    side: "right", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#btn-homeworks', 
-                popover: { 
-                    title: 'Ödev Takip Merkezi', 
-                    description: 'Tek tıkla ödev verin, AI desteğiyle raporlarını görün ve PDF olarak velilere sunun.', 
-                    side: "right", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#darkModeToggle', 
-                popover: { 
-                    title: 'VIP Konforu', 
-                    description: 'Gece çalışmaları için göz yormayan Karanlık Mod platformun her köşesinde aktif.', 
-                    side: "bottom", 
-                    align: 'end' 
-                } 
-            },
-            { 
-                element: 'a[href*="wa.me"]', 
-                popover: { 
-                    title: 'Özel Asistanınız', 
-                    description: 'VIP bir kullanıcı olarak her zaman yanınızdayız. WhatsApp destek hattımızdan bize 7/24 ulaşabilirsiniz.', 
-                    side: "top", 
-                    align: 'end' 
-                } 
-            }
-        ]
-    });
-
-    tour.drive();
-    localStorage.setItem('ep_tour_v19', 'completed');
-};
-
-// İlk girişte otomatik başlat
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        if (!localStorage.getItem('ep_tour_v19')) {
-            startTeacherTour();
-        }
-    }, 2500);
-});
 
 // Sistemi Başlat (GÜMRÜK VE SPLASH)
 if (document.readyState === 'loading') {
@@ -292,7 +170,7 @@ async function loadExtendedTeacherProfile(userId) {
         if (welcomeNameEl) welcomeNameEl.innerText = currentTeacherName + " Öğretmenim";
 
         const agendaNameEl = document.getElementById('agendaTeacherName');
-        if (agendaNameEl) agendaNameEl.innerText = currentTeacherName + " Öğretmenim, şimdi kafa dinleme vakti!";
+        if (agendaNameEl) agendaNameEl.innerText = currentTeacherName + " Öğretmenim, şimdi çalışma vakti!";
 
         // Markalama (B2B Kurumsal Yapı)
         if (profile.school_id) {
@@ -410,6 +288,7 @@ const btnResults = document.getElementById('btn-results');
 const btnLogs = document.getElementById('btn-logs');
 const btnClasses = document.getElementById('btn-classes');
 const btnWhiteboard = document.getElementById('btn-whiteboard');
+const btnStudentFlow = document.getElementById('btn-student-flow');
 
 // SEKSİYONLAR (PANEL SAYFALARI)
 const sectionDashboard = document.getElementById('section-dashboard');
@@ -421,6 +300,7 @@ const sectionResults = document.getElementById('section-results');
 const sectionLogs = document.getElementById('section-logs');
 const sectionClasses = document.getElementById('section-classes');
 const sectionWhiteboard = document.getElementById('section-whiteboard');
+const sectionStudentFlow = document.getElementById('section-student-flow');
 
 function switchTab(target) {
     if (sidebarMain && window.innerWidth < 768 && !sidebarMain.classList.contains('-translate-x-full')) {
@@ -428,12 +308,12 @@ function switchTab(target) {
     }
 
     // Tüm butonlardan aktiflik sınıflarını kaldır
-    [btnDashboard, btnStudents, btnClasses, btnHomeworks, btnActivities, btnQuizzes, btnResults, btnLogs, btnWhiteboard].forEach(btn => {
+    [btnDashboard, btnStudents, btnClasses, btnHomeworks, btnActivities, btnQuizzes, btnResults, btnLogs, btnWhiteboard, btnStudentFlow].forEach(btn => {
         if (btn) btn.classList.remove('bg-indigo-800', 'shadow-inner');
     });
 
     // Tüm seksiyonları gizle
-    [sectionDashboard, sectionStudents, sectionClasses, sectionHomeworks, sectionActivities, sectionQuizzes, sectionResults, sectionLogs, sectionWhiteboard].forEach(sec => {
+    [sectionDashboard, sectionStudents, sectionClasses, sectionHomeworks, sectionActivities, sectionQuizzes, sectionResults, sectionLogs, sectionWhiteboard, sectionStudentFlow].forEach(sec => {
         if (sec) sec.classList.add('hidden');
     });
 
@@ -471,6 +351,10 @@ function switchTab(target) {
         if (sectionLogs) sectionLogs.classList.remove('hidden');
         if (btnLogs) btnLogs.classList.add('bg-indigo-800', 'shadow-inner');
         loadLogs();
+    } else if (target === 'student-flow') {
+        if (sectionStudentFlow) sectionStudentFlow.classList.remove('hidden');
+        if (btnStudentFlow) btnStudentFlow.classList.add('bg-indigo-800', 'shadow-inner');
+        fetchStudentFlow();
     } else {
         if (sectionStudents) sectionStudents.classList.remove('hidden');
         if (btnStudents) btnStudents.classList.add('bg-indigo-800', 'shadow-inner');
@@ -487,6 +371,7 @@ if (btnActivities) btnActivities.onclick = () => switchTab('activities');
 if (btnQuizzes) btnQuizzes.onclick = () => switchTab('quizzes');
 if (btnResults) btnResults.onclick = () => switchTab('results');
 if (btnLogs) btnLogs.onclick = () => switchTab('logs');
+if (btnStudentFlow) btnStudentFlow.onclick = () => switchTab('student-flow');
 
 async function saveLog(action, details = "") {
     try {
@@ -538,6 +423,152 @@ async function loadLogs() {
             </div>
         `;
     }).join('');
+}
+
+// 🌟 YENİ: PROFESYONEL ÖĞRENCİ AKIŞI MOTORU (CANLI)
+async function fetchStudentFlow() {
+    const container = document.getElementById('studentFlowContainer');
+    if (!container || !currentTeacherId) return;
+
+    // Eğer eski bir abonelik varsa temizle (Çoklu sekme geçişlerinde çakışmasın)
+    if (window.studentFlowSubscription) {
+        supabaseClient.removeChannel(window.studentFlowSubscription);
+    }
+
+    container.innerHTML = `
+        <div class="p-20 text-center flex flex-col items-center justify-center gap-4">
+            <div class="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+            <p class="text-xs font-black text-indigo-400 uppercase tracking-widest animate-pulse">Öğrenci Akışı Güncelleniyor...</p>
+        </div>`;
+
+    try {
+        // 1. Öğretmenin tüm öğrencilerini bul
+        const { data: students } = await supabaseClient.from('profiles').select('id, full_name').eq('teacher_id', currentTeacherId).eq('role', 'student');
+        
+        if (!students || students.length === 0) {
+            container.innerHTML = `<div class="p-20 text-center text-gray-400 font-bold uppercase tracking-widest opacity-50 italic">Henüz takip edilecek öğrenci bulunmuyor.</div>`;
+            return;
+        }
+
+        const studentIds = students.map(s => s.id).filter(id => id !== null);
+        const studentMap = {};
+        students.forEach(s => studentMap[s.id] = s.full_name);
+
+        // 2. İlk yükleme (Snapshot)
+        const loadInitialLogs = async () => {
+            const { data: logs, error } = await supabaseClient.from('audit_logs')
+                .select('*')
+                .in('user_id', studentIds)
+                .order('created_at', { ascending: false })
+                .limit(50);
+
+            if (error || !logs || logs.length === 0) {
+                container.innerHTML = `<div class="p-20 text-center text-gray-400 font-bold uppercase tracking-widest opacity-50 italic">Öğrencilerden henüz bir hareket sinyali gelmedi.</div>`;
+                return;
+            }
+
+            renderLogs(logs);
+        };
+
+        const renderLogs = (logs) => {
+            container.innerHTML = logs.map(log => {
+                const date = new Date(log.created_at).toLocaleString('tr-TR');
+                const studentName = studentMap[log.user_id] || 'Bilinmeyen Öğrenci';
+                
+                let icon = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                let iconColor = 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30';
+
+                if (log.action.includes('Sınav') || log.action.includes('Quiz')) {
+                    icon = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>`;
+                    iconColor = 'text-rose-500 bg-rose-50 dark:bg-rose-900/30';
+                } else if (log.action.includes('Ödev')) {
+                    icon = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`;
+                    iconColor = 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30';
+                } else if (log.action.includes('Giriş')) {
+                    icon = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>`;
+                    iconColor = 'text-amber-500 bg-amber-50 dark:bg-amber-900/30';
+                }
+
+                return `
+                    <div class="p-5 hover:bg-gray-50/80 dark:hover:bg-slate-700/30 transition-all flex items-start gap-4 animate-in fade-in slide-in-from-left-4 duration-500 group">
+                        <div class="w-12 h-12 rounded-2xl ${iconColor} flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                            ${icon}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                                <h4 class="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">${escapeHTML(studentName)}</h4>
+                                <span class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-tighter">${date}</span>
+                            </div>
+                            <p class="text-sm font-bold text-gray-800 dark:text-white mb-1 leading-tight">${escapeHTML(log.action)}</p>
+                            <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400 leading-relaxed italic line-clamp-2">${escapeHTML(log.details) || ''}</p>
+                        </div>
+                    </div>`;
+            }).join('');
+        };
+
+        // Snapshot'ı yükle
+        await loadInitialLogs();
+
+        // Realtime Takibi Başlat
+        window.studentFlowSubscription = supabaseClient
+            .channel('student-flow-realtime')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, (payload) => {
+                if (studentIds.includes(payload.new.user_id)) {
+                    // Yeni bir log geldiğinde akışı tekrar çek (veya yeni item'ı en üste ekle)
+                    loadInitialLogs(); 
+                    showToast("Yeni bir öğrenci hareketi algılandı!", "info");
+                }
+            })
+            .subscribe();
+
+    } catch (e) {
+        console.error("Akış çekme hatası:", e);
+        container.innerHTML = `<div class="p-20 text-center text-red-400 font-bold uppercase tracking-widest opacity-50 italic">Hata: Akış verileri senkronize edilemedi.</div>`;
+    }
+}
+
+// 🌟 BANKA BİLGİLERİ YÖNETİMİ 🌟
+window.openBankSettings = function() {
+    const modal = document.getElementById('bankSettingsModal');
+    const ibanInp = document.getElementById('teacherIbanInput');
+    const recInp = document.getElementById('teacherBankReceiverInput');
+    
+    if (ibanInp) ibanInp.value = currentTeacherIban || '';
+    if (recInp) recInp.value = currentTeacherBankReceiver || '';
+    
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('animate-in', 'fade-in', 'zoom-in-95', 'duration-300');
+    }
+}
+
+window.saveBankSettings = async function() {
+    const iban = document.getElementById('teacherIbanInput').value.trim();
+    const receiver = document.getElementById('teacherBankReceiverInput').value.trim();
+    
+    if (!iban || !receiver) {
+        showToast("Lütfen tüm alanları doldurun.", "error");
+        return;
+    }
+
+    try {
+        const { error } = await supabaseClient.from('profiles').update({
+            bank_iban: iban,
+            bank_receiver: receiver
+        }).eq('id', currentTeacherId);
+
+        if (error) throw error;
+
+        currentTeacherIban = iban;
+        currentTeacherBankReceiver = receiver;
+        
+        showToast("Banka bilgileriniz başarıyla güncellendi.", "success");
+        saveLog("Banka Bilgileri Güncellendi", `Yeni IBAN: ${iban}`);
+        document.getElementById('bankSettingsModal').classList.add('hidden');
+    } catch (e) {
+        console.error("Banka kaydetme hatası:", e);
+        showToast("Kaydedilirken bir hata oluştu.", "error");
+    }
 }
 
 // ==========================================
