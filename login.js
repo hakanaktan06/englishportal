@@ -41,12 +41,31 @@ document.getElementById('showLoginBtn').addEventListener('click', () => {
 // 1.5 DİĞER GÖRSEL YARDIMCILAR (toggleAuth vb)
 // ==========================================
 window.toggleAuth = function (mode) {
+    const loginSec = document.getElementById('loginSection');
+    const registerSec = document.getElementById('registerSection');
+    if (!loginSec || !registerSec) return;
+
     if (mode === 'register') {
-        const btn = document.getElementById('showRegisterBtn');
-        if (btn) btn.click();
+        loginSec.classList.add('opacity-0');
+        setTimeout(() => {
+            loginSec.classList.add('hidden');
+            registerSec.classList.remove('hidden');
+            setTimeout(() => {
+                registerSec.classList.remove('opacity-0');
+                registerSec.classList.add('opacity-100');
+            }, 50);
+        }, 300);
     } else {
-        const btn = document.getElementById('showLoginBtn');
-        if (btn) btn.click();
+        registerSec.classList.remove('opacity-100');
+        registerSec.classList.add('opacity-0');
+        setTimeout(() => {
+            registerSec.classList.add('hidden');
+            loginSec.classList.remove('hidden');
+            setTimeout(() => {
+                loginSec.classList.remove('opacity-0');
+                loginSec.classList.add('opacity-100');
+            }, 50);
+        }, 300);
     }
 };
 
@@ -306,18 +325,13 @@ window.switchLoginTab = function(type) {
     const descText = document.getElementById('loginDescText');
     const loginRoleInput = document.getElementById('loginRole');
     const rBlock = document.getElementById('registerBlock');
-    const regTitle = document.getElementById('regTitle');
 
-    const activeClass = "flex-1 py-2.5 text-center rounded-xl transition-all duration-300 shadow-sm bg-white text-[#4f46e5]";
-    const inactiveClass = "flex-1 py-2.5 text-center rounded-xl transition-all duration-300 text-gray-400 hover:text-indigo-600";
+    const activeClass = "flex-1 py-3 text-center rounded-xl transition-all duration-300 shadow-sm bg-white text-[#4f46e5]";
+    const inactiveClass = "flex-1 py-3 text-center rounded-xl transition-all duration-300 text-slate-400 hover:text-[#4f46e5]";
 
     for (const key in tabs) {
         if (!tabs[key]) continue;
-        if (key === type) {
-            tabs[key].className = activeClass;
-        } else {
-            tabs[key].className = inactiveClass;
-        }
+        tabs[key].className = (key === type) ? activeClass : inactiveClass;
     }
 
     if(rBlock) rBlock.classList.add('hidden', 'opacity-0');
@@ -338,7 +352,6 @@ window.switchLoginTab = function(type) {
         if(descText) descText.innerText = "DİL OKULU / AKADEMİ PANELİNE GİRİŞ YAPIN";
         if(rBlock) {
             rBlock.classList.remove('hidden');
-            if(regTitle) regTitle.innerText = "Kurum Kaydı";
             setTimeout(() => rBlock.classList.remove('opacity-0'), 50);
         }
     }
