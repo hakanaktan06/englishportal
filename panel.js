@@ -302,6 +302,7 @@ function switchTab(target) {
         if (sectionDashboard) sectionDashboard.classList.remove('hidden');
         if (btnDashboard) btnDashboard.classList.add('bg-indigo-800', 'shadow-inner');
         fetchDashboardStats();
+        fetchAgenda(); // 🌟 YENİ: Ajandayı da tetikle!
     } else if (target === 'classes') {
         if (sectionClasses) sectionClasses.classList.remove('hidden');
         if (btnClasses) btnClasses.classList.add('bg-indigo-800', 'shadow-inner');
@@ -440,16 +441,19 @@ async function fetchAgenda() {
     const agendaContainer = document.getElementById('agendaList');
     if (!agendaContainer || !currentTeacherId) return;
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    // 🌟 YENİ: 1 hafta geriden bugüne ve geleceğe bak
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const startDateStr = sevenDaysAgo.toISOString().split('T')[0];
 
     const { data: lessons } = await supabaseClient.from('private_lessons')
         .select('lesson_date, lesson_time, topic, profiles!inner(full_name)')
-        .gte('lesson_date', todayStr)
+        .gte('lesson_date', startDateStr)
         .eq('teacher_id', currentTeacherId);
 
     const { data: homeworks } = await supabaseClient.from('homeworks')
         .select('due_date, title, status, profiles!inner(full_name)')
-        .gte('due_date', todayStr)
+        .gte('due_date', startDateStr)
         .eq('teacher_id', currentTeacherId);
 
     let agendaItems = [];
