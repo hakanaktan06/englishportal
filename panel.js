@@ -2844,4 +2844,11 @@ window.saveLessonUrl = async function() {
     }
 }
 
+// Sistemi Başlat
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkTeacherSecurity);
+} else {
+    checkTeacherSecurity();
+}
+
 // EOF (Stage 3 Ready)
