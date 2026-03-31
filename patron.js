@@ -91,19 +91,46 @@ function customConfirm(message, btnText = "Evet, Onayla") {
 // GÜVENLİK VE ÇIKIŞ
 // ==========================================
 async function checkGodSecurity() {
-    // 🌟 REDIRECT LOOP BREAK: Sayfa açılırken 700ms bekle (Supabase uyanışı için)
+    // 🌟 STABILIZATION: Supabase'in tam oturması için kısa bekleme
     await new Promise(r => setTimeout(r, 700));
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) { window.location.href = 'index.html'; return; }
+    try {
+        const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+        if (authError || !user) { 
+            window.location.href = 'index.html'; 
+            return; 
+        }
 
-    const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
-    if (!profile || profile.role !== 'god') {
+        // 🌟 STEP 1: Sadece Rolü Kontrol Et (Hızlı)
+        const { data: profile, error } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
+        
+        if (error || !profile || profile.role !== 'god') {
+            console.warn("Yetkisiz erişim denemesi:", profile?.role);
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Yetki TAMAM. Splash falan varsa kapatalım (God panelinde genelde yok ama ekleyelim)
+        const splash = document.getElementById('splashScreen');
+        if (splash) {
+            splash.classList.add('opacity-0');
+            setTimeout(() => splash.classList.add('hidden'), 700);
+        }
+
+        // 🌟 STEP 2: Diğer verileri çekmeye başla
+        initGodPortal();
+
+    } catch (e) {
+        console.error("God security error:", e);
         window.location.href = 'index.html';
-        return;
     }
+}
+
+async function initGodPortal() {
+    // Burada istatistikleri ve listeleri çekebiliriz (Non-blocking)
     fetchGodMetrics();
     fetchTeachers();
+    loadAnnouncements();
 }
 checkGodSecurity();
 
