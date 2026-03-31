@@ -1252,16 +1252,19 @@ window.initWhiteboardRealtime = async function(teacherId) {
 
     const fetchWhiteboard = async () => {
         try {
+            console.log("Beyaz Tahta Güncelleniyor... Hoca ID:", teacherId);
             const { data, error } = await supabaseClient.from('profiles').select('whiteboard_notes').eq('id', teacherId).single();
-            if (data && data.whiteboard_notes) {
-                const cleanNotes = data.whiteboard_notes.trim();
-                if (cleanNotes !== "") {
-                    display.innerText = cleanNotes;
+            
+            if (data) {
+                console.log("Beyaz Tahta Verisi Geldi:", data.whiteboard_notes ? "Veri Var" : "Veri Boş");
+                if (data.whiteboard_notes && data.whiteboard_notes.trim() !== "") {
+                    display.innerText = data.whiteboard_notes.trim();
                     container.classList.remove('hidden');
                 } else {
                     container.classList.add('hidden');
                 }
             } else {
+                console.log("Beyaz Tahta Sorgusu Sonuç Döndürmedi.");
                 container.classList.add('hidden');
             }
         } catch (err) {
