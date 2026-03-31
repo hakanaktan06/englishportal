@@ -355,6 +355,17 @@ async function fetchTeachers() {
                 </div>
             </div>`;
 
+        const isInstTeacher = !!teacher.school_id;
+        const instBadge = isInstTeacher ? `
+            <div class="mt-1 flex items-center gap-1.5 bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-md border border-indigo-500/20 w-fit">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m4 0h1m-5 4h1m4 0h1m-5 4h1m4 0h1"></path></svg>
+                <span class="text-[9px] font-black uppercase tracking-tighter">${escapeHTML(teacher.school_name || 'Kurum Öğretmeni')}</span>
+            </div>` : `
+            <div class="mt-1 flex items-center gap-1.5 bg-slate-700/30 text-slate-500 px-2 py-0.5 rounded-md border border-slate-700/50 w-fit">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Bağımsız Öğretmen</span>
+            </div>`;
+
         const card = document.createElement('div');
         card.className = "bg-slate-800/40 border border-slate-700/50 p-5 rounded-[24px] flex flex-col gap-4 hover:border-indigo-500/50 transition-colors relative overflow-hidden shadow-sm";
 
@@ -366,7 +377,8 @@ async function fetchTeachers() {
                     <div class="min-w-0">
                         <h4 class="font-black text-white text-base leading-tight truncate">${teacher.full_name ? escapeHTML(teacher.full_name) : 'İsimsiz'}</h4>
                         <p class="text-[10px] text-indigo-400 font-bold truncate lowercase mt-0.5">${teacher.email ? escapeHTML(teacher.email) : 'Mail Yok'}</p>
-                        <p class="text-[9px] text-slate-400 mt-1 font-bold flex items-center gap-1 truncate"><svg class="w-3 h-3 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> ${radarStatus}</p>
+                        ${instBadge}
+                        <p class="text-[9px] text-slate-400 mt-2 font-bold flex items-center gap-1 truncate"><svg class="w-3 h-3 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> ${radarStatus}</p>
                     </div>
                 </div>
                 <div class="shrink-0 text-right">${badgeHtml}</div>
@@ -563,30 +575,60 @@ async function fetchKurumlar() {
         return;
     }
 
-    list.innerHTML = kurumlar.map(k => `
-        <div class="bg-slate-800/40 border border-slate-700/50 p-5 rounded-[24px] flex flex-col gap-4 hover:border-amber-500/50 transition-colors relative overflow-hidden shadow-sm">
-            <div class="flex justify-between items-start">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
-                        <img src="${k.school_logo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(k.school_name || k.full_name) + '&background=f59e0b&color=fff'}" class="w-full h-full object-cover rounded-xl">
-                    </div>
-                    <div>
-                        <h4 class="font-black text-white text-base leading-tight">${k.school_name || k.full_name}</h4>
-                        <p class="text-[10px] text-amber-500 font-bold uppercase mt-0.5 tracking-tighter">${k.email}</p>
+    list.innerHTML = kurumlar.map(k => {
+        const isVip = k.is_premium;
+        const vipStatusText = isVip ? 'VIP AKTİF' : 'STANDART';
+        const vipStatusColor = isVip ? 'text-amber-500 border-amber-500/30 bg-amber-500/10' : 'text-slate-500 border-slate-700/50 bg-slate-900/40';
+
+        return `
+            <div class="bg-slate-800/40 border ${isVip ? 'border-amber-500/30' : 'border-slate-700/50'} p-5 rounded-[24px] flex flex-col gap-4 hover:border-amber-500/50 transition-colors relative overflow-hidden shadow-sm">
+                ${isVip ? '<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>' : ''}
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                            <img src="${k.school_logo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(k.school_name || k.full_name) + '&background=f59e0b&color=fff'}" class="w-full h-full object-cover rounded-xl">
+                        </div>
+                        <div>
+                            <h4 class="font-black text-white text-base leading-tight">${k.school_name || k.full_name}</h4>
+                            <p class="text-[10px] text-amber-500 font-bold uppercase mt-0.5 tracking-tighter">${k.email}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                ${timeAgo(k.last_login)}
-            </div>
+                
+                <div class="flex items-center justify-between">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        ${timeAgo(k.last_login)}
+                    </div>
+                    <div class="px-2 py-1 rounded-md border ${vipStatusColor} text-[9px] font-black uppercase tracking-widest">
+                        ${vipStatusText}
+                    </div>
+                </div>
 
-            <div class="flex gap-2 mt-auto">
-                <button onclick="resetTeacherPassword('${k.id}')" class="flex-1 py-3 bg-slate-900 border border-slate-700 text-[9px] font-black uppercase text-slate-400 hover:text-white rounded-xl transition">ŞİFRE</button>
-                <button onclick="deleteKurum('${k.id}', '${k.school_name || k.full_name}')" class="flex-1 py-3 bg-rose-500/10 text-[9px] font-black uppercase text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition">SİL</button>
-            </div>
-        </div>
-    `).join('');
+                <div class="flex gap-2 mt-auto">
+                    <button onclick="updateKurumVip('${k.id}', ${!isVip})" class="flex-1 py-3 ${isVip ? 'bg-slate-900 border border-slate-700 text-slate-400' : 'bg-amber-500/20 border border-amber-500/30 text-amber-500'} text-[9px] font-black uppercase hover:text-white rounded-xl transition">
+                        ${isVip ? 'VIP İPTAL' : 'VIP YAP'}
+                    </button>
+                    <button onclick="resetTeacherPassword('${k.id}')" class="flex-1 py-3 bg-slate-900 border border-slate-700 text-[9px] font-black uppercase text-slate-400 hover:text-white rounded-xl transition">ŞİFRE</button>
+                    <button onclick="deleteKurum('${k.id}', '${k.school_name || k.full_name}')" class="flex-1 py-3 bg-rose-500/10 text-[9px] font-black uppercase text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition">SİL</button>
+                </div>
+            </div>`;
+    }).join('');
+}
+
+window.updateKurumVip = async function(id, targetStatus) {
+    const msg = targetStatus ? "TÜM KURUMU VIP YAPMAK ÜZERESİNİZ!\n\nBu işleme bağlı tüm öğretmenler de premium özelliklere kavuşacaktır. Onaylıyor musunuz?" : "Kurumun VIP yetkisini iptal etmek üzeresiniz. Onaylıyor musunuz?";
+    const onay = await customConfirm(msg, targetStatus ? "Evet, VIP Yap" : "Evet, İptal Et");
+    if(!onay) return;
+
+    showToast("Ağ sistemlerine müdahale ediliyor...", "info");
+    const { error } = await supabaseClient.from('profiles').update({ is_premium: targetStatus }).eq('id', id);
+
+    if(error) showToast(error.message, 'error');
+    else {
+        showToast(targetStatus ? "Kurum artık VIP! Tüm üyeler premium oldu." : "VIP yetkisi geri çekildi.", "success");
+        fetchKurumlar();
+        fetchGodMetrics();
+    }
 }
 
 window.deleteKurum = async (id, name) => {
