@@ -28,10 +28,14 @@
             <button id="closeSidebarBtn" class="md:hidden text-slate-500 hover:text-white text-4xl leading-none">&times;</button>
             <svg class="hidden md:block w-6 h-6 text-amber-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
         </div>
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <a href="#" class="flex items-center p-3 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-xl transition font-bold text-sm shadow-inner group">
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto" id="sidebarMenu">
+            <a href="#" id="btn-teachers" class="menu-btn active-menu flex items-center p-3 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-xl transition font-bold text-sm shadow-inner group">
                 <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 Eğitmen Yönetimi
+            </a>
+            <a href="#" id="btn-kurum" class="menu-btn flex items-center p-3 hover:bg-slate-800 rounded-xl transition font-bold text-sm text-slate-400 hover:text-white group border border-transparent">
+                <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m4 0h1m-5 4h1m4 0h1m-5 4h1m4 0h1"></path></svg>
+                Kurum Yönetimi
             </a>
         </nav>
         <div class="p-4 border-t border-slate-800">
@@ -60,10 +64,19 @@
                 <p class="text-sm text-slate-400 mt-1 font-medium">Tüm sistem kontrolü ve metrikleri senin ellerinde.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div class="bg-slate-800/50 border border-slate-700/50 p-6 rounded-[24px] shadow-lg flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Kayıtlı Eğitmen</p>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Kayıtlı Kurum</p>
+                        <h3 class="text-3xl font-black text-amber-400 mt-1" id="godStatKurum">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-500/20 text-amber-500 rounded-full flex items-center justify-center border border-amber-500/30">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m4 0h1m-5 4h1m4 0h1m-5 4h1m4 0h1"></path></svg>
+                    </div>
+                </div>
+                <div class="bg-slate-800/50 border border-slate-700/50 p-6 rounded-[24px] shadow-lg flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Eğitmen Sayısı</p>
                         <h3 class="text-3xl font-black text-white mt-1" id="godStatTeachers">0</h3>
                     </div>
                     <div class="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center border border-indigo-500/30">
@@ -72,7 +85,7 @@
                 </div>
                 <div class="bg-slate-800/50 border border-slate-700/50 p-6 rounded-[24px] shadow-lg flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Sistemdeki Öğrenci</p>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Toplam Öğrenci</p>
                         <h3 class="text-3xl font-black text-white mt-1" id="godStatStudents">0</h3>
                     </div>
                     <div class="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-full flex items-center justify-center border border-purple-500/30">
@@ -80,11 +93,8 @@
                     </div>
                 </div>
                 <div class="bg-slate-800/50 border border-slate-700/50 p-6 rounded-[24px] shadow-lg flex items-center justify-between relative overflow-hidden group">
-                    <div class="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
-                        <svg class="w-24 h-24 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path></svg>
-                    </div>
                     <div class="relative z-10">
-                        <p class="text-xs font-bold text-emerald-500/80 uppercase tracking-widest">Sistemdeki Toplam Borç</p>
+                        <p class="text-xs font-bold text-emerald-500/80 uppercase tracking-widest">Toplam Borç</p>
                         <h3 class="text-3xl font-black text-emerald-400 mt-1" id="godStatDebt">₺0</h3>
                     </div>
                 </div>
@@ -174,8 +184,27 @@
                     </div>
                 </div>
                 
-                <div id="teacherList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="teacherList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                </div>
+            </div>
+
+            <!-- KURUM YÖNETİMİ PANELİ -->
+            <div id="section-kurum" class="bg-slate-800/50 border border-slate-700/50 p-5 md:p-6 rounded-[24px] shadow-lg backdrop-blur-sm mt-8 hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m4 0h1m-5 4h1m4 0h1m-5 4h1m4 0h1"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-black text-white">Okul & Kurum Yönetimi</h3>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Dil Okulları, Akademiler ve B2B Partnerler</p>
+                        </div>
                     </div>
+                </div>
+                
+                <div id="kurumList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <p class="col-span-full text-center text-slate-500 py-10 font-bold uppercase tracking-widest text-xs">Kurumlar yükleniyor...</p>
+                </div>
             </div>
 
         </div>
