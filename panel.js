@@ -112,16 +112,26 @@ function customConfirm(message, btnText = "Evet, İşlemi Yap") {
 // GÜVENLİK (FEDAİ) MOTORU VE SÜRE KONTROLÜ
 // ==========================================
 async function checkTeacherSecurity() {
+    // 🌟 REDIRECT LOOP BREAK: Sayfa açılırken 700ms bekle (Supabase uyanışı için)
+    await new Promise(r => setTimeout(r, 700));
+
     try {
         const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
         if (authError || !user) { window.location.href = 'index.html'; return; }
 
-        // 🌟 is_premium ve premium_until verisini çekiyoruz
-        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until, bank_iban, bank_receiver, school_logo, school_name, school_id').eq('id', user.id).single();
+        // 🌟 PROFİL FETCH VE RETRY (Profil bazen geç gelebilir)
+        let { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until, bank_iban, bank_receiver, school_logo, school_name, school_id').eq('id', user.id).single();
         
         if (profileError || !profile) {
-            window.location.href = 'index.html';
-            return;
+            // Bir kez daha deneyelim (Network gecikmesi olabilir)
+            const retry = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until, bank_iban, bank_receiver, school_logo, school_name, school_id').eq('id', user.id).single();
+            profile = retry.data;
+            profileError = retry.error;
+            
+            if (profileError || !profile) {
+                window.location.href = 'index.html';
+                return;
+            }
         }
 
         // KURUMSAL MARKALAMA (White-labeling)
