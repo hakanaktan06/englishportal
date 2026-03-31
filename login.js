@@ -370,16 +370,19 @@ window.switchLoginTab = function(type) {
 };
 
 async function checkActiveSession() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session) {
-        const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+    // 🌟 REDIRECT LOOP BREAK: Küçük bir bekleme ekleyelim ki Supabase tam uyansın
+    setTimeout(async () => {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
 
-        if (profile && profile.role === 'teacher') window.location.href = 'panel.html';
-        else if (profile && profile.role === 'kurum') window.location.href = 'kurum.html';
-        else if (profile && profile.role === 'student') {
-            const lastRole = localStorage.getItem('lastLoginRole');
-            window.location.href = (lastRole === 'parent') ? `veli.html?id=${session.user.id}` : 'student.html';
-        } else if (profile && profile.role === 'god') window.location.href = 'patron.html';
-    }
+            if (profile && profile.role === 'teacher') window.location.href = 'panel.html';
+            else if (profile && profile.role === 'kurum') window.location.href = 'kurum.html';
+            else if (profile && profile.role === 'student') {
+                const lastRole = localStorage.getItem('lastLoginRole');
+                window.location.href = (lastRole === 'parent') ? `veli.html?id=${session.user.id}` : 'student.html';
+            } else if (profile && profile.role === 'god') window.location.href = 'patron.html';
+        }
+    }, 500); // 500ms bekleme session'ın oturması için kritiktir.
 }
 checkActiveSession();
