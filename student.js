@@ -465,6 +465,7 @@ async function buyItem(category, itemId) {
         document.getElementById('studentCoinText').innerText = balance - item.price;
         showToast(`${item.name} başarıyla satın alındı!`, "success");
         playSound('buy');
+        saveLog("Market Alışverişi", `Satın Alınan: ${item.name} | Kategori: ${category} | Fiyat: ${item.price} EP-COIN`);
         renderShopItems(category);
     }
 }
@@ -475,6 +476,7 @@ async function saveAvatarConfig() {
     else {
         showToast("Avatar görünümü başarıyla kaydedildi!", "success");
         playSound('success');
+        saveLog("Avatar Güncellendi", "Görünüm detayları kaydedildi.");
     }
 }
 
@@ -599,9 +601,9 @@ async function fetchActivities() {
                     </div>
                     <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white flex-1 line-clamp-2 leading-tight group-hover:text-purple-600 dark:group-hover:text-purple-400 transition">${escapeHTML(act.title)}</h4>
                 </div>
-                <a href="${escapeHTML(act.link)}" target="_blank" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-purple-600 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-purple-600 transition font-black py-3 rounded-xl text-center text-xs tracking-widest uppercase shadow-sm flex justify-center items-center gap-2">
+                <button onclick="openActivity('${escapeHTML(act.link)}', '${escapeHTML(act.title)}')" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-purple-600 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-purple-600 transition font-black py-3 rounded-xl text-center text-xs tracking-widest uppercase shadow-sm flex justify-center items-center gap-2">
                     AÇ VE İNCELE <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                </a>
+                </button>
             </div>`;
     });
 }
@@ -712,6 +714,7 @@ async function fetchMyResults() {
 
 window.startQuiz = async function(quizId, quizTitle) {
     activeTakingQuizId = quizId;
+    saveLog("Sınav Başlatıldı", `Sınav: ${quizTitle}`);
     document.getElementById('takingQuizTitle').innerText = quizTitle;
     const container = document.getElementById('questionsContainer');
     const timerContainer = document.getElementById('quizTimerContainer');
@@ -827,7 +830,7 @@ if(quizFormEl) {
         await supabaseClient.from('profiles').update({ xp: newXp, coins: newCoins }).eq('id', currentStudentId);
 
         showToast(`Tebrikler! ${score} Puan, +${score} XP ve +20 EP-Coin kazandın! 🪙`, "success");
-        saveLog("Sınav Tamamlandı", `Puan: ${score}`);
+        saveLog("Sınav Tamamlandı", `Sonuç: ${score} Puan | Doğru: ${correctAnswers}/${totalQuestions}`);
         
         document.getElementById('quizTakingModal').classList.add('hidden');
         window.renderAnalysisScreen(examDetails, score);
@@ -887,6 +890,7 @@ window.startFlashcardTask = function(taskId, dataStr, title) {
     currentFcIndex = 0;
     document.getElementById('fcModalTitle').innerText = title.replace('[KELİME_KARTI]', '').trim();
     document.getElementById('flashcardModal').classList.remove('hidden');
+    saveLog("Kelime Pratiği Başlatıldı", `Görev: ${title}`);
     window.updateFlashcardUI();
 }
 
@@ -1027,17 +1031,6 @@ window.startListening = async function() {
     micStatus.innerText = "Sisteme Bağlanıyor...";
     micStatus.className = "text-xs text-indigo-200 font-black uppercase tracking-widest mt-5 drop-shadow-md bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm animate-pulse";
     
-    // NOT: Artık ön yüzde API key okuma mantığı yoruma alındı. Arkada hallediliyor.
-    /*
-    const { data: godProfile, error: godErr } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
-    if (godErr || !godProfile || !godProfile.openai_key) {
-        stream.getTracks().forEach(t => t.stop());
-        resetMicUI("Sistem Hatası: API bağlantısı kurulamadı.");
-        return;
-    }
-    const apiKey = godProfile.openai_key;
-    */
-
     const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' :
                      MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' :
                      MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : 'audio/ogg';
@@ -1158,7 +1151,7 @@ window.finishFlashcardTask = async function() {
     }
 
     showToast("Tebrikler! +50 XP ve +10 EP-Coin kazandın! 🪙", "success");
-    saveLog("Telaffuz Görevi Tamamlandı", "Flashcard serisi bitirildi.");
+    saveLog("Kelime Pratiği Tamamlandı", "Görev başarıyla bitirildi.");
     window.closeFlashcardModal();
     initStudentPortal();
 }
@@ -1176,8 +1169,12 @@ document.onkeydown = function(e) {
     if (e.ctrlKey && e.keyCode === 'U'.charCodeAt(0)) return false; 
 };
 
-// Sistemi Başlat
-initStudentPortal();
+// Sistemi Başlat (GÜMRÜK VE SPLASH)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initStudentPortal);
+} else {
+    initStudentPortal();
+}
 
 // ==========================================
 // YENİ: AI WRITING (GRAMER) MOTORU
@@ -1187,6 +1184,7 @@ window.openWritingTask = function(hwId, title) {
     document.getElementById('writingTopicDisplay').innerText = title.replace('[WRITING]', 'Konu:').trim();
     document.getElementById('studentWritingInput').value = '';
     document.getElementById('writingTaskModal').classList.remove('hidden');
+    saveLog("Yazma Görevi Başlatıldı", `Konu: ${title}`);
 }
 
 window.submitWritingTask = async function() {
@@ -1198,15 +1196,6 @@ window.submitWritingTask = async function() {
     const originalText = btn.innerHTML;
     btn.innerHTML = 'Okunuyor ve Değerlendiriliyor... ⏳';
     btn.disabled = true;
-
-    // NOT: Artık ön yüzde direkt API Key almıyoruz.
-    /*
-    const { data: godProfile } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
-    if (!godProfile || !godProfile.openai_key) {
-        showToast("Sistem hatası: Öğretmenine haber ver.", "error");
-        btn.innerHTML = originalText; btn.disabled = false; return;
-    }
-    */
 
     try {
         const response = await fetch('/api/generate', {
@@ -1237,6 +1226,11 @@ window.submitWritingTask = async function() {
         showToast('Bağlantı hatası, tekrar dene.', 'error');
     }
     btn.innerHTML = originalText; btn.disabled = false;
+}
+
+window.openActivity = function(link, title) {
+    saveLog("Etkinlik Görüntülendi", `Etkinlik: ${title}`);
+    window.open(link, '_blank');
 }
 
 // ==========================================
@@ -1298,116 +1292,9 @@ window.checkLiveLesson = async function(teacherId) {
     setInterval(fetchLiveStatus, 10000); // 10 saniyede bir kontrol et
 }
 
-// ==========================================
-// 10. VIP ÖĞRENCİ REHBERİ (PREMIUM TOUR)
-// ==========================================
-window.startStudentTour = function () {
-    const driver = window.driver.js.driver;
-    const tour = driver({
-        showProgress: true,
-        animate: true,
-        allowClose: true,
-        smoothScroll: true,
-        popoverClass: 'vip-tour-popover',
-        stagePadding: 10,
-        doneBtnText: 'Anlaşıldı! 🎓',
-        nextBtnText: 'İleri',
-        prevBtnText: 'Geri',
-        onHighlightStarted: (element) => {
-            if (element?.id === 'studentNameDisplay' && typeof confetti === 'function') {
-                confetti({
-                    particleCount: 150,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#4f46e5', '#fbbf24', '#ffffff']
-                });
-            }
-        },
-        steps: [
-            { 
-                element: '#studentNameDisplay', 
-                popover: { 
-                    title: 'VIP Dünyasına Hoş Geldin! 🌟', 
-                    description: 'İngilizce öğrenme yolculuğunda senin için en teknolojik araçları hazırladık. Hadi birlikte keşfedelim!', 
-                    side: "bottom", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '.grid-cols-2', 
-                popover: { 
-                    title: 'Seviyen ve Ödüllerin', 
-                    description: 'Buradan XP puanlarını ve kazandığın FP-COIN\'lerini görebilirsin. Ne kadar çok çalışırsan o kadar çok ödül kazanırsın!', 
-                    side: "bottom", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#homework-list', 
-                popover: { 
-                    title: 'Ödev Takvimi', 
-                    description: 'Hocanın gönderdiği tüm ödevler burada listelenir. "BEKLEYEN" ödevlerini zamanında bitirmeyi unutma!', 
-                    side: "top", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: 'nav.flex-1', 
-                popover: { 
-                    title: 'Etkinlik Kütüphanesi', 
-                    description: 'Kelime oyunları, okuma parçaları ve dinleme aktiviteleriyle dolu zengin içeriklere buradan ulaşabilirsin.', 
-                    side: "right", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#whiteboard-container', 
-                popover: { 
-                    title: 'Canlı Ders Notları', 
-                    description: 'Hocan dersteyken tahtaya yazdığı her şey anında burada görünür. Dersten sonra da buraya bakabilirsin!', 
-                    side: "top", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#sidebarMenu a[href*="shop"]', 
-                popover: { 
-                    title: 'Market & Avatar', 
-                    description: 'Kazandığın coinler ile karakterine yeni eşyalar alabilir ve tarzını konuşturabilirsin.', 
-                    side: "right", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#darkModeToggle', 
-                popover: { 
-                    title: 'Gözlerin Yorulmasın', 
-                    description: 'Gece çalışmaları için Karanlık Mod\'u istediğin zaman buradan açabilirsin.', 
-                    side: "bottom", 
-                    align: 'end' 
-                } 
-            },
-            { 
-                element: '#btnTour', 
-                popover: { 
-                    title: 'Yardım Her Zaman Yanında', 
-                    description: 'Kafan karışırsa bu butona basarak turu her zaman yeniden başlatabilirsin.', 
-                    side: "bottom", 
-                    align: 'end' 
-                } 
-            }
-        ]
-    });
-
-    tour.drive();
-    localStorage.setItem('ep_student_tour_v19', 'completed');
-};
-
-// İlk girişte otomatik başlat
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        if (!localStorage.getItem('ep_student_tour_v19')) {
-            startStudentTour();
-        }
-    }, 2500);
-});
+// Sistemi Başlat (GÜMRÜK VE SPLASH)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initStudentPortal);
+} else {
+    initStudentPortal();
+}
