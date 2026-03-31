@@ -52,8 +52,8 @@ loginForm.addEventListener('submit', async (e) => {
     loginBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
     loginBtn.disabled = true;
 
-    const rawInput = document.getElementById('loginInput').value.trim();
-    const password = document.getElementById('passwordInput').value;
+    const rawInput = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPass').value;
 
     let finalEmail = rawInput;
     if (!rawInput.includes('@')) {
@@ -133,7 +133,7 @@ registerForm.addEventListener('submit', async (e) => {
 
     const name = document.getElementById('regName').value.trim();
     const email = document.getElementById('regEmail').value.trim().toLowerCase();
-    const password = document.getElementById('regPassword').value;
+    const password = document.getElementById('regPass').value;
 
     // 1. Supabase Auth'a Kayıt
     const { data: authData, error: authError } = await supabaseClient.auth.signUp({
@@ -192,7 +192,7 @@ function resetButton(btnElement, originalText) {
 
 // ŞİFRE GÖSTER/GİZLE MOTORU
 document.getElementById('togglePasswordBtn')?.addEventListener('click', () => {
-    const pwd = document.getElementById('passwordInput');
+    const pwd = document.getElementById('loginPass');
     const type = pwd.getAttribute('type') === 'password' ? 'text' : 'password';
     pwd.setAttribute('type', type);
 });
@@ -210,6 +210,7 @@ const translations = {
         "login-title": "Giriş Yap",
         "login-subtitle": "Eğitim yolculuğuna devam et.",
         "tab-student": "Öğrenci",
+        "tab-parent": "Veli",
         "tab-teacher": "Eğitmen",
         "tab-kurum": "Kurum",
         "label-user": "Kullanıcı Adı veya Email",
@@ -228,6 +229,7 @@ const translations = {
         "login-title": "Login",
         "login-subtitle": "Continue your learning journey.",
         "tab-student": "Student",
+        "tab-parent": "Parent",
         "tab-teacher": "Teacher",
         "tab-kurum": "Institution",
         "label-user": "Username or Email",
