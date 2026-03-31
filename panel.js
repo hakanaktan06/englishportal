@@ -33,17 +33,6 @@ let currentTeacherIban = '';
 let currentTeacherBankReceiver = '';
 
 // ==========================================
-// GÜVENLİK: XSS KORUMA MOTORU (ÇELİK YELEK)
-// ==========================================
-function escapeHTML(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>'"]/g, function (tag) {
-        const charsToReplace = { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' };
-        return charsToReplace[tag] || tag;
-    });
-}
-
-// ==========================================
 // UI ULTRA: ŞIK BİLDİRİM VE ONAY MOTORU
 // ==========================================
 function showToast(message, type = 'success') {
@@ -2609,39 +2598,7 @@ window.manageClassStudents = async function(id) {
     document.getElementById('addClassModal').classList.remove('hidden');
 };
 
-window.openAddClassModal = async function() {
-    if (!editingClassId) {
-        editingClassId = null;
-        document.getElementById('addClassForm').reset();
-        const modalTitle = document.querySelector('#addClassModal h3');
-        if (modalTitle) modalTitle.innerText = "Yeni Sınıf Oluştur";
-        const submitBtn = document.querySelector('#addClassForm button[type="submit"]');
-        if (submitBtn) submitBtn.innerText = "Sınıfı Kaydet";
-    }
-
-    const { data: students } = await supabaseClient.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
-    const container = document.getElementById('classStudentChoices');
-    if (!container) return;
-
-    if (!students || students.length === 0) {
-        container.innerHTML = '<p class="text-xs text-gray-400 italic">Henüz öğrenciniz bulunmuyor.</p>';
-    } else {
-        container.innerHTML = students.map(s => `
-            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-lg cursor-pointer transition">
-                <input type="checkbox" name="classStudents" value="${s.id}" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${escapeHTML(s.full_name)}</span>
-            </label>
-        `).join('');
-    }
-    
-    document.getElementById('addClassModal').classList.remove('hidden');
-};
-
-window.closeAddClassModal = function() {
-    editingClassId = null;
-    document.getElementById('addClassModal').classList.add('hidden');
-};
-
+// Sınıf Verilerini Çek
 async function fetchClasses() {
     const container = document.getElementById('classList');
     if(!container) return;
