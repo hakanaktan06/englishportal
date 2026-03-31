@@ -1297,3 +1297,77 @@ window.checkLiveLesson = async function(teacherId) {
     fetchLiveStatus();
     setInterval(fetchLiveStatus, 10000); // 10 saniyede bir kontrol et
 }
+
+// ==========================================
+// 10. VIP ÖĞRENCİ REHBERİ (ONBOARDING TOUR)
+// ==========================================
+window.startStudentTour = function () {
+    const driver = window.driver.js.driver;
+    const tour = driver({
+        showProgress: true,
+        animate: true,
+        allowClose: true,
+        doneBtnText: 'Bitir',
+        nextBtnText: 'İleri',
+        prevBtnText: 'Geri',
+        steps: [
+            { 
+                element: '#studentNameDisplay', 
+                popover: { 
+                    title: 'Hoş Geldin!', 
+                    description: 'VIP eğitim portalına başarıyla giriş yaptın. Burası senin kişisel gelişim merkezin.', 
+                    side: "bottom", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '.grid-cols-2', 
+                popover: { 
+                    title: 'Başarı ve Ödüller', 
+                    description: 'Mevcut seviyeni ve topladığın FP-COIN\'lerini buradan takip edebilirsin. Ne kadar çok ödev, o kadar çok XP!', 
+                    side: "bottom", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#homework-list', 
+                popover: { 
+                    title: 'Ödevlerin', 
+                    description: 'Hocanın verdiği tüm ödevler burada listelenir. "BEKLEYEN" ödevlerini yapmayı unutma!', 
+                    side: "top", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#whiteboard-container', 
+                popover: { 
+                    title: 'Canlı Ders Tahtası', 
+                    description: 'Hocan dersteyken veya sonrasında not paylaştığında anında burada görünür.', 
+                    side: "top", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#darkModeToggle', 
+                popover: { 
+                    title: 'Karanlık Mod', 
+                    description: 'Gece çalışırken gözlerin yorulmasın diye temayı değiştirebilirsin.', 
+                    side: "bottom", 
+                    align: 'end' 
+                } 
+            }
+        ]
+    });
+
+    tour.drive();
+    localStorage.setItem('ep_student_tour_v1', 'completed');
+};
+
+// İlk girişte otomatik başlat
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        if (!localStorage.getItem('ep_student_tour_v1')) {
+            startStudentTour();
+        }
+    }, 2500);
+});
