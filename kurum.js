@@ -315,7 +315,7 @@ document.getElementById('logoutBtn').onclick = async () => {
 };
 
 // ==========================================
-// 10. VIP KURUM REHBERİ (ONBOARDING TOUR)
+// 10. VIP KURUM REHBERİ (PREMIUM TOUR)
 // ==========================================
 window.startKurumTour = function () {
     const driver = window.driver.js.driver;
@@ -323,15 +323,28 @@ window.startKurumTour = function () {
         showProgress: true,
         animate: true,
         allowClose: true,
-        doneBtnText: 'Bitir',
+        smoothScroll: true,
+        popoverClass: 'vip-tour-popover',
+        stagePadding: 10,
+        doneBtnText: 'Kurumu Yönetmeye Başla 🚀',
         nextBtnText: 'İleri',
         prevBtnText: 'Geri',
+        onHighlightStarted: (element) => {
+            if (element?.id === 'headerSchoolName' && typeof confetti === 'function') {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#4f46e5', '#fbbf24', '#ffffff']
+                });
+            }
+        },
         steps: [
             { 
                 element: '#headerSchoolName', 
                 popover: { 
-                    title: 'Kurumsal Hoş Geldiniz!', 
-                    description: 'Okulunuzun tüm dijital yönetim merkezi burasıdır. İsminizi ve logonuzu buradan kontrol edin.', 
+                    title: 'Kurumsal Yönetim Merkezi 🏛️', 
+                    description: 'VIP Rehber çözüm ortağınız olarak kurumunuzun kimliğini buradan yönetebilirsiniz.', 
                     side: "bottom", 
                     align: 'start' 
                 } 
@@ -339,8 +352,8 @@ window.startKurumTour = function () {
             { 
                 element: '.grid-cols-1.md\\:grid-cols-3', 
                 popover: { 
-                    title: 'Akademi İstatistikleri', 
-                    description: 'Toplam öğretmen ve öğrenci sayınızı, genel performans verilerinizi anlık takip edin.', 
+                    title: 'Akademi Analitiği', 
+                    description: 'Okulunuzdaki toplam aktif öğretmen ve öğrenci trafiğini tek bakışta analiz edin.', 
                     side: "bottom", 
                     align: 'start' 
                 } 
@@ -348,8 +361,8 @@ window.startKurumTour = function () {
             { 
                 element: '#teacherList', 
                 popover: { 
-                    title: 'Öğretmen Yönetimi', 
-                    description: 'Eğitmenlerinizi buradan ekleyebilir, yetkilerini düzenleyebilir ve performanslarını görebilirsiniz.', 
+                    title: 'Kadronuzu Yönetin', 
+                    description: 'Eğitmenlerinizi sisteme ekleyin, şifrelerini güncelleyin ve hangi sınıflardan sorumlu olduklarını buradan belirleyin.', 
                     side: "top", 
                     align: 'start' 
                 } 
@@ -357,8 +370,17 @@ window.startKurumTour = function () {
             { 
                 element: '#schoolBrandingSection', 
                 popover: { 
-                    title: 'Okul Markası', 
-                    description: 'Kendi logonuzu ve okul isminizi kaydedin. Tüm öğretmen ve öğrenci panellerinde sizin markanız görünsün.', 
+                    title: 'Kendi Markanızı Yaratın', 
+                    description: 'Okulunuzun logosunu ve ismini buraya yüklediğinizde, tüm öğretmen ve öğrencilerimiz sizin markanızı görecek!', 
+                    side: "top", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#kurumLogsList', 
+                popover: { 
+                    title: 'Şeffaf Kayıtlar', 
+                    description: 'Sistemde yapılan tüm kritik işlemlerin loglarını (kim neyi ne zaman değiştirdi) buradan anlık takip edin.', 
                     side: "top", 
                     align: 'start' 
                 } 
@@ -366,8 +388,8 @@ window.startKurumTour = function () {
             { 
                 element: '#btnTour', 
                 popover: { 
-                    title: 'Yeniden Başlat', 
-                    description: 'Aklınıza takılan bir şey olursa bu butona basarak turu istediğiniz zaman tekrar başlatabilirsiniz.', 
+                    title: 'Pusula Her Zaman Burada', 
+                    description: 'Sisteme yeni bir özellik eklendiğinde veya yardıma ihtiyaç duyduğunuzda bu butona basarak turu tekrarlayabilirsiniz.', 
                     side: "bottom", 
                     align: 'end' 
                 } 
@@ -376,13 +398,13 @@ window.startKurumTour = function () {
     });
 
     tour.drive();
-    localStorage.setItem('ep_kurum_tour_v1', 'completed');
+    localStorage.setItem('ep_kurum_tour_v19', 'completed');
 };
 
 // İlk girişte otomatik başlat
 window.addEventListener('load', () => {
     setTimeout(() => {
-        if (!localStorage.getItem('ep_kurum_tour_v1')) {
+        if (!localStorage.getItem('ep_kurum_tour_v19')) {
             startKurumTour();
         }
     }, 2500);
