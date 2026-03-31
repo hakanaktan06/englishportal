@@ -56,4 +56,3 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Bilinmeyen bir hata oluştu: ' + err.message });
   }
 };
-
