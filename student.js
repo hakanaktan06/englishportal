@@ -171,17 +171,28 @@ async function saveLog(action, details = "") {
 // 2. OTURUM KONTROLÜ VE SPLASH EKRANI KAPATMA
 // ==========================================
 async function initStudentPortal() {
+    // 🌟 REDIRECT LOOP BREAK: Sayfa açılırken 700ms bekle (Supabase uyanışı için)
+    await new Promise(r => setTimeout(r, 700));
+
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) { window.location.href = 'index.html'; return; }
 
     currentStudentId = user.id;
     
-    // 🌟 PROFİL VERİLERİNİ ÇEK (Ekrana yazdırmak için şart!)
-    const { data: profile, error: pError } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+    // 🌟 PROFİL FETCH VE RETRY (Profil bazen geç gelebilir)
+    let { data: profile, error: pError } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
 
     if (pError || !profile) {
-        console.error("Profil yüklenemedi:", pError);
-        // Hata olsa bile kullanıcıyı içeride tutalım ama splash'i kapatalım
+        // Bir kez daha deneyelim (Network gecikmesi olabilir)
+        const retry = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+        profile = retry.data;
+        pError = retry.error;
+        
+        if (pError || !profile) {
+            console.error("Profil yüklenemedi:", pError);
+            window.location.href = 'index.html';
+            return;
+        }
     }
 
     if (profile) { 
