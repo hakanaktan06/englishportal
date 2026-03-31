@@ -80,10 +80,25 @@ loginForm.addEventListener('submit', async (e) => {
         return;
     }
 
+    const loginRole = document.getElementById('loginRole').value;
+
+    // 🛡️ ROL DOĞRULAMA MOTORU (FEDAİ)
     if (profileData.role === 'teacher') {
+        if (loginRole !== 'teacher') {
+            await supabaseClient.auth.signOut();
+            showError(errorBox, "YETKİ HATASI: Bu formdan sadece öğrenciler giriş yapabilir.");
+            resetButton(loginBtn, originalBtnText);
+            return;
+        }
         window.location.href = 'panel.html';
     } else if (profileData.role === 'student') {
-        const loginRole = document.getElementById('loginRole').value;
+        if (loginRole !== 'student' && loginRole !== 'parent') {
+            await supabaseClient.auth.signOut();
+            showError(errorBox, "YETKİ HATASI: Bu formdan sadece eğitmenler giriş yapabilir.");
+            resetButton(loginBtn, originalBtnText);
+            return;
+        }
+
         if (loginRole === 'parent') {
             localStorage.setItem('lastLoginRole', 'parent');
             window.location.href = `veli.html?id=${userId}`;
@@ -92,7 +107,14 @@ loginForm.addEventListener('submit', async (e) => {
             window.location.href = 'student.html';
         }
     } else if (profileData.role === 'god') {
-        window.location.href = 'patron.html'; // PATRON PANELİ GİRİŞİ HAZIRLIĞI
+        // God her yerden girebilir ama öğretmen sekmesini kullanması önerilir
+        if (loginRole !== 'teacher') {
+            await supabaseClient.auth.signOut();
+            showError(errorBox, "YETKİ HATASI: Patron girişi için eğitmen sekmesini kullanın.");
+            resetButton(loginBtn, originalBtnText);
+            return;
+        }
+        window.location.href = 'patron.html';
     } else {
         showError(errorBox, "Yetkiniz belirsiz.");
         resetButton(loginBtn, originalBtnText);
