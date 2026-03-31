@@ -100,7 +100,99 @@ function customConfirm(message, btnText = "Evet, İşlemi Yap") {
 // ==========================================
 // GÜVENLİK (FEDAİ) MOTORU VE SÜRE KONTROLÜ
 // ==========================================
-async function checkTeacherSecurity() {
+// ==========================================
+// 15. VIP PLATFORM REHBERİ (ONBOARDING TOUR)
+// ==========================================
+window.startPlatformTour = function () {
+    const driver = window.driver.js.driver;
+    const tour = driver({
+        showProgress: true,
+        animate: true,
+        allowClose: true,
+        doneBtnText: 'Bitir',
+        nextBtnText: 'İleri',
+        prevBtnText: 'Geri',
+        steps: [
+            { 
+                element: '#mainSidebar', 
+                popover: { 
+                    title: 'VIP Menü Navigasyonu', 
+                    description: 'Tüm modüllere (Öğrenci, Ödev, Sınav, Finans) buradan ulaşabilirsiniz. VIP özellikler bu menüde gizlidir.', 
+                    side: "right", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#premiumBadge', 
+                popover: { 
+                    title: 'VIP Statüsü', 
+                    description: 'Abone durumunuzu ve kurumsal VIP mirasını buradan takip edebilirsiniz. Logo parlıyorsa VIP aktif demektir!', 
+                    side: "bottom", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#section-dashboard', 
+                popover: { 
+                    title: 'Kokpit (Dashboard)', 
+                    description: 'Sınıf ortalaması, bekleyen tahsilat ve kayıtlı öğrenci sayısı gibi kritik verilere buradan göz atın.', 
+                    side: "bottom", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#agendaList', 
+                popover: { 
+                    title: 'Yaklaşan Program', 
+                    description: 'Bugün ve yarın için planlanan dertleriniz ve ödevleriniz burada otomatik listelenir.', 
+                    side: "top", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#btn-whiteboard', 
+                popover: { 
+                    title: 'Dijital Beyaz Tahta', 
+                    description: 'Öğrencilerinizle gerçek zamanlı notlarınızı buradan paylaşabilirsiniz. Her yazdığınız anında ekranlarına düşer.', 
+                    side: "right", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#darkModeToggle', 
+                popover: { 
+                    title: 'Görünüm Ayarları', 
+                    description: 'Gözünüz yorulmasın diye Karanlık Mod (Dark Mode) her zaman elinizin altında.', 
+                    side: "bottom", 
+                    align: 'end' 
+                } 
+            },
+            { 
+                element: 'a[href*="wa.me"]', 
+                popover: { 
+                    title: '7/24 VIP Destek', 
+                    description: 'Bir sorunuz olduğunda doğrudan kurucularımıza WhatsApp üzerinden ulaşın.', 
+                    side: "top", 
+                    align: 'end' 
+                } 
+            }
+        ]
+    });
+
+    tour.drive();
+    localStorage.setItem('ep_tour_v1', 'completed');
+};
+
+// İlk girişte otomatik başlat
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        if (!localStorage.getItem('ep_tour_v1')) {
+            startPlatformTour();
+        }
+    }, 2000);
+});
+
+async function checkActiveSession() {
     // 🌟 STABILIZATION: Supabase'in tam oturması için kısa bekleme
     await new Promise(r => setTimeout(r, 700));
 
