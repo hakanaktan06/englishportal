@@ -443,8 +443,10 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
         </div>`;
 
     try {
-        const { data: students } = await supabaseClient.from('profiles').select('id, full_name').eq('teacher_id', currentTeacherId).eq('role', 'student');
+        const { data: students, error: sErr } = await supabaseClient.from('profiles').select('id, full_name').eq('teacher_id', currentTeacherId).eq('role', 'student');
         
+        console.log("FLOW_STUDENTS_QUERY:", { students, sErr, currentTeacherId });
+
         if (!students || students.length === 0) {
             container.innerHTML = `<div class="p-10 text-center text-gray-400 font-bold uppercase tracking-widest opacity-50 italic text-[10px]">Henüz takip edilecek öğrenci bulunmuyor.</div>`;
             return;
@@ -454,12 +456,16 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
         const studentMap = {};
         students.forEach(s => studentMap[s.id] = s.full_name);
 
+        console.log("FLOW_STUDENT_IDS:", studentIds);
+
         const loadInitialLogs = async () => {
             const { data: logs, error } = await supabaseClient.from('audit_logs')
                 .select('*')
                 .in('user_id', studentIds)
                 .order('created_at', { ascending: false })
                 .limit(containerId === 'studentLiveLogs' ? 10 : 50);
+
+            console.log("FLOW_LOGS_QUERY_RESULT:", { logs, error, containerId });
 
             if (error || !logs || logs.length === 0) {
                 container.innerHTML = `<div class="p-10 text-center text-gray-400 font-bold uppercase tracking-widest opacity-50 italic text-[10px]">Henüz bir hareket sinyali gelmedi.</div>`;
