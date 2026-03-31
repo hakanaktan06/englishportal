@@ -112,118 +112,114 @@ function customConfirm(message, btnText = "Evet, İşlemi Yap") {
 // GÜVENLİK (FEDAİ) MOTORU VE SÜRE KONTROLÜ
 // ==========================================
 async function checkTeacherSecurity() {
-    // 🌟 REDIRECT LOOP BREAK: Sayfa açılırken 700ms bekle (Supabase uyanışı için)
+    // 🌟 STABILIZATION: Supabase'in tam oturması için kısa bekleme
     await new Promise(r => setTimeout(r, 700));
 
     try {
         const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-        if (authError || !user) { window.location.href = 'index.html'; return; }
+        if (authError || !user) { 
+            console.warn("Kullanıcı bulunamadı, giriş sayfasına yönlendiriliyor.");
+            window.location.href = 'index.html'; 
+            return; 
+        }
 
-        // 🌟 PROFİL FETCH VE RETRY (Profil bazen geç gelebilir)
-        let { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until, bank_iban, bank_receiver, school_logo, school_name, school_id').eq('id', user.id).single();
+        // 🌟 STEP 1: Sadece Rolü Kontrol Et (Hızlı & Güvenli)
+        const { data: roleCheck, error: roleError } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
         
-        if (profileError || !profile) {
-            // Bir kez daha deneyelim (Network gecikmesi olabilir)
-            const retry = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until, bank_iban, bank_receiver, school_logo, school_name, school_id').eq('id', user.id).single();
-            profile = retry.data;
-            profileError = retry.error;
-            
-            if (profileError || !profile) {
-                window.location.href = 'index.html';
-                return;
-            }
-        }
-
-        // KURUMSAL MARKALAMA (White-labeling)
-        if (profile.school_name) {
-            document.querySelectorAll('.school-name-display').forEach(el => el.innerText = profile.school_name);
-        }
-        if (profile.school_logo) {
-            document.querySelectorAll('.school-logo-display').forEach(el => el.src = profile.school_logo);
-        }
-
-        if (profile.role === 'god') {
-            window.location.href = 'patron.html';
+        if (roleError || !roleCheck) {
+            console.error("Yetki kontrolü başarısız:", roleError);
+            window.location.href = 'index.html';
             return;
         }
 
-        if (profile.role !== 'teacher') {
-            showToast("Erişim Engellendi: Bu alanı görüntülemek için yetkiniz bulunmamaktadır.", "error");
-            setTimeout(() => { window.location.href = 'student.html'; }, 1000);
+        if (roleCheck.role !== 'teacher' && roleCheck.role !== 'god') {
+            console.warn("Yetkisiz rol erişimi:", roleCheck.role);
+            window.location.href = 'student.html';
             return;
+        }
+
+        // Eğer buradaysak yetki TAMAM. Splash'i hemen kapatalım ki kullanıcı beklediğini hissetmesin.
+        const splash = document.getElementById('splashScreen');
+        if (splash) {
+            splash.classList.add('opacity-0');
+            setTimeout(() => splash.classList.add('hidden'), 700);
         }
 
         currentTeacherId = user.id;
-        currentTeacherName = profile.full_name;
+
+        // 🌟 STEP 2: Detaylı Verileri Arkadan Çek (Non-blocking)
+        loadExtendedTeacherProfile(user.id);
+
+    } catch (e) {
+        console.error("Güvenlik sistemi hatası:", e);
+    }
+}
+
+async function loadExtendedTeacherProfile(userId) {
+    try {
+        const { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
+        
+        if (error || !profile) {
+            console.warn("Profil detayları çekilemedi (Bazı kolonlar eksik olabilir):", error);
+            return;
+        }
+
+        currentTeacherName = profile.full_name || 'Eğitmen';
         currentTeacherIban = profile.bank_iban || '';
         currentTeacherBankReceiver = profile.bank_receiver || '';
 
-        // 🌟 TARİH KONTROLÜ (SÜRESİ BİTMİŞ Mİ?) 🌟
-        if (profile.is_premium && profile.premium_until) {
-            const today = new Date();
-            const expiry = new Date(profile.premium_until);
-            if (today > expiry) {
-                isPremiumTeacher = false; // Süre doldu, hoca Freemium'a düştü!
-            } else {
-                isPremiumTeacher = true; // Hala süresi var
-            }
-        } else {
-            isPremiumTeacher = profile.is_premium;
-        }
-
-        // 🌟 KİLİT VE ROZET GÖRÜNÜMÜ KONTROLÜ 🌟
-        if (isPremiumTeacher) {
-            document.getElementById('premiumBadge')?.classList.remove('hidden');
-            document.getElementById('lockIconVeli')?.classList.add('hidden');
-            document.getElementById('lockIconKarne')?.classList.add('hidden');
-            document.getElementById('lockIconSertifika')?.classList.add('hidden');
-            document.getElementById('lockIconAI')?.classList.add('hidden');
-            document.getElementById('lockIconEksik')?.classList.add('hidden');
-        } else {
-            document.getElementById('premiumBadge')?.classList.add('hidden');
-            document.getElementById('lockIconVeli')?.classList.remove('hidden');
-            document.getElementById('lockIconKarne')?.classList.remove('hidden');
-            document.getElementById('lockIconSertifika')?.classList.remove('hidden');
-            document.getElementById('lockIconAI')?.classList.remove('hidden');
-            document.getElementById('lockIconEksik')?.classList.remove('hidden');
-        }
-
+        // UI Güncellemeleri
         const welcomeNameEl = document.getElementById('welcomeTeacherName');
         if (welcomeNameEl) welcomeNameEl.innerText = currentTeacherName + " Öğretmenim";
 
         const agendaNameEl = document.getElementById('agendaTeacherName');
         if (agendaNameEl) agendaNameEl.innerText = currentTeacherName + " Öğretmenim, şimdi kafa dinleme vakti!";
 
-        switchTab('dashboard');
+        // Markalama
+        if (profile.school_name) document.querySelectorAll('.school-name-display').forEach(el => el.innerText = profile.school_name);
+        if (profile.school_logo) document.querySelectorAll('.school-logo-display').forEach(el => el.src = profile.school_logo);
 
-        setTimeout(() => {
-            const splash = document.getElementById('splashScreen');
-            if (splash) {
-                splash.classList.add('opacity-0');
-                setTimeout(() => splash.classList.add('hidden'), 700);
-            }
+        // Premium Kontrolü
+        if (profile.is_premium && profile.premium_until) {
+            const today = new Date();
+            const expiry = new Date(profile.premium_until);
+            isPremiumTeacher = (today <= expiry);
+        } else {
+            isPremiumTeacher = profile.is_premium;
+        }
 
-            // TEK SEFERLİK PREMİUM KUTLAMASI
-            if (isPremiumTeacher) {
-                const isCelebrated = localStorage.getItem('premium_celebrated_' + user.id);
-                if (!isCelebrated) {
-                    const modal = document.getElementById('premiumCelebrationModal');
-                    const box = document.getElementById('premiumCelebrationBox');
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                        setTimeout(() => {
-                            modal.classList.remove('opacity-0');
-                            box.classList.remove('scale-95');
-                        }, 50);
-                        localStorage.setItem('premium_celebrated_' + user.id, 'true'); // Hafızaya yaz ki bir daha göstermesin
-                    }
+        // Kilitleri yönet
+        updatePremiumUI();
+
+        // 🌟 TEK SEFERLİK PREMİUM KUTLAMASI (Ayrı bir adım olarak)
+        if (isPremiumTeacher) {
+            const isCelebrated = localStorage.getItem('premium_celebrated_' + userId);
+            if (!isCelebrated) {
+                const modal = document.getElementById('premiumCelebrationModal');
+                const box = document.getElementById('premiumCelebrationBox');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    setTimeout(() => {
+                        modal.classList.remove('opacity-0');
+                        box.classList.remove('scale-95');
+                    }, 50);
+                    localStorage.setItem('premium_celebrated_' + userId, 'true');
                 }
             }
+        }
 
-        }, 400);
-    } catch (err) {
-        console.error(err);
-        window.location.href = 'index.html';
+    } catch (e) { 
+        console.error("Profil detay yükleme hatası:", e); 
+    }
+}
+
+function updatePremiumUI() {
+    if (isPremiumTeacher) {
+        document.getElementById('premiumBadge')?.classList.remove('hidden');
+        document.querySelectorAll('.lock-icon').forEach(el => el.classList.add('hidden'));
+    } else {
+        document.getElementById('premiumBadge')?.classList.add('hidden');
+        document.querySelectorAll('.lock-icon').forEach(el => el.classList.remove('hidden'));
     }
 }
 
