@@ -82,11 +82,11 @@ loginForm.addEventListener('submit', async (e) => {
 
     const loginRole = document.getElementById('loginRole').value;
 
-    // 🛡️ ROL DOĞRULAMA MOTORU (FEDAİ)
+    // ROL DOĞRULAMA MOTORU
     if (profileData.role === 'teacher') {
         if (loginRole !== 'teacher') {
             await supabaseClient.auth.signOut();
-            showError(errorBox, "YETKİ HATASI: Bu formdan sadece öğrenciler giriş yapabilir.");
+            showError(errorBox, "Erişim Reddedildi: Lütfen eğitmen panelini kullanın.");
             resetButton(loginBtn, originalBtnText);
             return;
         }
@@ -94,29 +94,24 @@ loginForm.addEventListener('submit', async (e) => {
     } else if (profileData.role === 'student') {
         if (loginRole !== 'student' && loginRole !== 'parent') {
             await supabaseClient.auth.signOut();
-            showError(errorBox, "YETKİ HATASI: Bu formdan sadece eğitmenler giriş yapabilir.");
+            showError(errorBox, "Erişim Reddedildi: Lütfen öğrenci/veli panelini kullanın.");
             resetButton(loginBtn, originalBtnText);
             return;
         }
-
-        if (loginRole === 'parent') {
-            localStorage.setItem('lastLoginRole', 'parent');
-            window.location.href = `veli.html?id=${userId}`;
-        } else {
-            localStorage.setItem('lastLoginRole', 'student');
-            window.location.href = 'student.html';
-        }
-    } else if (profileData.role === 'god') {
-        // God her yerden girebilir ama öğretmen sekmesini kullanması önerilir
-        if (loginRole !== 'teacher') {
+        localStorage.setItem('lastLoginRole', loginRole);
+        window.location.href = (loginRole === 'parent') ? `veli.html?id=${userId}` : 'student.html';
+    } else if (profileData.role === 'kurum') {
+        if (loginRole !== 'kurum') {
             await supabaseClient.auth.signOut();
-            showError(errorBox, "YETKİ HATASI: Patron girişi için eğitmen sekmesini kullanın.");
+            showError(errorBox, "Erişim Reddedildi: Lütfen kurum panelini kullanın.");
             resetButton(loginBtn, originalBtnText);
             return;
         }
+        window.location.href = 'kurum.html';
+    } else if (profileData.role === 'god') {
         window.location.href = 'patron.html';
     } else {
-        showError(errorBox, "Yetkiniz belirsiz.");
+        showError(errorBox, "Tanımlanamayan Üyelik Tipi!");
         resetButton(loginBtn, originalBtnText);
     }
 });
@@ -153,21 +148,23 @@ registerForm.addEventListener('submit', async (e) => {
     }
 
     if (authData.user) {
-        // 2. Profiles tablosuna 'teacher' olarak ve limitsiz premium 'false' olarak ekle
+        const loginRole = document.getElementById('loginRole').value;
+        const targetRole = (loginRole === 'kurum') ? 'kurum' : 'teacher';
+
         const { error: profileError } = await supabaseClient.from('profiles').insert([{
             id: authData.user.id,
             full_name: name,
             email: email,
-            role: 'teacher',
-            is_premium: false // Varsayılan olarak Freemium hesap
+            role: targetRole,
+            is_premium: (targetRole === 'kurum') ? true : false, // Kurumlar deneme amaçlı direkt premium başlar
+            school_id: authData.user.id // Kendisi bir kurumsa, school_id kendisidir
         }]);
 
         if (profileError) {
             showError(regErrorBox, "Profil oluşturulamadı.");
             resetButton(regBtn, originalBtnText);
         } else {
-            // Kayıt başarılıysa direkt panele at
-            window.location.href = 'panel.html';
+            window.location.href = (targetRole === 'kurum') ? 'kurum.html' : 'panel.html';
         }
     }
 });
@@ -203,20 +200,94 @@ document.getElementById('togglePasswordBtn')?.addEventListener('click', () => {
 // ==========================================
 // OTOMATİK OTURUM KONTROLÜ
 // ==========================================
+// ==========================================
+// DİL DEĞİŞTİRME MOTORU (i18n)
+// ==========================================
+const translations = {
+    tr: {
+        "nav-features": "Özellikler",
+        "nav-about": "Hakkımızda",
+        "login-title": "Giriş Yap",
+        "login-subtitle": "Eğitim yolculuğuna devam et.",
+        "tab-student": "Öğrenci",
+        "tab-teacher": "Eğitmen",
+        "tab-kurum": "Kurum",
+        "label-user": "Kullanıcı Adı veya Email",
+        "label-pass": "Şifre",
+        "btn-login": "GİRİŞ YAP",
+        "btn-register-link": "Hemen Kaydol",
+        "reg-title": "Yeni Hesap Oluştur",
+        "reg-subtitle": "English Portal dünyasına katıl.",
+        "label-fullname": "Ad Soyad",
+        "btn-register": "KAYIT OL",
+        "footer-text": "Dil öğreniminde yapay zeka destekli profesyonel çözüm."
+    },
+    en: {
+        "nav-features": "Features",
+        "nav-about": "About",
+        "login-title": "Login",
+        "login-subtitle": "Continue your learning journey.",
+        "tab-student": "Student",
+        "tab-teacher": "Teacher",
+        "tab-kurum": "Institution",
+        "label-user": "Username or Email",
+        "label-pass": "Password",
+        "btn-login": "LOGIN",
+        "btn-register-link": "Register Now",
+        "reg-title": "Create New Account",
+        "reg-subtitle": "Join the English Portal world.",
+        "label-fullname": "Full Name",
+        "btn-register": "REGISTER",
+        "footer-text": "AI-powered professional solution for language learning."
+    }
+};
+
+window.changeLang = function(lang) {
+    localStorage.setItem('ep_lang', lang);
+    applyTranslations();
+};
+
+function applyTranslations() {
+    const lang = localStorage.getItem('ep_lang') || 'tr';
+    const langTR = document.getElementById('langTR');
+    const langEN = document.getElementById('langEN');
+
+    if(lang === 'en') {
+        if(langEN) langEN.classList.add('text-white');
+        if(langTR) langTR.classList.add('text-white/50');
+        if(langEN) langEN.classList.remove('text-white/50');
+        if(langTR) langTR.classList.remove('text-white');
+    } else {
+        if(langTR) langTR.classList.add('text-white');
+        if(langEN) langEN.classList.add('text-white/50');
+        if(langTR) langTR.classList.remove('text-white/50');
+        if(langEN) langEN.classList.remove('text-white');
+    }
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+            if (el.tagName === 'INPUT') {
+                el.placeholder = translations[lang][key];
+            } else {
+                el.innerText = translations[lang][key];
+            }
+        }
+    });
+}
+applyTranslations();
+
 async function checkActiveSession() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
         const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
 
-        if (profile && profile.role === 'teacher') {
-            window.location.href = 'panel.html';
-        } else if (profile && profile.role === 'student') {
+        if (profile && profile.role === 'teacher') window.location.href = 'panel.html';
+        else if (profile && profile.role === 'kurum') window.location.href = 'kurum.html';
+        else if (profile && profile.role === 'student') {
             const lastRole = localStorage.getItem('lastLoginRole');
-            if (lastRole === 'parent') window.location.href = `veli.html?id=${session.user.id}`;
-            else window.location.href = 'student.html';
-        } else if (profile && profile.role === 'god') {
-            window.location.href = 'patron.html';
-        }
+            window.location.href = (lastRole === 'parent') ? `veli.html?id=${session.user.id}` : 'student.html';
+        } else if (profile && profile.role === 'god') window.location.href = 'patron.html';
     }
 }
 checkActiveSession();
