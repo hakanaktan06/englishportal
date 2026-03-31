@@ -313,3 +313,77 @@ document.getElementById('logoutBtn').onclick = async () => {
     await supabaseClient.auth.signOut();
     window.location.href = 'index.html';
 };
+
+// ==========================================
+// 10. VIP KURUM REHBERİ (ONBOARDING TOUR)
+// ==========================================
+window.startKurumTour = function () {
+    const driver = window.driver.js.driver;
+    const tour = driver({
+        showProgress: true,
+        animate: true,
+        allowClose: true,
+        doneBtnText: 'Bitir',
+        nextBtnText: 'İleri',
+        prevBtnText: 'Geri',
+        steps: [
+            { 
+                element: '#headerSchoolName', 
+                popover: { 
+                    title: 'Kurumsal Hoş Geldiniz!', 
+                    description: 'Okulunuzun tüm dijital yönetim merkezi burasıdır. İsminizi ve logonuzu buradan kontrol edin.', 
+                    side: "bottom", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '.grid-cols-1.md\\:grid-cols-3', 
+                popover: { 
+                    title: 'Akademi İstatistikleri', 
+                    description: 'Toplam öğretmen ve öğrenci sayınızı, genel performans verilerinizi anlık takip edin.', 
+                    side: "bottom", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#teacherList', 
+                popover: { 
+                    title: 'Öğretmen Yönetimi', 
+                    description: 'Eğitmenlerinizi buradan ekleyebilir, yetkilerini düzenleyebilir ve performanslarını görebilirsiniz.', 
+                    side: "top", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#schoolBrandingSection', 
+                popover: { 
+                    title: 'Okul Markası', 
+                    description: 'Kendi logonuzu ve okul isminizi kaydedin. Tüm öğretmen ve öğrenci panellerinde sizin markanız görünsün.', 
+                    side: "top", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#btnTour', 
+                popover: { 
+                    title: 'Yeniden Başlat', 
+                    description: 'Aklınıza takılan bir şey olursa bu butona basarak turu istediğiniz zaman tekrar başlatabilirsiniz.', 
+                    side: "bottom", 
+                    align: 'end' 
+                } 
+            }
+        ]
+    });
+
+    tour.drive();
+    localStorage.setItem('ep_kurum_tour_v1', 'completed');
+};
+
+// İlk girişte otomatik başlat
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        if (!localStorage.getItem('ep_kurum_tour_v1')) {
+            startKurumTour();
+        }
+    }, 2500);
+});
