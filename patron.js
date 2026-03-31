@@ -312,35 +312,25 @@ async function fetchTeachers() {
         if (unpaidLessons) unpaidLessons.filter(l => l.teacher_id === teacher.id).forEach(l => myUnpaidDebt += Number(l.price || 0));
 
         let myInst = allInstitutions ? allInstitutions.find(i => i.id === teacher.school_id) : null;
-        let isVip = teacher.is_premium || (myInst && myInst.is_premium);
+        let isIndividualVip = teacher.is_premium;
+        if (isIndividualVip && teacher.premium_until) {
+            if (new Date(teacher.premium_until) < new Date()) isIndividualVip = false;
+        }
+
+        let isInstitutionalVip = myInst && myInst.is_premium;
+        let isVip = isIndividualVip || isInstitutionalVip;
+        
         let badgeHtml = "";
 
         if (isVip) {
-            let label = "VIP AKTİF";
+            let label = isIndividualVip ? "VIP AKTİF" : "VIP (Kurumsal)";
             let subLabel = "";
 
-            if (teacher.is_premium && teacher.premium_until) {
-                const expiryDate = new Date(teacher.premium_until);
-                if (new Date() > expiryDate) {
-                    isVip = false; // Süresi bitmiş bireysel VIP ise standarda düşebilir (eğer kurumu da VIP değilse)
-                    if (! (myInst && myInst.is_premium)) {
-                        label = "Süresi Bitti";
-                    } else {
-                        label = "VIP (Kurumsal)"; // Kurum hala VIP ise süresi biten bireysel hoca kurtarıldı!
-                        isVip = true;
-                    }
-                } else {
-                    subLabel = `SON: ${expiryDate.toLocaleDateString('tr-TR')}`;
-                }
-            } else if (myInst && myInst.is_premium) {
-                label = "VIP (Kurumsal)";
+            if (isIndividualVip && teacher.premium_until) {
+                subLabel = `SON: ${new Date(teacher.premium_until).toLocaleDateString('tr-TR')}`;
             }
 
-            if (isVip) {
-                badgeHtml = `<div class="flex flex-col items-end"><span class="bg-amber-500/20 text-amber-500 border border-amber-500/50 px-2 py-1 rounded-md text-[9px] md:text-[10px] font-black uppercase tracking-widest shadow-[0_0_10px_rgba(245,158,11,0.2)] mb-1 whitespace-nowrap">${label}</span>${subLabel ? '<span class="text-[8px] md:text-[9px] text-amber-500/70 font-bold tracking-widest whitespace-nowrap">'+subLabel+'</span>' : ''}</div>`;
-            } else {
-                badgeHtml = `<div class="flex flex-col items-end"><span class="bg-slate-700/50 text-slate-400 border border-slate-600 px-2 py-1 rounded-md text-[9px] md:text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Standart</span></div>`;
-            }
+            badgeHtml = `<div class="flex flex-col items-end"><span class="bg-amber-500/20 text-amber-500 border border-amber-500/50 px-2 py-1 rounded-md text-[9px] md:text-[10px] font-black uppercase tracking-widest shadow-[0_0_10px_rgba(245,158,11,0.2)] mb-1 whitespace-nowrap">${label}</span>${subLabel ? '<span class="text-[8px] md:text-[9px] text-amber-500/70 font-bold tracking-widest whitespace-nowrap">'+subLabel+'</span>' : ''}</div>`;
         } else {
             badgeHtml = `<div class="flex flex-col items-end"><span class="bg-slate-700/50 text-slate-400 border border-slate-600 px-2 py-1 rounded-md text-[9px] md:text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Standart</span></div>`;
         }
