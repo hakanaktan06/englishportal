@@ -73,6 +73,18 @@ function updateChartTheme(isDark) {
 async function loadVeliPortal() {
     if (!studentId) { showError(); return; }
 
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) { window.location.href = 'index.html'; return; }
+
+    const { data: currentUserProfile } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
+    if (currentUserProfile && currentUserProfile.role === 'teacher') {
+        window.location.href = 'panel.html';
+        return;
+    } else if (currentUserProfile && currentUserProfile.role === 'god') {
+        window.location.href = 'patron.html';
+        return;
+    }
+
     // 1. Öğrenci Adını ve Öğretmen Bilgisini Çek
     const { data: student, error: studErr } = await supabaseClient.from('profiles').select('full_name, teacher_id').eq('id', studentId).single();
     if (studErr || !student) { showError(); return; }
@@ -247,10 +259,10 @@ window.copyIban = function() {
         return;
     }
     navigator.clipboard.writeText(globalTeacherIban).then(() => {
-        showVeliToast(" IBAN Başarıyla Kopyalandı!", "success");
+        showVeliToast("✅ IBAN Başarıyla Kopyalandı!", "success");
         const btn = event.currentTarget;
         const originalHtml = btn.innerHTML;
-        btn.innerHTML = " KOPYALANDI!";
+        btn.innerHTML = "✅ KOPYALANDI!";
         btn.classList.replace('bg-indigo-600', 'bg-emerald-600');
         setTimeout(() => {
             btn.innerHTML = originalHtml;
