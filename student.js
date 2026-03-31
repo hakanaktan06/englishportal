@@ -1299,7 +1299,7 @@ window.checkLiveLesson = async function(teacherId) {
 }
 
 // ==========================================
-// 10. VIP ÖĞRENCİ REHBERİ (ONBOARDING TOUR)
+// 10. VIP ÖĞRENCİ REHBERİ (PREMIUM TOUR)
 // ==========================================
 window.startStudentTour = function () {
     const driver = window.driver.js.driver;
@@ -1307,15 +1307,28 @@ window.startStudentTour = function () {
         showProgress: true,
         animate: true,
         allowClose: true,
-        doneBtnText: 'Bitir',
+        smoothScroll: true,
+        popoverClass: 'vip-tour-popover',
+        stagePadding: 10,
+        doneBtnText: 'Anlaşıldı! 🎓',
         nextBtnText: 'İleri',
         prevBtnText: 'Geri',
+        onHighlightStarted: (element) => {
+            if (element?.id === 'studentNameDisplay' && typeof confetti === 'function') {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#4f46e5', '#fbbf24', '#ffffff']
+                });
+            }
+        },
         steps: [
             { 
                 element: '#studentNameDisplay', 
                 popover: { 
-                    title: 'Hoş Geldin!', 
-                    description: 'VIP eğitim portalına başarıyla giriş yaptın. Burası senin kişisel gelişim merkezin.', 
+                    title: 'VIP Dünyasına Hoş Geldin! 🌟', 
+                    description: 'İngilizce öğrenme yolculuğunda senin için en teknolojik araçları hazırladık. Hadi birlikte keşfedelim!', 
                     side: "bottom", 
                     align: 'start' 
                 } 
@@ -1323,8 +1336,8 @@ window.startStudentTour = function () {
             { 
                 element: '.grid-cols-2', 
                 popover: { 
-                    title: 'Başarı ve Ödüller', 
-                    description: 'Mevcut seviyeni ve topladığın FP-COIN\'lerini buradan takip edebilirsin. Ne kadar çok ödev, o kadar çok XP!', 
+                    title: 'Seviyen ve Ödüllerin', 
+                    description: 'Buradan XP puanlarını ve kazandığın FP-COIN\'lerini görebilirsin. Ne kadar çok çalışırsan o kadar çok ödül kazanırsın!', 
                     side: "bottom", 
                     align: 'start' 
                 } 
@@ -1332,26 +1345,53 @@ window.startStudentTour = function () {
             { 
                 element: '#homework-list', 
                 popover: { 
-                    title: 'Ödevlerin', 
-                    description: 'Hocanın verdiği tüm ödevler burada listelenir. "BEKLEYEN" ödevlerini yapmayı unutma!', 
+                    title: 'Ödev Takvimi', 
+                    description: 'Hocanın gönderdiği tüm ödevler burada listelenir. "BEKLEYEN" ödevlerini zamanında bitirmeyi unutma!', 
                     side: "top", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: 'nav.flex-1', 
+                popover: { 
+                    title: 'Etkinlik Kütüphanesi', 
+                    description: 'Kelime oyunları, okuma parçaları ve dinleme aktiviteleriyle dolu zengin içeriklere buradan ulaşabilirsin.', 
+                    side: "right", 
                     align: 'start' 
                 } 
             },
             { 
                 element: '#whiteboard-container', 
                 popover: { 
-                    title: 'Canlı Ders Tahtası', 
-                    description: 'Hocan dersteyken veya sonrasında not paylaştığında anında burada görünür.', 
+                    title: 'Canlı Ders Notları', 
+                    description: 'Hocan dersteyken tahtaya yazdığı her şey anında burada görünür. Dersten sonra da buraya bakabilirsin!', 
                     side: "top", 
+                    align: 'start' 
+                } 
+            },
+            { 
+                element: '#sidebarMenu a[href*="shop"]', 
+                popover: { 
+                    title: 'Market & Avatar', 
+                    description: 'Kazandığın coinler ile karakterine yeni eşyalar alabilir ve tarzını konuşturabilirsin.', 
+                    side: "right", 
                     align: 'start' 
                 } 
             },
             { 
                 element: '#darkModeToggle', 
                 popover: { 
-                    title: 'Karanlık Mod', 
-                    description: 'Gece çalışırken gözlerin yorulmasın diye temayı değiştirebilirsin.', 
+                    title: 'Gözlerin Yorulmasın', 
+                    description: 'Gece çalışmaları için Karanlık Mod\'u istediğin zaman buradan açabilirsin.', 
+                    side: "bottom", 
+                    align: 'end' 
+                } 
+            },
+            { 
+                element: '#btnTour', 
+                popover: { 
+                    title: 'Yardım Her Zaman Yanında', 
+                    description: 'Kafan karışırsa bu butona basarak turu her zaman yeniden başlatabilirsin.', 
                     side: "bottom", 
                     align: 'end' 
                 } 
@@ -1360,13 +1400,13 @@ window.startStudentTour = function () {
     });
 
     tour.drive();
-    localStorage.setItem('ep_student_tour_v1', 'completed');
+    localStorage.setItem('ep_student_tour_v19', 'completed');
 };
 
 // İlk girişte otomatik başlat
 window.addEventListener('load', () => {
     setTimeout(() => {
-        if (!localStorage.getItem('ep_student_tour_v1')) {
+        if (!localStorage.getItem('ep_student_tour_v19')) {
             startStudentTour();
         }
     }, 2500);
