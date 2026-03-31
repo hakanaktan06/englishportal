@@ -21,7 +21,9 @@ function escapeHTML(str) {
 }
 
 
-// 🌟 YENİ: SİSTEMDEKİ AKTİF ÖĞRETMENİN HAFIZASI VE LİMİT BEKÇİLERİ 🌟
+// ==========================================
+// YENİ: SİSTEMDEKİ AKTİF ÖĞRETMENİN HAFIZASI VE LİMİT BEKÇİLERİ
+// ==========================================
 let currentTeacherId = null;
 let currentTeacherName = '';
 let isPremiumTeacher = false;
@@ -31,7 +33,7 @@ let currentTeacherIban = '';
 let currentTeacherBankReceiver = '';
 
 // ==========================================
-// 🛡️ GÜVENLİK: XSS KORUMA MOTORU (ÇELİK YELEK)
+// GÜVENLİK: XSS KORUMA MOTORU (ÇELİK YELEK)
 // ==========================================
 function escapeHTML(str) {
     if (!str) return '';
@@ -115,11 +117,19 @@ async function checkTeacherSecurity() {
         if (authError || !user) { window.location.href = 'index.html'; return; }
 
         // 🌟 is_premium ve premium_until verisini çekiyoruz
-        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until, bank_iban, bank_receiver').eq('id', user.id).single();
+        const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until, bank_iban, bank_receiver, school_logo, school_name, school_id').eq('id', user.id).single();
         
         if (profileError || !profile) {
             window.location.href = 'index.html';
             return;
+        }
+
+        // KURUMSAL MARKALAMA (White-labeling)
+        if (profile.school_name) {
+            document.querySelectorAll('.school-name-display').forEach(el => el.innerText = profile.school_name);
+        }
+        if (profile.school_logo) {
+            document.querySelectorAll('.school-logo-display').forEach(el => el.src = profile.school_logo);
         }
 
         if (profile.role === 'god') {
@@ -128,7 +138,7 @@ async function checkTeacherSecurity() {
         }
 
         if (profile.role !== 'teacher') {
-            showToast("Erişim Engellendi! Öğretmen yetkiniz yok.", "error");
+            showToast("Erişim Engellendi: Bu alanı görüntülemek için yetkiniz bulunmamaktadır.", "error");
             setTimeout(() => { window.location.href = 'student.html'; }, 1000);
             return;
         }
@@ -183,7 +193,7 @@ async function checkTeacherSecurity() {
                 setTimeout(() => splash.classList.add('hidden'), 700);
             }
 
-            // 🌟 TEK SEFERLİK PREMİUM KUTLAMASI 🌟
+            // TEK SEFERLİK PREMİUM KUTLAMASI
             if (isPremiumTeacher) {
                 const isCelebrated = localStorage.getItem('premium_celebrated_' + user.id);
                 if (!isCelebrated) {
@@ -256,37 +266,44 @@ const btnHomeworks = document.getElementById('btn-homeworks');
 const btnActivities = document.getElementById('btn-activities');
 const btnQuizzes = document.getElementById('btn-quizzes');
 const btnResults = document.getElementById('btn-results');
-
-const sectionDashboard = document.getElementById('section-dashboard');
-const sectionStudents = document.getElementById('section-students');
-const sectionHomeworks = document.getElementById('section-homeworks');
-const sectionActivities = document.getElementById('section-activities');
-const sectionQuizzes = document.getElementById('section-quizzes');
-const sectionResults = document.getElementById('section-results');
+const btnLogs = document.getElementById('btn-logs');
+const btnClasses = document.getElementById('btn-classes');
+const btnWhiteboard = document.getElementById('btn-whiteboard');
+const sectionLogs = document.getElementById('section-logs');
+const sectionClasses = document.getElementById('section-classes');
+const sectionWhiteboard = document.getElementById('section-whiteboard');
 
 function switchTab(target) {
-    if (window.innerWidth < 768 && sidebarMain && !sidebarMain.classList.contains('-translate-x-full')) {
+    if (sidebarMain && window.innerWidth < 768 && !sidebarMain.classList.contains('-translate-x-full')) {
         toggleMobileSidebar();
     }
 
+    if (btnResults) btnResults.classList.remove('bg-indigo-800', 'shadow-inner');
+    if (btnLogs) btnLogs.classList.remove('bg-indigo-800', 'shadow-inner');
+    if (btnWhiteboard) btnWhiteboard.classList.remove('bg-indigo-800', 'shadow-inner');
+
     if (sectionDashboard) sectionDashboard.classList.add('hidden');
     if (sectionStudents) sectionStudents.classList.add('hidden');
+    if (sectionClasses) sectionClasses.classList.add('hidden');
     if (sectionHomeworks) sectionHomeworks.classList.add('hidden');
     if (sectionActivities) sectionActivities.classList.add('hidden');
     if (sectionQuizzes) sectionQuizzes.classList.add('hidden');
     if (sectionResults) sectionResults.classList.add('hidden');
-
-    if (btnDashboard) btnDashboard.classList.remove('bg-indigo-800', 'shadow-inner');
-    if (btnStudents) btnStudents.classList.remove('bg-indigo-800', 'shadow-inner');
-    if (btnHomeworks) btnHomeworks.classList.remove('bg-indigo-800', 'shadow-inner');
-    if (btnActivities) btnActivities.classList.remove('bg-indigo-800', 'shadow-inner');
-    if (btnQuizzes) btnQuizzes.classList.remove('bg-indigo-800', 'shadow-inner');
-    if (btnResults) btnResults.classList.remove('bg-indigo-800', 'shadow-inner');
+    if (sectionLogs) sectionLogs.classList.add('hidden');
+    if (sectionWhiteboard) sectionWhiteboard.classList.add('hidden');
 
     if (target === 'dashboard') {
         if (sectionDashboard) sectionDashboard.classList.remove('hidden');
         if (btnDashboard) btnDashboard.classList.add('bg-indigo-800', 'shadow-inner');
         fetchDashboardStats();
+    } else if (target === 'classes') {
+        if (sectionClasses) sectionClasses.classList.remove('hidden');
+        if (btnClasses) btnClasses.classList.add('bg-indigo-800', 'shadow-inner');
+        fetchClasses();
+    } else if (target === 'whiteboard') {
+        if (sectionWhiteboard) sectionWhiteboard.classList.remove('hidden');
+        if (btnWhiteboard) btnWhiteboard.classList.add('bg-indigo-800', 'shadow-inner');
+        fetchWhiteboard();
     } else if (target === 'homeworks') {
         if (sectionHomeworks) sectionHomeworks.classList.remove('hidden');
         if (btnHomeworks) btnHomeworks.classList.add('bg-indigo-800', 'shadow-inner');
@@ -304,6 +321,10 @@ function switchTab(target) {
         if (sectionResults) sectionResults.classList.remove('hidden');
         if (btnResults) btnResults.classList.add('bg-indigo-800', 'shadow-inner');
         fetchResults();
+    } else if (target === 'logs') {
+        if (sectionLogs) sectionLogs.classList.remove('hidden');
+        if (btnLogs) btnLogs.classList.add('bg-indigo-800', 'shadow-inner');
+        loadLogs();
     } else {
         if (sectionStudents) sectionStudents.classList.remove('hidden');
         if (btnStudents) btnStudents.classList.add('bg-indigo-800', 'shadow-inner');
@@ -311,12 +332,67 @@ function switchTab(target) {
     }
 }
 
-if (btnDashboard) btnDashboard.addEventListener('click', (e) => { e.preventDefault(); switchTab('dashboard'); });
-if (btnHomeworks) btnHomeworks.addEventListener('click', (e) => { e.preventDefault(); switchTab('homeworks'); });
-if (btnStudents) btnStudents.addEventListener('click', (e) => { e.preventDefault(); switchTab('students'); });
-if (btnActivities) btnActivities.addEventListener('click', (e) => { e.preventDefault(); switchTab('activities'); });
-if (btnQuizzes) btnQuizzes.addEventListener('click', (e) => { e.preventDefault(); switchTab('quizzes'); });
-if (btnResults) btnResults.addEventListener('click', (e) => { e.preventDefault(); switchTab('results'); });
+if (btnDashboard) btnDashboard.onclick = () => switchTab('dashboard');
+if (btnStudents) btnStudents.onclick = () => switchTab('students');
+if (btnClasses) btnClasses.onclick = () => switchTab('classes');
+if (btnWhiteboard) btnWhiteboard.addEventListener('click', () => switchTab('whiteboard'));
+if (btnHomeworks) btnHomeworks.addEventListener('click', () => switchTab('homeworks'));
+if (btnActivities) btnActivities.onclick = () => switchTab('activities');
+if (btnQuizzes) btnQuizzes.onclick = () => switchTab('quizzes');
+if (btnResults) btnResults.onclick = () => switchTab('results');
+if (btnLogs) btnLogs.onclick = () => switchTab('logs');
+
+async function saveLog(action, details = "") {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+        
+        // Cihaz ve tarayıcı bilgisini al
+        const device = navigator.userAgent;
+        const enrichedDetails = `${details}${details ? ' | ' : ''}Cihaz: ${device}`;
+
+        console.log("LOG KAYIT:", action, enrichedDetails);
+        await supabaseClient.from('audit_logs').insert([{
+            user_id: user.id,
+            action: action,
+            details: enrichedDetails,
+            created_at: new Date().toISOString()
+        }]);
+    } catch (e) { console.error("Log hatası:", e); }
+}
+
+async function loadLogs() {
+    const container = document.getElementById('logsContainer');
+    container.innerHTML = '<div class="p-10 text-center text-gray-400 italic animate-pulse">Kayıtlar getiriliyor...</div>';
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    const { data: logs, error } = await supabaseClient.from('audit_logs').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
+
+    if (error || !logs || logs.length === 0) {
+        container.innerHTML = '<div class="p-20 text-center text-gray-400 font-bold uppercase tracking-widest opacity-50">Henüz bir işlem kaydı bulunmuyor.</div>';
+        return;
+    }
+
+    container.innerHTML = logs.map(log => {
+        const date = new Date(log.created_at).toLocaleString('tr-TR');
+        return `
+            <div class="p-4 hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors flex items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-gray-800 dark:text-white">${escapeHTML(log.action)}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${escapeHTML(log.details) || ''}</p>
+                    </div>
+                </div>
+                <span class="text-[10px] font-black text-gray-400 uppercase tracking-tighter whitespace-nowrap">${date}</span>
+            </div>
+        `;
+    }).join('');
+}
 
 // ==========================================
 // KOKPİT (DASHBOARD) İSTATİSTİK VE AJANDA MOTORU
@@ -414,7 +490,6 @@ async function fetchAgenda() {
     if (agendaItems.length === 0) {
         agendaContainer.innerHTML = `
             <div class="flex flex-col items-center justify-center py-10 text-gray-400">
-                <svg class="w-16 h-16 mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                 <p class="text-sm font-bold text-gray-500">Yaklaşan bir programınız yok.</p>
                 <p id="agendaTeacherName" class="text-xs mt-1">${currentTeacherName} Öğretmenim, şimdi kafa dinleme vakti!</p>
             </div>`;
@@ -516,6 +591,7 @@ if (studentFormEl) {
             if (profileError) showToast("Hata: " + profileError.message, "error");
             else {
                 showToast("Öğrenci başarıyla eklendi.", "success");
+                saveLog("Yeni Öğrenci Eklendi", `${name} (${rawUsername}) sisteme kaydedildi.`);
                 if (studentModalEl) studentModalEl.classList.add('hidden');
                 studentFormEl.reset();
                 fetchStudents();
@@ -526,12 +602,17 @@ if (studentFormEl) {
     });
 }
 
-window.deleteStudent = async function (id) {
-    const onay = await customConfirm("Bu öğrenciyi kalıcı olarak silmek istediğine emin misin? Dönüşü yok!", "Evet, Sil");
+window.deleteStudent = async function (id, name) {
+    const onay = await safeDelete(`"${escapeHTML(name)}" öğrencisini ve TÜM verilerini silmek üzeresiniz. Bu işlem geri alınamaz!`);
     if (!onay) return;
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
     if (error) showToast("Silerken hata oldu: " + error.message, "error");
-    else { showToast("Öğrenci silindi.", "success"); fetchStudents(); fetchDashboardStats(); }
+    else { 
+        showToast("Öğrenci silindi.", "success"); 
+        saveLog("Öğrenci Silindi", `${name} (ID: ${id}) sistemden kaldırıldı.`);
+        fetchStudents(); 
+        fetchDashboardStats(); 
+    }
 };
 
 // 🌟 YENİ: ÖĞRETMEN PANELİ ÖZEL ŞIK ŞİFRE GİRİŞ ARAYÜZÜ 🌟
@@ -730,7 +811,7 @@ async function fetchStudents() {
                     <button onclick="resetStudentPassword('${student.id}')" class="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-50 hover:bg-amber-50 dark:bg-slate-700/50 dark:hover:bg-amber-900/30 text-slate-400 hover:text-amber-500 transition-all border border-transparent hover:border-amber-200 dark:hover:border-amber-800 shadow-sm" title="Şifre Sıfırla">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4v-3l8.44-8.44A6 6 0 0115 7h0z"></path></svg>
                     </button>
-                    <button onclick="deleteStudent('${student.id}')" class="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-50 hover:bg-rose-50 dark:bg-slate-700/50 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-500 transition-all border border-transparent hover:border-rose-200 dark:hover:border-rose-800 shadow-sm" title="Sistemden Sil">
+                    <button onclick="deleteStudent('${student.id}', '${escapeHTML(student.full_name)}')" class="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-50 hover:bg-rose-50 dark:bg-slate-700/50 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-500 transition-all border border-transparent hover:border-rose-200 dark:hover:border-rose-800 shadow-sm" title="Sistemden Sil">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 </div>
@@ -767,45 +848,98 @@ async function fetchStudents() {
 // ==========================================
 // 4. ÖDEV MOTORLARI 
 // ==========================================
-window.deleteHomework = async function (id) {
-    const onay = await customConfirm("Bu ödevi tamamen siliyorum, emin misin?", "Evet, Sil");
+window.deleteHomework = async function (id, title) {
+    const onay = await safeDelete(`"${escapeHTML(title)}" ödevini silmek istediğinize emin misiniz?`);
     if (!onay) return;
     const { error } = await supabaseClient.from('homeworks').delete().eq('id', id);
     if (error) showToast("Ödev silinirken hata oldu!", "error");
-    else { showToast("Ödev silindi.", "success"); fetchHomeworks(); fetchStudents(); }
+    else { 
+        showToast("Ödev silindi.", "success"); 
+        saveLog("Ödev Silindi", `"${title}" ödevi silindi.`);
+        fetchHomeworks(); 
+        fetchStudents(); 
+    }
 };
 
 async function fillStudentSelect() {
-    const { data } = await supabaseClient.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
     const select = document.getElementById('hwStudentSelect');
-    if (data && select) {
-        select.innerHTML = '<option value="">Öğrenci Seçin...</option>';
-        data.forEach(s => { select.innerHTML += `<option value="${s.id}">${escapeHTML(s.full_name)}</option>`; });
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Yükleniyor...</option>';
+
+    const { data: students } = await supabaseClient.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
+    const { data: classes } = await supabaseClient.from('classes').select('id, name').eq('teacher_id', currentTeacherId);
+
+    let html = '<option value="">Kime Gönderilecek?</option>';
+
+    if (classes && classes.length > 0) {
+        html += '<optgroup label="Sınıflar (Toplu)">';
+        classes.forEach(c => {
+            html += `<option value="class_${c.id}"> Sınıf: ${escapeHTML(c.name)}</option>`;
+        });
+        html += '</optgroup>';
     }
+
+    if (students && students.length > 0) {
+        html += '<optgroup label="Öğrenciler (Tekil)">';
+        students.forEach(s => {
+            html += `<option value="${s.id}">${escapeHTML(s.full_name)}</option>`;
+        });
+        html += '</optgroup>';
+    }
+    select.innerHTML = html;
 }
 
 const homeworkFormEl = document.getElementById('newHomeworkForm');
 if (homeworkFormEl) {
     homeworkFormEl.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const studentId = document.getElementById('hwStudentSelect').value;
-        if (!studentId) { showToast("Önce öğrenciyi seçmelisin!", "error"); return; }
+        const target = document.getElementById('hwStudentSelect').value;
+        if (!target) { showToast("Lütfen bir hedef seçin!", "error"); return; }
+
+        const title = document.getElementById('hwTitle').value;
+        const desc = document.getElementById('hwDesc').value;
+        const dueDate = document.getElementById('hwDueDate').value;
 
         const btn = homeworkFormEl.querySelector('button');
         const originalBtnHTML = btn.innerHTML;
         btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Gönderiliyor...`;
 
-        const { error } = await supabaseClient.from('homeworks').insert([{
-            student_id: studentId,
-            title: document.getElementById('hwTitle').value,
-            description: document.getElementById('hwDesc').value,
-            due_date: document.getElementById('hwDueDate').value,
-            status: 'Bekliyor',
-            teacher_id: currentTeacherId
-        }]);
+        let studentIds = [];
+        if (target.startsWith('class_')) {
+            const classId = target.replace('class_', '');
+            const { data } = await supabaseClient.from('class_students').select('student_id').eq('class_id', classId);
+            studentIds = data.map(d => d.student_id);
+        } else {
+            studentIds = [target];
+        }
 
-        if (error) showToast("Ödev hatası: " + error.message, "error");
-        else { showToast("Ödev başarıyla verildi!", "success"); homeworkFormEl.reset(); fetchHomeworks(); fetchStudents(); }
+        if (studentIds.length === 0) {
+            showToast("Hedefte öğrenci bulunamadı!", "error");
+            btn.innerHTML = originalBtnHTML;
+            return;
+        }
+
+        const inserts = studentIds.map(sid => ({
+            student_id: sid,
+            teacher_id: currentTeacherId,
+            title: title,
+            description: desc,
+            due_date: dueDate,
+            status: 'Bekliyor'
+        }));
+
+        const { error } = await supabaseClient.from('homeworks').insert(inserts);
+
+        if (error) {
+            showToast("Ödev hatası: " + error.message, "error");
+        } else {
+            showToast(`${studentIds.length} kişiye ödev başarıyla verildi!`, "success");
+            saveLog("Toplu Ödev", `"${title}" ödevi ${studentIds.length} öğrenciye atandı.`);
+            homeworkFormEl.reset();
+            fetchHomeworks();
+            fetchStudents();
+        }
         btn.innerHTML = originalBtnHTML;
     });
 }
@@ -846,7 +980,7 @@ async function fetchHomeworks() {
                     <button onclick="reviewWriting('${hw.id}', '${hw.student_id}', '${safeDesc}')" class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-xl transition shadow-sm border border-blue-100 dark:border-blue-800 text-xs font-black">
                         İNCELE ↗
                     </button>
-                    <button onclick="deleteHomework('${hw.id}')" class="bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white p-2.5 rounded-xl transition shadow-sm border border-rose-100 dark:border-rose-800" title="Sil">
+                    <button onclick="deleteHomework('${hw.id}', '${escapeHTML(hw.title)}')" class="bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white p-2.5 rounded-xl transition shadow-sm border border-rose-100 dark:border-rose-800" title="Sil">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 `;
@@ -855,7 +989,7 @@ async function fetchHomeworks() {
                     <button onclick="approveHomework('${hw.id}', '${hw.student_id}')" class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white p-2.5 rounded-xl transition shadow-sm border border-emerald-100 dark:border-emerald-800" title="Ödevi Onayla ve XP Ver">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                     </button>
-                    <button onclick="deleteHomework('${hw.id}')" class="bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white p-2.5 rounded-xl transition shadow-sm border border-rose-100 dark:border-rose-800" title="Sil">
+                    <button onclick="deleteHomework('${hw.id}', '${escapeHTML(hw.title)}')" class="bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white p-2.5 rounded-xl transition shadow-sm border border-rose-100 dark:border-rose-800" title="Sil">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 `;
@@ -897,7 +1031,7 @@ async function fetchHomeworks() {
                 actionButtons += `<button onclick="reviewWriting('${hw.id}', '${hw.student_id}', '${safeDesc}', true)" class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-xl transition shadow-sm border border-blue-100 dark:border-blue-800 text-[10px] font-black mr-2">İNCELE ↗</button>`;
             }
 
-            actionButtons += `<button onclick="deleteHomework('${hw.id}')" class="bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2 rounded-xl transition border border-gray-100 dark:border-slate-600" title="Kayıtlardan Sil">
+            actionButtons += `<button onclick="deleteHomework('${hw.id}', '${escapeHTML(hw.title)}')" class="bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2 rounded-xl transition border border-gray-100 dark:border-slate-600" title="Kayıtlardan Sil">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </button>`;
 
@@ -916,7 +1050,7 @@ async function fetchHomeworks() {
 }
 
 window.approveHomework = async function (hwId, studentId) {
-    const onay = await customConfirm("Ödevi onaylayıp öğrenciye +50 XP kazandırmak istediğinize emin misiniz?", "Evet, Onayla");
+    const onay = await customConfirm("Ödevi onaylayıp öğrenciye +50 XP ve +10 EP-Coin kazandırmak istediğinize emin misiniz?", "Evet, Onayla");
     if (!onay) return;
 
     showToast("Ödev onaylanıyor...", "info");
@@ -927,13 +1061,15 @@ window.approveHomework = async function (hwId, studentId) {
         return;
     }
 
-    const { data: prof } = await supabaseClient.from('profiles').select('xp').eq('id', studentId).single();
+    const { data: prof } = await supabaseClient.from('profiles').select('xp, coins').eq('id', studentId).single();
     if (prof) {
         const newXp = (prof.xp || 0) + 50;
-        await supabaseClient.from('profiles').update({ xp: newXp }).eq('id', studentId);
+        const newCoins = (prof.coins || 0) + 10;
+        await supabaseClient.from('profiles').update({ xp: newXp, coins: newCoins }).eq('id', studentId);
     }
 
-    showToast("Ödev onaylandı! Öğrenciye +50 XP eklendi.", "success");
+    showToast("Ödev onaylandı! +50 XP ve +10 EP-Coin eklendi. 🪙", "success");
+    saveLog("Ödev Onaylandı", `Öğrenci ID: ${studentId}, Ödev ID: ${hwId} onaylandı.`);
     fetchHomeworks();
     fetchStudents();
 };
@@ -1194,19 +1330,21 @@ async function fetchQuizzes() {
                     <button onclick="openQuestionEditor('${quiz.id}', '${quiz.title.replace(/'/g, "\\'")}')" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white px-4 py-2.5 rounded-xl text-[10px] md:text-xs font-black transition-all shadow-sm border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> YÖNET
                     </button>
-                    <button onclick="deleteQuiz('${quiz.id}')" class="bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2.5 rounded-xl transition border border-gray-100 dark:border-slate-600" title="Sınavı Sil">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
+                        <button onclick="deleteQuiz('${quiz.id}', '${escapeHTML(quiz.title)}')" class="bg-gray-50 dark:bg-slate-700 text-gray-400 dark:text-gray-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2.5 rounded-xl transition border border-gray-100 dark:border-slate-600" title="Sınavı Sil">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
                 </div>
             </div>`;
     });
 }
 
-window.deleteQuiz = async (id) => {
-    const onay = await customConfirm("Bu sınavı ve içindeki TÜM soruları siliyorum, emin misin?", "Evet, Sil");
+window.deleteQuiz = async (id, title) => {
+    const onay = await safeDelete(`"${escapeHTML(title)}" sınavını ve içindeki TÜM soruları silmek istediğinize emin misiniz?`);
     if (!onay) return;
-    await supabaseClient.from('quizzes').delete().eq('id', id);
+    const { error } = await supabaseClient.from('quizzes').delete().eq('id', id);
+    if(error) { showToast("Hata: " + error.message, "error"); return; }
     showToast("Sınav tamamen silindi.", "success");
+    saveLog("Sınav Silindi", `"${title}" sınavı ve içeriği silindi.`);
     fetchQuizzes();
     fetchDashboardStats();
 };
@@ -1257,9 +1395,12 @@ async function fetchResults() {
 }
 
 window.deleteResult = async function (id) {
-    const onay = await customConfirm("Bu öğrencinin sınav sonucunu kalıcı olarak siliyorum, emin misin?", "Evet, Sil");
+    const onay = await safeDelete("Bu öğrencinin sınav sonucunu kalıcı olarak silmek istediğinizden emin misiniz?");
     if (!onay) return;
-    await supabaseClient.from('quiz_results').delete().eq('id', id);
+    const { error } = await supabaseClient.from('quiz_results').delete().eq('id', id);
+    if(error) { showToast("Hata: " + error.message, "error"); return; }
+    showToast("Sınav sonucu silindi.", "success");
+    saveLog("Sınav Sonucu Silindi", `Bir sınav sonucu kaydı silindi.`);
     fetchResults();
 };
 
@@ -2343,4 +2484,364 @@ window.saveBankSettings = async function() {
     }
 }
 
-// EOF (End of File)
+// ==========================================
+// 14. SINIF YÖNETİM MOTORU (STAGE 2)
+// ==========================================
+window.openAddClassModal = async function() {
+    const modal = document.getElementById('addClassModal');
+    const container = document.getElementById('classStudentChoices');
+    if(!modal || !container) return;
+
+    modal.classList.remove('hidden');
+    container.innerHTML = '<div class="text-center p-4 text-xs text-gray-400">Öğrenciler yükleniyor...</div>';
+
+    const { data: students } = await supabaseClient.from('profiles').select('id, full_name').eq('teacher_id', currentTeacherId).eq('role', 'student');
+    
+    if(!students || students.length === 0) {
+        container.innerHTML = '<div class="text-center p-4 text-xs text-red-400 font-bold">Henüz kayıtlı öğrenciniz yok.</div>';
+        return;
+    }
+
+    container.innerHTML = students.map(s => `
+        <label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-lg cursor-pointer transition">
+            <input type="checkbox" name="classStudents" value="${s.id}" class="w-4 h-4 text-indigo-600 rounded border-gray-300">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${escapeHTML(s.full_name)}</span>
+        </label>
+    `).join('');
+}
+
+window.closeAddClassModal = function() {
+    const modal = document.getElementById('addClassModal');
+    if(modal) modal.classList.add('hidden');
+}
+
+const addClassForm = document.getElementById('addClassForm');
+let editingClassId = null;
+
+if(addClassForm) {
+    addClassForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('className').value;
+        const selectedStudents = Array.from(document.querySelectorAll('input[name="classStudents"]:checked')).map(el => el.value);
+
+        if(!name) return;
+
+        const btn = addClassForm.querySelector('button[type="submit"]');
+        const originalText = btn.innerText;
+        btn.innerText = "İşlem Yapılıyor...";
+        btn.disabled = true;
+
+        if (editingClassId) {
+            // GÜNCELLEME MODU
+            const { error: updateErr } = await supabaseClient.from('classes').update({ name: name }).eq('id', editingClassId);
+            if(updateErr) { showToast("Sınıf güncellenemedi!", "error"); btn.innerText = originalText; btn.disabled = false; return; }
+
+            // Eski öğrencileri sil ve yenileri ekle
+            await supabaseClient.from('class_students').delete().eq('class_id', editingClassId);
+            if(selectedStudents.length > 0) {
+                const inserts = selectedStudents.map(sid => ({ class_id: editingClassId, student_id: sid }));
+                await supabaseClient.from('class_students').insert(inserts);
+            }
+            showToast("Sınıf başarıyla güncellendi.", "success");
+            saveLog("Sınıf Güncellendi", `"${name}" sınıfı düzenlendi. Toplam ${selectedStudents.length} öğrenci.`);
+        } else {
+            // YENİ OLUŞTURMA MODU
+            const { data: cls, error } = await supabaseClient.from('classes').insert([{ teacher_id: currentTeacherId, name: name }]).select().single();
+            if(error) { showToast("Sınıf oluşturulamadı!", "error"); btn.innerText = originalText; btn.disabled = false; return; }
+
+            if(selectedStudents.length > 0) {
+                const inserts = selectedStudents.map(sid => ({ class_id: cls.id, student_id: sid }));
+                await supabaseClient.from('class_students').insert(inserts);
+            }
+            showToast("Sınıf başarıyla oluşturuldu.", "success");
+            saveLog("Sınıf Oluşturuldu", `${name} isimli sınıf ${selectedStudents.length} öğrenci ile kuruldu.`);
+        }
+
+        closeAddClassModal();
+        addClassForm.reset();
+        fetchClasses();
+        btn.innerText = originalText;
+        btn.disabled = false;
+    });
+}
+
+window.manageClassStudents = async function(id) {
+    editingClassId = id;
+    const { data: cls } = await supabaseClient.from('classes').select('name, class_students(student_id)').eq('id', id).single();
+    if (!cls) return;
+
+    document.getElementById('className').value = cls.name;
+    const modalTitle = document.querySelector('#addClassModal h3');
+    if (modalTitle) modalTitle.innerText = "Sınıfı Düzenle";
+    
+    const submitBtn = document.querySelector('#addClassForm button[type="submit"]');
+    if (submitBtn) submitBtn.innerText = "Değişiklikleri Kaydet";
+
+    // Öğrenci listesini yükle ve checked yap
+    await openAddClassModal(); 
+    
+    const currentStudentIds = cls.class_students.map(cs => cs.student_id);
+    document.querySelectorAll('input[name="classStudents"]').forEach(input => {
+        if (currentStudentIds.includes(input.value)) {
+            input.checked = true;
+        }
+    });
+
+    document.getElementById('addClassModal').classList.remove('hidden');
+};
+
+window.openAddClassModal = async function() {
+    if (!editingClassId) {
+        editingClassId = null;
+        document.getElementById('addClassForm').reset();
+        const modalTitle = document.querySelector('#addClassModal h3');
+        if (modalTitle) modalTitle.innerText = "Yeni Sınıf Oluştur";
+        const submitBtn = document.querySelector('#addClassForm button[type="submit"]');
+        if (submitBtn) submitBtn.innerText = "Sınıfı Kaydet";
+    }
+
+    const { data: students } = await supabaseClient.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
+    const container = document.getElementById('classStudentChoices');
+    if (!container) return;
+
+    if (!students || students.length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-400 italic">Henüz öğrenciniz bulunmuyor.</p>';
+    } else {
+        container.innerHTML = students.map(s => `
+            <label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-lg cursor-pointer transition">
+                <input type="checkbox" name="classStudents" value="${s.id}" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${escapeHTML(s.full_name)}</span>
+            </label>
+        `).join('');
+    }
+    
+    document.getElementById('addClassModal').classList.remove('hidden');
+};
+
+window.closeAddClassModal = function() {
+    editingClassId = null;
+    document.getElementById('addClassModal').classList.add('hidden');
+};
+
+async function fetchClasses() {
+    const container = document.getElementById('classList');
+    if(!container) return;
+    container.innerHTML = '<div class="col-span-full text-center py-20 animate-pulse text-indigo-400 font-bold uppercase tracking-widest leading-relaxed">Sınıf Yapıları Hazırlanıyor...</div>';
+
+    const { data: classes, error } = await supabaseClient.from('classes').select('*, class_students(student_id, profiles(full_name))').eq('teacher_id', currentTeacherId);
+
+    if(error || !classes || classes.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full flex flex-col items-center justify-center p-20 bg-gray-50 dark:bg-slate-800/50 rounded-[40px] border-4 border-dashed border-gray-200 dark:border-slate-700">
+                <div class="w-20 h-20 bg-white dark:bg-slate-800 rounded-3xl shadow-xl flex items-center justify-center mb-6">
+                    <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m4 0h1m-5 4h1m4 0h1m-5 4h1m4 0h1"></path></svg>
+                </div>
+                <p class="text-xl font-black text-gray-400 uppercase tracking-widest italic">Henüz Bir Sınıf Oluşturmadınız</p>
+                <button onclick="openAddClassModal()" class="mt-4 text-indigo-600 font-bold hover:underline">İlk Sınıfınızı Oluşturun &rarr;</button>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = classes.map(c => {
+        const studentCount = c.class_students?.length || 0;
+        const studentNames = c.class_students?.map(cs => cs.profiles?.full_name).filter(Boolean).join(', ') || 'Henüz öğrenci yok';
+        
+        return `
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-lg border border-gray-100 dark:border-slate-700 hover:shadow-2xl transition-all group relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-50 dark:bg-indigo-900/20 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg font-black text-xl">
+                            ${c.name.charAt(0).toUpperCase()}
+                        </div>
+                        <button onclick="deleteClass('${c.id}', '${c.name}')" class="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-800 dark:text-white mb-1 uppercase tracking-tight">${escapeHTML(c.name)}</h3>
+                    <p class="text-xs font-bold text-indigo-500 dark:text-indigo-400 mb-4">${studentCount} Öğrenci Kayıtlı</p>
+                    
+                    <div class="space-y-2 mb-6">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-1">Öğrenci Listesi</p>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium line-clamp-2 italic">${escapeHTML(studentNames)}</p>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick="manageClassStudents('${c.id}')" class="flex-1 py-3 bg-gray-50 dark:bg-slate-700 hover:bg-indigo-600 hover:text-white text-gray-600 dark:text-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-sm border border-gray-100 dark:border-slate-600">Öğrencileri Yönet</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+window.deleteClass = async function(id, name) {
+    const confirmed = await safeDelete(`"${name}" sınıfını silmek üzeresiniz. Bu işlem sınıf listesini temizler ancak öğrencileri silmez.`);
+    if(!confirmed) return;
+
+    const { error } = await supabaseClient.from('classes').delete().eq('id', id);
+    if(error) { showToast("Sınıf silinemedi!", "error"); return; }
+
+    showToast("Sınıf silindi.", "success");
+    saveLog("Sınıf Silindi", `${name} isimli sınıf ve atomik bağları kaldırıldı.`);
+    fetchClasses();
+}
+
+// 🌟 GÜVENLİ SİLME MEKANİZMASI (STAGE 2) 🌟
+async function safeDelete(message) {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = "fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[10000] p-4 animate-in fade-in duration-300";
+        
+        modal.innerHTML = `
+            <div class="bg-white dark:bg-slate-900 rounded-[40px] p-8 w-full max-w-sm shadow-2xl border-4 border-red-500/20 transform animate-in zoom-in duration-300">
+                <div class="w-20 h-20 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h3 class="text-2xl font-black text-center text-slate-800 dark:text-white mb-2 uppercase">KRİTİK ONAY</h3>
+                <p class="text-center text-slate-500 dark:text-slate-400 text-sm font-medium mb-8">${message}</p>
+                <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-3xl mb-6 border border-slate-100 dark:border-slate-700">
+                    <p class="text-[10px] font-black text-slate-400 uppercase text-center mb-3">Onaylamak için aşağıya <span class="text-red-600 font-black">SİL</span> yazın</p>
+                    <input type="text" id="deleteConfirmInput" class="w-full bg-white dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-700 px-4 py-3 rounded-2xl text-center font-black uppercase tracking-widest text-red-600 focus:border-red-500 outline-none transition" placeholder="..." autocomplete="off">
+                </div>
+                <div class="flex gap-3">
+                    <button id="sdCancel" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition">İPTAL</button>
+                    <button id="sdConfirm" class="flex-1 py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-red-600/30 hover:bg-red-700 transition opacity-50 cursor-not-allowed" disabled>SİL</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        const input = modal.querySelector('#deleteConfirmInput');
+        const btnOk = modal.querySelector('#sdConfirm');
+        const btnCancel = modal.querySelector('#sdCancel');
+
+        input.focus();
+        input.addEventListener('input', (e) => {
+            if(e.target.value.trim().toUpperCase() === 'SİL') {
+                btnOk.disabled = false;
+                btnOk.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnOk.disabled = true;
+                btnOk.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        });
+
+        btnOk.onclick = () => { modal.remove(); resolve(true); };
+        btnCancel.onclick = () => { modal.remove(); resolve(false); };
+    });
+}
+
+// 🌟 VERİ YEDEKLEME (CSV EXPORT) 🌟
+window.exportDataToCSV = async function() {
+    showToast("Veriler derleniyor...", "info");
+    
+    // Öğrenciler ve Sınav Sonuçlarını Çek
+    const { data: students } = await supabaseClient.from('profiles').select('*').eq('teacher_id', currentTeacherId).eq('role', 'student');
+    const { data: results } = await supabaseClient.from('quiz_results').select('*, profiles!inner(*)').eq('profiles.teacher_id', currentTeacherId);
+
+    let csvContent = "\uFEFF"; // UTF-8 BOM
+    csvContent += "English Portal VIP - Sistem Yedegi\n";
+    csvContent += "Tarih: " + new Date().toLocaleString() + "\n\n";
+
+    // 1. Öğrenci Listesi
+    csvContent += "OGRENCI LISTESI\n";
+    csvContent += "Ad Soyad;Email;Veli Telefon;Bakiye\n";
+    students.forEach(s => {
+        csvContent += `${s.full_name};${s.email};${s.parent_phone};${s.balance || 0} TL\n`;
+    });
+
+    csvContent += "\n\nSINAV SONUCLARI\n";
+    csvContent += "Ogrenci;Sinav;Puan;Tarih\n";
+    results.forEach(r => {
+        csvContent += `${r.profiles.full_name};${r.quiz_title || 'Bilinmiyor'};${r.score};${new Date(r.created_at).toLocaleDateString()}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `EnglishPortal_Yedek_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast("Yedekleme başarıyla tamamlandı.", "success");
+    saveLog("Veri Yedekleme", "Tüm sistem verileri CSV formatında indirildi.");
+}
+
+// ==========================================
+// 🌟 10. DİJİTAL BEYAZ TAHTA & CANLI DERS MOTORU (STAGE 3) 🌟
+// ==========================================
+
+async function fetchWhiteboard() {
+    const textarea = document.getElementById('whiteboardInput');
+    const lessonInput = document.getElementById('lessonUrlInput');
+    if (!textarea) return;
+
+    // 1. Beyaz Tahta İçeriğini Çek
+    const { data: wb } = await supabaseClient.from('whiteboard').select('content').eq('teacher_id', currentTeacherId).maybeSingle();
+    if (wb) {
+        textarea.value = wb.content;
+    } else {
+        textarea.value = "";
+    }
+
+    // 2. Canlı Ders Linkini Çek (Profil Tablosundan)
+    const { data: prof } = await supabaseClient.from('profiles').select('lesson_url').eq('id', currentTeacherId).single();
+    if (prof && lessonInput) {
+        lessonInput.value = prof.lesson_url || "";
+    }
+}
+
+window.saveWhiteboard = async function() {
+    const content = document.getElementById('whiteboardInput').value;
+    const btn = document.querySelector('[onclick="saveWhiteboard()"]');
+    const originalHTML = btn.innerHTML;
+
+    btn.innerHTML = '⏳ YAYINLANIYOR...';
+    btn.disabled = true;
+
+    // Önce kaydın olup olmadığını kontrol et
+    const { data: existing } = await supabaseClient.from('whiteboard').select('id').eq('teacher_id', currentTeacherId).maybeSingle();
+
+    let error;
+    if (existing) {
+        const { error: err } = await supabaseClient.from('whiteboard').update({ content: content, updated_at: new Date().toISOString() }).eq('teacher_id', currentTeacherId);
+        error = err;
+    } else {
+        const { error: err } = await supabaseClient.from('whiteboard').insert([{ teacher_id: currentTeacherId, content: content }]);
+        error = err;
+    }
+
+    if (error) {
+        showToast("Tahta güncellenemedi: " + error.message, "error");
+    } else {
+        showToast("Beyaz Tahta başarıyla güncellendi ve yayınlandı! 🚀", "success");
+        saveLog("Beyaz Tahta", "Ders notları güncellendi ve tüm öğrencilere yayınlandı.");
+    }
+
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
+}
+
+window.saveLessonUrl = async function() {
+    const url = document.getElementById('lessonUrlInput').value.trim();
+    if (url && !url.startsWith('http')) {
+        showToast("Lütfen geçerli bir URL girin (http/https ile başlayan)", "error");
+        return;
+    }
+
+    const { error } = await supabaseClient.from('profiles').update({ lesson_url: url }).eq('id', currentTeacherId);
+
+    if (error) {
+        showToast("Link güncellenemedi!", "error");
+    } else {
+        showToast("Canlı Ders linki başarıyla kaydedildi.", "success");
+        saveLog("Canlı Ders", "Eğitim linki güncellendi: " + (url || "Kaldırıldı"));
+    }
+}
+
+// EOF (Stage 3 Ready)
