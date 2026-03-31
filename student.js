@@ -1253,12 +1253,12 @@ window.initWhiteboardRealtime = async function(teacherId) {
     const fetchWhiteboard = async () => {
         try {
             console.log("Beyaz Tahta Güncelleniyor... Hoca ID:", teacherId);
-            const { data, error } = await supabaseClient.from('profiles').select('whiteboard_notes').eq('id', teacherId).single();
+            const { data, error } = await supabaseClient.from('whiteboard').select('content').eq('teacher_id', teacherId).maybeSingle();
             
             if (data) {
-                console.log("Beyaz Tahta Verisi Geldi:", data.whiteboard_notes ? "Veri Var" : "Veri Boş");
-                if (data.whiteboard_notes && data.whiteboard_notes.trim() !== "") {
-                    display.innerText = data.whiteboard_notes.trim();
+                console.log("Beyaz Tahta Verisi Geldi:", data.content ? "Veri Var" : "Veri Boş");
+                if (data.content && data.content.trim() !== "") {
+                    display.innerText = data.content.trim();
                     container.classList.remove('hidden');
                 } else {
                     container.classList.add('hidden');
