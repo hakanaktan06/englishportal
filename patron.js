@@ -134,6 +134,83 @@ async function initGodPortal() {
 }
 checkGodSecurity();
 
+// MODAL KONTROLLERİ
+const kurumModal = document.getElementById('addKurumModal');
+const openKurumBtn = document.getElementById('addKurumBtn');
+const closeKurumBtn = document.getElementById('closeKurumModal');
+const kurumForm = document.getElementById('newKurumForm');
+
+if (openKurumBtn) {
+    openKurumBtn.onclick = () => {
+        if(kurumModal) {
+            kurumModal.classList.remove('hidden');
+            setTimeout(() => {
+                kurumModal.classList.remove('opacity-0', 'scale-95');
+                kurumModal.querySelector('.bg-slate-900').classList.remove('scale-95');
+            }, 10);
+        }
+    };
+}
+
+if (closeKurumBtn) {
+    closeKurumBtn.onclick = () => {
+        if(kurumModal) {
+            kurumModal.classList.add('opacity-0');
+            kurumModal.querySelector('.bg-slate-900').classList.add('scale-95');
+            setTimeout(() => kurumModal.classList.add('hidden'), 300);
+        }
+    };
+}
+
+if (kurumForm) {
+    kurumForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const submitBtn = kurumForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = "KAYIT YAPILIYOR...";
+        submitBtn.disabled = true;
+
+        const name = document.getElementById('kurumName').value;
+        const email = document.getElementById('kurumEmail').value;
+        const password = document.getElementById('kurumPassword').value;
+
+        try {
+            // 1. Auth hesabı oluştur
+            const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+                email: email,
+                password: password
+            });
+
+            if (authError) throw authError;
+
+            if (authData.user) {
+                // 2. Profilini oluştur
+                const { error: profileError } = await supabaseClient.from('profiles').insert([{
+                    id: authData.user.id,
+                    full_name: name,
+                    school_name: name,
+                    email: email,
+                    role: 'kurum'
+                }]);
+
+                if (profileError) throw profileError;
+
+                showToast("Kurum başarıyla sisteme kaydedildi!", "success");
+                kurumForm.reset();
+                if (closeKurumBtn) closeKurumBtn.click();
+                fetchKurumlar();
+                fetchGodMetrics();
+            }
+        } catch (err) {
+            console.error("Kurum kayıt hatası:", err);
+            showToast("Hata: " + (err.message || "İşlem başarısız"), "error");
+        } finally {
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+        }
+    };
+}
+
 document.getElementById('godLogoutBtn').addEventListener('click', async () => {
     const onay = await customConfirm("God Panel oturumunu sonlandırmak istediğinizi onaylıyor musunuz?", "Evet, Çıkış Yap");
     if (onay) {
