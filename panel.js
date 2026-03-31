@@ -288,19 +288,15 @@ function switchTab(target) {
         toggleMobileSidebar();
     }
 
-    if (btnResults) btnResults.classList.remove('bg-indigo-800', 'shadow-inner');
-    if (btnLogs) btnLogs.classList.remove('bg-indigo-800', 'shadow-inner');
-    if (btnWhiteboard) btnWhiteboard.classList.remove('bg-indigo-800', 'shadow-inner');
+    // Tüm butonlardan aktiflik sınıflarını kaldır
+    [btnDashboard, btnStudents, btnClasses, btnHomeworks, btnActivities, btnQuizzes, btnResults, btnLogs, btnWhiteboard].forEach(btn => {
+        if (btn) btn.classList.remove('bg-indigo-800', 'shadow-inner');
+    });
 
-    if (sectionDashboard) sectionDashboard.classList.add('hidden');
-    if (sectionStudents) sectionStudents.classList.add('hidden');
-    if (sectionClasses) sectionClasses.classList.add('hidden');
-    if (sectionHomeworks) sectionHomeworks.classList.add('hidden');
-    if (sectionActivities) sectionActivities.classList.add('hidden');
-    if (sectionQuizzes) sectionQuizzes.classList.add('hidden');
-    if (sectionResults) sectionResults.classList.add('hidden');
-    if (sectionLogs) sectionLogs.classList.add('hidden');
-    if (sectionWhiteboard) sectionWhiteboard.classList.add('hidden');
+    // Tüm seksiyonları gizle
+    [sectionDashboard, sectionStudents, sectionClasses, sectionHomeworks, sectionActivities, sectionQuizzes, sectionResults, sectionLogs, sectionWhiteboard].forEach(sec => {
+        if (sec) sec.classList.add('hidden');
+    });
 
     if (target === 'dashboard') {
         if (sectionDashboard) sectionDashboard.classList.remove('hidden');
@@ -345,8 +341,8 @@ function switchTab(target) {
 if (btnDashboard) btnDashboard.onclick = () => switchTab('dashboard');
 if (btnStudents) btnStudents.onclick = () => switchTab('students');
 if (btnClasses) btnClasses.onclick = () => switchTab('classes');
-if (btnWhiteboard) btnWhiteboard.addEventListener('click', () => switchTab('whiteboard'));
-if (btnHomeworks) btnHomeworks.addEventListener('click', () => switchTab('homeworks'));
+if (btnWhiteboard) btnWhiteboard.onclick = () => switchTab('whiteboard');
+if (btnHomeworks) btnHomeworks.onclick = () => switchTab('homeworks');
 if (btnActivities) btnActivities.onclick = () => switchTab('activities');
 if (btnQuizzes) btnQuizzes.onclick = () => switchTab('quizzes');
 if (btnResults) btnResults.onclick = () => switchTab('results');
