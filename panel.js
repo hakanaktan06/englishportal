@@ -507,8 +507,10 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
 
         await loadInitialLogs();
 
+        // 🌟 DÜZELTME: Her abone olunduğunda benzersiz bir kanal ismi kullanılarak hatanın önüne geçilir
+        const uniqueChannelId = `student-flow-${containerId}-${Date.now()}`;
         window.studentFlowSubscription = supabaseClient
-            .channel('student-flow-realtime')
+            .channel(uniqueChannelId)
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, (payload) => {
                 if (studentIds.includes(payload.new.user_id)) {
                     loadInitialLogs(); 
@@ -2370,7 +2372,7 @@ setTimeout(pingLastLogin, 2000);
 
 // MOTORLARI ATEŞLE
 if (typeof setDynamicMotivations === 'function') setDynamicMotivations();
-checkTeacherSecurity();
+// checkTeacherSecurity(); // 🌟 KALDIRILDI: Bu fonksiyon tanımlı olmadığı için hata veriyordu.
 
 
 
