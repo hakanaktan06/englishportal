@@ -71,141 +71,160 @@ function updateChartTheme(isDark) {
 }
 
 async function loadVeliPortal() {
-    // 🌟 REDIRECT LOOP BREAK: Sayfa açılırken 700ms bekle (Supabase uyanışı için)
+    // 🌟 STABILIZATION: Supabase'in tam oturması için kısa bekleme
     await new Promise(r => setTimeout(r, 700));
 
-    if (!studentId) { showError(); return; }
-
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) { window.location.href = 'index.html'; return; }
-
-    const { data: currentUserProfile } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
-    if (currentUserProfile && currentUserProfile.role === 'teacher') {
-        window.location.href = 'panel.html';
-        return;
-    } else if (currentUserProfile && currentUserProfile.role === 'god') {
-        window.location.href = 'patron.html';
-        return;
+    if (!studentId) { 
+        showError(); 
+        return; 
     }
 
-    // 1. Öğrenci Adını ve Öğretmen Bilgisini Çek
-    const { data: student, error: studErr } = await supabaseClient.from('profiles').select('full_name, teacher_id').eq('id', studentId).single();
-    if (studErr || !student) { showError(); return; }
-    
-    globalStudentName = student.full_name;
-    document.getElementById('veliStudentName').innerText = globalStudentName;
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) { window.location.href = 'index.html'; return; }
 
-    if (student.teacher_id) {
-        const { data: teacher } = await supabaseClient.from('profiles').select('bank_iban, bank_receiver').eq('id', student.teacher_id).single();
-        if (teacher) {
-            globalTeacherIban = teacher.bank_iban || '';
-            globalTeacherReceiver = teacher.bank_receiver || '';
-            document.getElementById('displayIbanText').innerText = globalTeacherIban || 'Öğretmen IBAN girmemiş.';
-            document.getElementById('displayReceiverText').innerText = globalTeacherReceiver || 'Öğretmen isim girmemiş.';
+        const { data: currentUserProfile } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
+        if (currentUserProfile && currentUserProfile.role === 'teacher') {
+            window.location.href = 'panel.html';
+            return;
+        } else if (currentUserProfile && currentUserProfile.role === 'god') {
+            window.location.href = 'patron.html';
+            return;
         }
+
+        // 🌟 STEP 1: Öğrenci Varlığını Doğrula (Hızlı)
+        const { data: student, error: studErr } = await supabaseClient.from('profiles').select('full_name, teacher_id').eq('id', studentId).single();
+        
+        if (studErr || !student) {
+            console.error("Öğrenci bulunamadı:", studErr);
+            showError();
+            return;
+        }
+
+        // Yetki ve Öğrenci TAMAM. Splash'i kapatalım.
+        const loadingScreen = document.getElementById('loadingScreen');
+        if (loadingScreen) {
+            loadingScreen.classList.add('opacity-0');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            }, 500);
+        }
+
+        globalStudentName = student.full_name;
+        document.getElementById('veliStudentName').innerText = globalStudentName;
+
+        // 🌟 STEP 2: Diğer verileri arkadan çek
+        fetchVeliPortalData(student);
+
+    } catch (e) {
+        console.error("Veli portal yükleme hatası:", e);
     }
+}
 
-    // 2. Dersleri Çek ve Borcu Hesapla
-    const { data: lessons } = await supabaseClient.from('private_lessons').select('*').eq('student_id', studentId).order('lesson_date', { ascending: false });
-    const listEl = document.getElementById('veliLessonList');
-
-    if (!lessons || lessons.length === 0) {
-        listEl.innerHTML = '<p class="text-gray-400 italic">Henüz işlenmiş bir özel ders kaydı bulunmuyor.</p>';
-    } else {
-        let totalDebt = 0;
-        let futureLessons = [];
-        const now = new Date();
-
-        lessons.forEach(l => {
-            const lessonDate = new Date(`${l.lesson_date}T${l.lesson_time || '00:00'}:00`);
-            
-            // Gelecek dersleri ayır
-            if (lessonDate > now) {
-                futureLessons.push({ ...l, dateObj: lessonDate });
-                return; // Listeye ekleme (isteğe bağlı, ama genelde "İşlenen Dersler" geçmişi gösterir)
+async function fetchVeliPortalData(student) {
+    try {
+        // 1. Öğretmen Bilgisini Çek
+        if (student.teacher_id) {
+            const { data: teacher } = await supabaseClient.from('profiles').select('bank_iban, bank_receiver').eq('id', student.teacher_id).single();
+            if (teacher) {
+                globalTeacherIban = teacher.bank_iban || '';
+                globalTeacherReceiver = teacher.bank_receiver || '';
+                const ibanEl = document.getElementById('displayIbanText');
+                const recEl = document.getElementById('displayReceiverText');
+                if (ibanEl) ibanEl.innerText = globalTeacherIban || 'Öğretmen IBAN girmemiş.';
+                if (recEl) recEl.innerText = globalTeacherReceiver || 'Öğretmen isim girmemiş.';
             }
-
-            const date = lessonDate.toLocaleDateString('tr-TR');
-            const time = l.lesson_time ? ` | ⏰ ${l.lesson_time}` : '';
-            const duration = l.duration_hours ? ` | ⏳ ${l.duration_hours} Saat` : '';
-
-            if (!l.is_paid) totalDebt += Number(l.price || 0);
-
-            listEl.innerHTML += `
-                <div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                        <p class="text-[11px] font-black text-indigo-500 dark:text-indigo-400 tracking-wider">📅 ${date} ${time} ${duration}</p>
-                        <p class="text-sm font-bold text-gray-800 dark:text-gray-100 mt-1">${escapeHTML(l.topic)}</p>
-                    </div>
-                    ${l.price ? `<span class="text-xs font-black ${l.is_paid ? 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/30' : 'text-red-500 bg-red-50 dark:text-red-400 dark:bg-red-900/30'} px-3 py-1.5 rounded-lg whitespace-nowrap">${l.price} TL - ${l.is_paid ? 'ÖDENDİ' : 'ÖDENMEDİ'}</span>` : ''}
-                </div>`;
-        });
-
-        // Geri Sayım Motorunu Başlat
-        if (futureLessons.length > 0) {
-            // En yakın gelecek dersi bul (zaten lesson_date DESC olduğu için en sonu veya sort etmek daha güvenli)
-            futureLessons.sort((a, b) => a.dateObj - b.dateObj);
-            startNextLessonCountdown(futureLessons[0]);
         }
 
-        if (totalDebt > 0) {
-            document.getElementById('veliDebtText').innerText = totalDebt + " TL";
-            document.getElementById('veliDebtBadge').classList.remove('hidden', 'display-none');
-            document.getElementById('veliDebtBadge').style.display = 'inline-flex';
-        }
-    }
+        // 2. Dersleri Çek ve Borcu Hesapla
+        const { data: lessons } = await supabaseClient.from('private_lessons').select('*').eq('student_id', studentId).order('lesson_date', { ascending: false });
+        const listEl = document.getElementById('veliLessonList');
 
-    // 3. Sınavları Çek ve Grafiği Çiz
-    const { data: results } = await supabaseClient.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: true });
-    let labels = []; let scores = [];
+        if (listEl) {
+            if (!lessons || lessons.length === 0) {
+                listEl.innerHTML = '<p class="text-gray-400 italic">Henüz işlenmiş bir özel ders kaydı bulunmuyor.</p>';
+            } else {
+                let totalDebt = 0;
+                let futureLessons = [];
+                const now = new Date();
+                listEl.innerHTML = ""; // Temizle
 
-    if (!results || results.length === 0) {
-        labels = ['Sınav Yok']; scores = [0];
-    } else {
-        results.forEach(r => { labels.push(r.quizzes.title); scores.push(r.score); });
-    }
+                lessons.forEach(l => {
+                    const lessonDate = new Date(`${l.lesson_date}T${l.lesson_time || '00:00'}:00`);
+                    if (lessonDate > now) {
+                        futureLessons.push({ ...l, dateObj: lessonDate });
+                        return;
+                    }
 
-    const isDark = document.documentElement.classList.contains('dark');
-    const textColor = isDark ? '#9ca3af' : '#4b5563';
-    const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                    const date = lessonDate.toLocaleDateString('tr-TR');
+                    if (!l.is_paid) totalDebt += Number(l.price || 0);
 
-    veliChartInstance = new Chart(document.getElementById('veliChart').getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Puan',
-                data: scores,
-                borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                borderWidth: 3, tension: 0.4, fill: true,
-                pointBackgroundColor: '#fff', pointBorderColor: '#4f46e5',
-                pointBorderWidth: 2, pointRadius: 4
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            scales: { 
-                y: { 
-                    beginAtZero: true, 
-                    max: 100,
-                    ticks: { color: textColor },
-                    grid: { color: gridColor }
-                },
-                x: {
-                    ticks: { color: textColor },
-                    grid: { color: gridColor }
+                    listEl.innerHTML += `
+                        <div class="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-100 dark:border-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <p class="text-[11px] font-black text-indigo-500 dark:text-indigo-400 tracking-wider">📅 ${date} ${l.lesson_time || ''}</p>
+                                <p class="text-sm font-bold text-gray-800 dark:text-gray-100 mt-1">${escapeHTML(l.topic)}</p>
+                            </div>
+                            <span class="text-xs font-black ${l.is_paid ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50'} px-3 py-1.5 rounded-lg">${l.price || 0} TL</span>
+                        </div>`;
+                });
+
+                if (futureLessons.length > 0) {
+                    futureLessons.sort((a, b) => a.dateObj - b.dateObj);
+                    startNextLessonCountdown(futureLessons[0]);
                 }
-            },
-            plugins: { legend: { display: false } }
-        }
-    });
 
-    // Perdeyi Kaldır
-    document.getElementById('loadingScreen').classList.add('opacity-0');
-    setTimeout(() => {
-        document.getElementById('loadingScreen').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
-    }, 500);
+                if (totalDebt > 0) {
+                    const debtEl = document.getElementById('veliDebtText');
+                    if (debtEl) debtEl.innerText = totalDebt + " TL";
+                    document.getElementById('veliDebtBadge')?.classList.remove('hidden');
+                }
+            }
+        }
+
+        // 3. Sınavları Çek ve Grafiği Çiz
+        renderVeliChart();
+
+    } catch (e) {
+        console.error("Veli verisi yükleme hatası:", e);
+    }
+}
+
+async function renderVeliChart() {
+    try {
+        const { data: results } = await supabaseClient.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: true });
+        if (!results || results.length === 0) return;
+
+        let labels = []; let scores = [];
+        results.forEach(r => { labels.push(r.quizzes.title); scores.push(r.score); });
+
+        const isDark = document.documentElement.classList.contains('dark');
+        const textColor = isDark ? '#9ca3af' : '#4b5563';
+        const ctx = document.getElementById('veliChart')?.getContext('2d');
+        if (!ctx) return;
+
+        veliChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Puan',
+                    data: scores,
+                    borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    borderWidth: 3, tension: 0.4, fill: true
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: { 
+                    y: { beginAtZero: true, max: 100, ticks: { color: textColor } },
+                    x: { ticks: { color: textColor } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    } catch (e) { console.error("Grafik çizim hatası:", e); }
 }
 
 // 4. GERİ SAYIM VE DİĞER MODÜLLER
