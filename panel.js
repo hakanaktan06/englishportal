@@ -189,8 +189,15 @@ window.addEventListener('load', () => {
         if (!localStorage.getItem('ep_tour_v1')) {
             startPlatformTour();
         }
-    }, 2000);
+    }, 2500);
 });
+
+// Sistemi Başlat (GÜMRÜK VE SPLASH)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkActiveSession);
+} else {
+    checkActiveSession();
+}
 
 async function checkActiveSession() {
     // 🌟 STABILIZATION: Supabase'in tam oturması için kısa bekleme
@@ -2938,9 +2945,9 @@ window.saveLessonUrl = async function() {
 
 // Sistemi Başlat
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', checkTeacherSecurity);
+    document.addEventListener('DOMContentLoaded', checkActiveSession);
 } else {
-    checkTeacherSecurity();
+    checkActiveSession();
 }
 
 // EOF (Stage 3 Ready)
