@@ -3011,7 +3011,7 @@ window.saveWhiteboard = async function() {
     btn.innerHTML = originalHTML;
     btn.disabled = false;
 }
-
+ 
 window.saveLessonUrl = async function() {
     const url = document.getElementById('lessonUrlInput').value.trim();
     if (url && !url.startsWith('http')) {
