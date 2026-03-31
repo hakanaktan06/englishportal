@@ -116,9 +116,20 @@ async function checkTeacherSecurity() {
 
         // 🌟 is_premium ve premium_until verisini çekiyoruz
         const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('full_name, role, is_premium, premium_until, bank_iban, bank_receiver').eq('id', user.id).single();
-        if (profileError || !profile || profile.role !== 'teacher') {
-            showToast("Erişim Engellendi! Yönetici yetkiniz yok.", "error");
-            setTimeout(() => { window.location.href = 'student.html'; }, 1500);
+        
+        if (profileError || !profile) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        if (profile.role === 'god') {
+            window.location.href = 'patron.html';
+            return;
+        }
+
+        if (profile.role !== 'teacher') {
+            showToast("Erişim Engellendi! Öğretmen yetkiniz yok.", "error");
+            setTimeout(() => { window.location.href = 'student.html'; }, 1000);
             return;
         }
 
