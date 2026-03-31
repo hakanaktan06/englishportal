@@ -202,14 +202,8 @@ async function loadExtendedTeacherProfile(userId) {
                 logo.src = 'assets/logo_premium.png';
                 logo.classList.remove('grayscale', 'brightness-0');
             }
-            // VIP olanlarda kilitleri kaldır
-            document.querySelectorAll('.vip-lock').forEach(el => el.classList.add('hidden'));
-        } else {
-            // Standart olanlarda kilitleri göster
-            document.querySelectorAll('.vip-lock').forEach(el => el.classList.remove('hidden'));
         }
-
-        // Kilitleri yönet
+        // Kilitleri ve UI'ı güncelle
         updatePremiumUI();
 
         // 🌟 PANELİ BAŞLAT (Kokpit Sekmesini Aç)
@@ -221,12 +215,16 @@ async function loadExtendedTeacherProfile(userId) {
 }
 
 function updatePremiumUI() {
+    const locks = document.querySelectorAll('.vip-lock, .lock-icon');
     if (isPremiumTeacher) {
-        document.getElementById('premiumBadge')?.classList.remove('hidden');
-        document.querySelectorAll('.lock-icon').forEach(el => el.classList.add('hidden'));
+        locks.forEach(el => el.classList.add('hidden'));
+        const logo = document.getElementById('panelLogo');
+        if (logo) {
+            logo.src = 'assets/logo_premium.png';
+            logo.classList.remove('grayscale', 'brightness-0');
+        }
     } else {
-        document.getElementById('premiumBadge')?.classList.add('hidden');
-        document.querySelectorAll('.lock-icon').forEach(el => el.classList.remove('hidden'));
+        locks.forEach(el => el.classList.remove('hidden'));
     }
 }
 
