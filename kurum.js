@@ -13,11 +13,14 @@ let currentSchoolName = '';
 // 🛡️ GÜVENLİK VE BAŞLATMA
 // ==========================================
 async function initKurumPortal() {
+    // 🌟 STABILIZATION: Supabase'in tam oturması için kısa bekleme
+    await new Promise(r => setTimeout(r, 700));
+
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) { window.location.href = 'index.html'; return; }
 
     const { data: profile, error: pError } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
-    
+
     if (pError || !profile || profile.role !== 'kurum') {
         if (profile && profile.role === 'god') { window.location.href = 'patron.html'; return; }
         await supabaseClient.auth.signOut();
@@ -25,7 +28,8 @@ async function initKurumPortal() {
         return;
     }
 
-    currentSchoolId = profile.school_id;
+    // 🌟 FALLBACK: Eğer school_id yoksa kendi ID'sini kullan (B2B root tenant)
+    currentSchoolId = profile.school_id || user.id;
     currentAdminName = profile.full_name;
     currentSchoolName = profile.school_name || "Yeni Akademi";
 
@@ -34,12 +38,12 @@ async function initKurumPortal() {
     document.getElementById('headerSchoolName').innerText = currentSchoolName;
     document.getElementById('setSchoolName').value = currentSchoolName;
     document.getElementById('setSchoolLogo').value = profile.school_logo || '';
-    if(profile.school_logo) document.getElementById('previewLogo').src = profile.school_logo;
+    if (profile.school_logo) document.getElementById('previewLogo').src = profile.school_logo;
 
     switchTab('dashboard');
     setTimeout(() => {
         const splash = document.getElementById('splashScreen');
-        if(splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
+        if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
     }, 400);
 }
 
@@ -54,20 +58,20 @@ const tabs = {
 
 function switchTab(target) {
     for (const key in tabs) {
-        if(tabs[key]) tabs[key].classList.add('hidden');
+        if (tabs[key]) tabs[key].classList.add('hidden');
     }
-    if(tabs[target]) tabs[target].classList.remove('hidden');
+    if (tabs[target]) tabs[target].classList.remove('hidden');
 
     // Sidebar Active State
     document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('bg-amber-600/20', 'text-amber-500', 'active-menu'));
     const activeBtn = document.getElementById(`btn-${target}`);
-    if(activeBtn) activeBtn.classList.add('bg-amber-600/20', 'text-amber-500', 'active-menu');
+    if (activeBtn) activeBtn.classList.add('bg-amber-600/20', 'text-amber-500', 'active-menu');
 
-    if(target === 'dashboard') fetchStats();
-    if(target === 'teachers') fetchTeachers();
+    if (target === 'dashboard') fetchStats();
+    if (target === 'teachers') fetchTeachers();
 
     // Mobile Sidebar Close
-    if(window.innerWidth < 768) {
+    if (window.innerWidth < 768) {
         document.getElementById('mainSidebar').classList.add('-translate-x-full');
         document.getElementById('sidebarOverlay').classList.add('hidden');
     }
@@ -91,12 +95,12 @@ async function fetchStats() {
 
     // 3. Ödev Sayısı (Tamamlanan)
     const { data: teachers } = await supabaseClient.from('profiles').select('id').eq('school_id', currentSchoolId).eq('role', 'teacher');
-    if(teachers && teachers.length > 0) {
+    if (teachers && teachers.length > 0) {
         const tIds = teachers.map(t => t.id);
         const { count: hCount } = await supabaseClient.from('homeworks').select('*', { count: 'exact', head: true }).in('teacher_id', tIds).eq('status', 'Tamamlandı');
         document.getElementById('statHwCount').innerText = hCount || 0;
     }
-    
+
     loadKurumLogs();
 }
 
@@ -109,7 +113,7 @@ async function fetchTeachers() {
 
     const { data: teachers, error } = await supabaseClient.from('profiles').select('*').eq('school_id', currentSchoolId).eq('role', 'teacher').order('created_at', { ascending: false });
 
-    if(error || !teachers || teachers.length === 0) {
+    if (error || !teachers || teachers.length === 0) {
         container.innerHTML = '<div class="col-span-full py-20 text-center text-slate-400 font-black uppercase tracking-widest bg-slate-50 dark:bg-slate-800/50 rounded-[40px] border-2 border-dashed border-slate-200 dark:border-slate-800">Henüz kayıtlı eğitmeniniz bulunmuyor.</div>';
         return;
     }
@@ -147,15 +151,15 @@ document.getElementById('newTeacherForm').onsubmit = async (e) => {
     const name = document.getElementById('regName').value;
     const username = document.getElementById('regUsername').value;
     const pass = document.getElementById('regPassword').value;
-    
+
     // 🌟 AKILLI DÜZELTME: Eğer kullanıcı zaten bir email girdiyse onu kullan, yoksa otomatik oluştur
-    const email = username.includes('@') 
-        ? username.toLowerCase().trim() 
-        : `${username.toLowerCase().replace(/\s+/g, '')}@${currentSchoolId.substring(0,8)}.com`;
+    const email = username.includes('@')
+        ? username.toLowerCase().trim()
+        : `${username.toLowerCase().replace(/\s+/g, '')}@${currentSchoolId.substring(0, 8)}.com`;
 
     // 1. Auth Kaydı
     const { data: authData, error: authError } = await supabaseClient.auth.signUp({ email, password: pass });
-    if(authError) { showToast(authError.message, 'error'); btn.innerText = originalText; btn.disabled = false; return; }
+    if (authError) { showToast(authError.message, 'error'); btn.innerText = originalText; btn.disabled = false; return; }
 
     // 2. Profil Kaydı
     const { error: pError } = await supabaseClient.from('profiles').insert([{
@@ -167,7 +171,7 @@ document.getElementById('newTeacherForm').onsubmit = async (e) => {
         created_by: currentSchoolId
     }]);
 
-    if(pError) { showToast(pError.message, 'error'); } 
+    if (pError) { showToast(pError.message, 'error'); }
     else {
         showToast("Eğitmen başarıyla eklendi!", 'success');
         saveKurumLog("Eğitmen Eklendi", `${name} sisteme dahil edildi.`);
@@ -181,9 +185,9 @@ document.getElementById('newTeacherForm').onsubmit = async (e) => {
 };
 
 window.deleteTeacher = async (id, name) => {
-    if(!confirm(`${name} isimli eğitmeni silmek istediğinize emin misiniz?`)) return;
+    if (!confirm(`${name} isimli eğitmeni silmek istediğinize emin misiniz?`)) return;
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
-    if(error) showToast(error.message, 'error');
+    if (error) showToast(error.message, 'error');
     else {
         showToast("Eğitmen silindi.", "success");
         saveKurumLog("Eğitmen Silindi", `${name} sistemden kaldırıldı.`);
@@ -194,20 +198,15 @@ window.deleteTeacher = async (id, name) => {
 
 window.resetTeacherPass = async (id, name) => {
     const newPass = prompt(`${name} için yeni şifreyi girin:`);
-    if(!newPass) return;
-    
-    // Auth Update (Server side update should be done via edge functions, but we simulate via patron-like logic if we had service role. 
-    // Since we are client-side with anon key, we'll suggest using a specific logic or letting god handle it.)
-    // Note: Standard Supabase client can't update another user's password without service role.
-    // For SaaS, we will use a dedicated table 'password_resets' which a trigger or edge function monitors.
-    // Or, simpler for now:
+    if (!newPass) return;
+
     const { error } = await supabaseClient.from('password_resets').insert([{
         user_id: id,
         new_password: newPass,
         requested_by: currentSchoolId
     }]);
 
-    if(error) showToast("Hata: " + error.message, "error");
+    if (error) showToast("Hata: " + error.message, "error");
     else showToast("Şifre sıfırlama talebi gönderildi.", "success");
 };
 
@@ -219,16 +218,22 @@ document.getElementById('schoolSettingsForm').onsubmit = async (e) => {
     const name = document.getElementById('setSchoolName').value;
     const logo = document.getElementById('setSchoolLogo').value;
     
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if(!user) return;
+
     const { error } = await supabaseClient.from('profiles').update({
         school_name: name,
-        school_logo: logo
-    }).eq('id', currentSchoolId);
+        school_logo: logo,
+        school_id: user.id // Kenidisini root tenant olarak mühürle
+    }).eq('id', user.id); // 🌟 Kendi profilini güncelle
 
     if (error) showToast(error.message, 'error');
     else {
         showToast("Okul bilgileri güncellendi!", "success");
         currentSchoolName = name;
         document.getElementById('headerSchoolName').innerText = name;
+        const mainLogo = document.getElementById('schoolLogoImg');
+        if(mainLogo) mainLogo.src = logo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name);
         document.getElementById('previewLogo').src = logo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name);
         saveKurumLog("Okul Ayarları Güncellendi", "İsim/Logo değişikliği yapıldı.");
     }
@@ -250,9 +255,9 @@ async function saveKurumLog(action, details) {
 async function loadKurumLogs() {
     const { data: { user } } = await supabaseClient.auth.getUser();
     const { data: logs } = await supabaseClient.from('audit_logs').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20);
-    
+
     const container = document.getElementById('kurumLogsList');
-    if(!logs || logs.length === 0) {
+    if (!logs || logs.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-400 py-10">İşlem kaydı bulunmuyor.</p>';
         return;
     }
@@ -290,7 +295,7 @@ if (document.readyState === 'loading') {
 
 // Logout
 document.getElementById('logoutBtn').onclick = async () => {
-    if(!confirm("Çıkış yapmak istediğinize emin misiniz?")) return;
+    if (!confirm("Çıkış yapmak istediğinize emin misiniz?")) return;
     await supabaseClient.auth.signOut();
     window.location.href = 'index.html';
 };
