@@ -441,115 +441,124 @@ async function fetchAgenda() {
     const agendaContainer = document.getElementById('agendaList');
     if (!agendaContainer || !currentTeacherId) return;
 
-    // 🌟 YENİ: 1 hafta geriden bugüne ve geleceğe bak
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const startDateStr = sevenDaysAgo.toISOString().split('T')[0];
 
-    const { data: lessons } = await supabaseClient.from('private_lessons')
-        .select('lesson_date, lesson_time, topic, profiles!inner(full_name)')
-        .gte('lesson_date', startDateStr)
-        .eq('teacher_id', currentTeacherId);
+    console.log("AJANDA_SORGUSU_PARAMETRELERI:", { startDateStr, currentTeacherId });
 
-    const { data: homeworks } = await supabaseClient.from('homeworks')
-        .select('due_date, title, status, profiles!inner(full_name)')
-        .gte('due_date', startDateStr)
-        .eq('teacher_id', currentTeacherId);
+    try {
+        const { data: lessons, error: lErr } = await supabaseClient.from('private_lessons')
+            .select('lesson_date, lesson_time, topic, profiles!inner(full_name)')
+            .gte('lesson_date', startDateStr)
+            .eq('teacher_id', currentTeacherId);
+        
+        if(lErr) console.error("Ajanda Ders Hatası:", lErr);
 
-    let agendaItems = [];
+        const { data: homeworks, error: hErr } = await supabaseClient.from('homeworks')
+            .select('due_date, title, status, profiles!inner(full_name)')
+            .gte('due_date', startDateStr)
+            .eq('teacher_id', currentTeacherId);
+        
+        if(hErr) console.error("Ajanda Ödev Hatası:", hErr);
 
-    if (lessons) {
-        lessons.forEach(l => {
-            agendaItems.push({
-                type: 'lesson',
-                dateStr: l.lesson_date,
-                timeStr: l.lesson_time || 'Belirtilmedi',
-                dateObj: new Date(`${l.lesson_date}T${l.lesson_time || '00:00'}:00`),
-                title: `${escapeHTML(l.profiles?.full_name || 'Öğrenci')} ile Özel Ders`,
-                desc: escapeHTML(l.topic)
-            });
-        });
-    }
+        console.log("AJANDA_HAM_VERI (Dersler):", lessons);
+        console.log("AJANDA_HAM_VERI (Ödevler):", homeworks);
 
-    if (homeworks) {
-        homeworks.forEach(h => {
-            if (h.status !== 'Tamamlandı') {
-                // YENİ: Başlık Temizleme Operasyonu
-                let cleanTitle = h.title;
-                if (cleanTitle.includes('[KELİME_KARTI]')) {
-                    cleanTitle = cleanTitle.replace('[KELİME_KARTI]', 'Telaffuz Görevi:').trim();
-                } else if (cleanTitle.includes('[WRITING]')) {
-                    cleanTitle = cleanTitle.replace('[WRITING]', 'Gramer Görevi:').trim();
-                }
+        let agendaItems = [];
 
+        if (lessons) {
+            lessons.forEach(l => {
                 agendaItems.push({
-                    type: 'homework',
-                    dateStr: h.due_date,
-                    timeStr: '23:59',
-                    dateObj: new Date(`${h.due_date}T23:59:00`),
-                    title: `${h.profiles?.full_name || 'Öğrenci'} - Ödev Teslimi`,
-                    desc: cleanTitle
+                    type: 'lesson',
+                    dateStr: l.lesson_date,
+                    timeStr: l.lesson_time || 'Belirtilmedi',
+                    dateObj: new Date(`${l.lesson_date}T${l.lesson_time || '00:00'}:00`),
+                    title: `${escapeHTML(l.profiles?.full_name || 'Öğrenci')} ile Özel Ders`,
+                    desc: escapeHTML(l.topic)
                 });
-            }
-        });
-    }
-
-    agendaItems.sort((a, b) => a.dateObj - b.dateObj);
-    agendaContainer.innerHTML = '';
-
-    if (agendaItems.length === 0) {
-        agendaContainer.innerHTML = `
-            <div class="flex flex-col items-center justify-center py-10 text-gray-400">
-                <p class="text-sm font-bold text-gray-500">Yaklaşan bir programınız yok.</p>
-                <p id="agendaTeacherName" class="text-xs mt-1">${currentTeacherName} Öğretmenim, şimdi kafa dinleme vakti!</p>
-            </div>`;
-        return;
-    }
-
-    agendaItems.slice(0, 10).forEach(item => {
-        const d = item.dateObj;
-        const dayName = d.toLocaleDateString('tr-TR', { weekday: 'long' });
-        const shortDate = d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
-
-        const isToday = d.toDateString() === new Date().toDateString();
-        const dateBadge = isToday
-            ? `<span class="bg-rose-50 dark:bg-rose-900/30 border border-rose-100 dark:border-rose-800 text-rose-600 dark:text-rose-400 px-2.5 py-1 rounded-md text-[10px] font-black uppercase shadow-sm">BUGÜN</span>`
-            : `<span class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-md text-[10px] font-black uppercase">${shortDate} ${dayName}</span>`;
-
-        const icon = item.type === 'lesson'
-            ? `<div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-sm"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422A12.083 12.083 0 0112 21.5a12.083 12.083 0 01-6.16-10.922L12 14z"></path></svg></div>`
-            : `<div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></div>`;
-
-        const timeHtml = item.type === 'lesson' && item.timeStr !== 'Belirtilmedi'
-            ? `<span class="ml-2 text-xs font-black text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${item.timeStr}</span>`
-            : '';
-
-        // Ödevler tablosuyla BİREBİR aynı rozet tasarımı
-        let badgeHtml = '';
-        if (item.desc.includes('Gramer Görevi:')) {
-            badgeHtml = `<span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded text-[10px] font-black mr-2 uppercase tracking-widest border border-blue-200 dark:border-blue-800">GRAMER</span>`;
-            item.desc = item.desc.replace('Gramer Görevi:', '').trim();
-        } else if (item.desc.includes('Telaffuz Görevi:')) {
-            badgeHtml = `<span class="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded text-[10px] font-black mr-2 uppercase tracking-widest border border-purple-200 dark:border-purple-800">TELAFFUZ</span>`;
-            item.desc = item.desc.replace('Telaffuz Görevi:', '').trim();
+            });
         }
 
+        if (homeworks) {
+            homeworks.forEach(h => {
+                if (h.status !== 'Tamamlandı') {
+                    let cleanTitle = h.title || 'İsimsiz Ödev';
+                    if (cleanTitle.includes('[KELİME_KARTI]')) {
+                        cleanTitle = cleanTitle.replace('[KELİME_KARTI]', 'Telaffuz Görevi:').trim();
+                    } else if (cleanTitle.includes('[WRITING]')) {
+                        cleanTitle = cleanTitle.replace('[WRITING]', 'Gramer Görevi:').trim();
+                    }
 
-        agendaContainer.innerHTML += `
-            <div class="flex items-center gap-4 p-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-700 rounded-2xl border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition group cursor-default">
-                ${icon}
-                <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-1.5">
-                        ${dateBadge}
-                        ${timeHtml}
+                    agendaItems.push({
+                        type: 'homework',
+                        dateStr: h.due_date,
+                        timeStr: '23:59',
+                        dateObj: new Date(`${h.due_date}T23:59:00`),
+                        title: `${h.profiles?.full_name || 'Öğrenci'} - Ödev Teslimi`,
+                        desc: cleanTitle
+                    });
+                }
+            });
+        }
+
+        agendaItems.sort((a, b) => a.dateObj - b.dateObj);
+        agendaContainer.innerHTML = '';
+
+        if (agendaItems.length === 0) {
+            agendaContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                    <p class="text-sm font-bold text-gray-500">Yaklaşan bir programınız yok.</p>
+                    <p class="text-[10px] mt-1 opacity-50 uppercase tracking-widest font-black">Harika! Şimdi dinlenme vakti.</p>
+                </div>`;
+            return;
+        }
+
+        agendaItems.slice(0, 10).forEach(item => {
+            const d = item.dateObj;
+            const dayName = d.toLocaleDateString('tr-TR', { weekday: 'long' });
+            const shortDate = d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+
+            const isToday = d.toDateString() === new Date().toDateString();
+            const dateBadge = isToday
+                ? `<span class="bg-rose-50 dark:bg-rose-900/30 border border-rose-100 dark:border-rose-800 text-rose-600 dark:text-rose-400 px-2.5 py-1 rounded-md text-[10px] font-black uppercase shadow-sm">BUGÜN</span>`
+                : `<span class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-md text-[10px] font-black uppercase">${shortDate} ${dayName}</span>`;
+
+            const icon = item.type === 'lesson'
+                ? `<div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-sm"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422A12.083 12.083 0 0112 21.5a12.083 12.083 0 01-6.16-10.922L12 14z"></path></svg></div>`
+                : `<div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg></div>`;
+
+            const timeHtml = item.type === 'lesson' && item.timeStr !== 'Belirtilmedi'
+                ? `<span class="ml-2 text-xs font-black text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${item.timeStr}</span>`
+                : '';
+
+            let badgeHtml = '';
+            let displayDesc = item.desc;
+            if (displayDesc.includes('Gramer Görevi:')) {
+                badgeHtml = `<span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2.5 py-0.5 rounded text-[10px] font-black mr-2 uppercase tracking-widest border border-blue-200 dark:border-blue-800">GRAMER</span>`;
+                displayDesc = displayDesc.replace('Gramer Görevi:', '').trim();
+            } else if (displayDesc.includes('Telaffuz Görevi:')) {
+                badgeHtml = `<span class="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2.5 py-0.5 rounded text-[10px] font-black mr-2 uppercase tracking-widest border border-purple-200 dark:border-purple-800">TELAFFUZ</span>`;
+                displayDesc = displayDesc.replace('Telaffuz Görevi:', '').trim();
+            }
+
+            agendaContainer.innerHTML += `
+                <div class="flex items-center gap-4 p-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-700/40 rounded-2xl border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition group cursor-default">
+                    ${icon}
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            ${dateBadge}
+                            ${timeHtml}
+                        </div>
+                        <h4 class="text-sm font-black text-gray-800 dark:text-white leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">${escapeHTML(item.title)}</h4>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-1 truncate max-w-[250px] sm:max-w-md flex items-center">${badgeHtml} ${escapeHTML(displayDesc)}</p>
                     </div>
-                    <h4 class="text-sm font-black text-gray-800 dark:text-white leading-tight group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition">${escapeHTML(item.title)}</h4>
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 truncate max-w-[250px] sm:max-w-md">${badgeHtml} ${escapeHTML(item.desc)}</p>
-                </div>
-            </div>`;
-    });
+                </div>`;
+        });
+    } catch (err) {
+        console.error("Ajanda ölümcül hata:", err);
+    }
 }
-
 
 // ==========================================
 // 3. YENİ NESİL: VIP ÖĞRENCİ İSTİHBARAT MOTORU (LİMİTLİ)
