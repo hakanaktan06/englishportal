@@ -6,6 +6,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 let currentStudentId = null;
+let currentStudentTeacherId = null; // 🌟 GÜVENLİK: Sadece kendi hocasının verilerini görmesi için
 let currentQuizQuestions = []; 
 let activeTakingQuizId = null;
 let quizTimerInterval = null; 
@@ -256,11 +257,17 @@ async function loadExtendedStudentProfile(userId) {
             applyAvatarConfig(profile.avatar_config);
         }
 
+        // 🌟 GÜVENLİK: Hoca ID'sini sabitle
+        currentStudentTeacherId = profile.teacher_id;
+
         // 🌟 STAGE 3: BEYAZ TAHTA VE CANLI DERS 🌟
         if (profile.teacher_id) {
             if (typeof initWhiteboardRealtime === 'function') initWhiteboardRealtime(profile.teacher_id);
             if (typeof checkLiveLesson === 'function') checkLiveLesson(profile.teacher_id);
         }
+
+        // 🌟 BAŞLANGIÇ SEKİMESİNİ YÜKLE
+        switchTab('homeworks');
 
     } catch (e) { 
         console.error("Öğrenci profil detay yükleme hatası:", e); 
@@ -559,7 +566,12 @@ async function fetchMyHomeworks() {
 let currentActivityFilter = 'all';
 
 async function fetchActivities() {
-    const { data } = await supabaseClient.from('activities').select('*').order('created_at', { ascending: false });
+    if (!currentStudentTeacherId) {
+        console.warn("Hoca ID bulunamadı, filtreleme yapılamıyor.");
+        return;
+    }
+
+    const { data } = await supabaseClient.from('activities').select('*').eq('teacher_id', currentStudentTeacherId).order('created_at', { ascending: false });
     const container = document.getElementById('myActivitiesList');
     if (!container) return;
 
@@ -626,7 +638,9 @@ document.querySelectorAll('.sidebar-filter-btn').forEach(btn => {
 // 6. SINAV MOTORU VE SONUÇLAR
 // ==========================================
 async function fetchQuizzes() {
-    const { data } = await supabaseClient.from('quizzes').select('*').order('created_at', { ascending: false });
+    if (!currentStudentTeacherId) return;
+
+    const { data } = await supabaseClient.from('quizzes').select('*').eq('teacher_id', currentStudentTeacherId).order('created_at', { ascending: false });
     const container = document.getElementById('myQuizzesList');
     if (!container) return;
 
