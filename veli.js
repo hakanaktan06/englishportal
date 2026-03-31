@@ -259,10 +259,10 @@ window.copyIban = function() {
         return;
     }
     navigator.clipboard.writeText(globalTeacherIban).then(() => {
-        showVeliToast("✅ IBAN Başarıyla Kopyalandı!", "success");
+        showVeliToast("Bilgi: IBAN başarıyla kopyalandı.", "success");
         const btn = event.currentTarget;
         const originalHtml = btn.innerHTML;
-        btn.innerHTML = "✅ KOPYALANDI!";
+        btn.innerHTML = "KOPYALANDI";
         btn.classList.replace('bg-indigo-600', 'bg-emerald-600');
         setTimeout(() => {
             btn.innerHTML = originalHtml;
