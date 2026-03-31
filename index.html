@@ -131,10 +131,12 @@
                         <a href="#features" data-i18n="nav-features" class="text-[10px] font-black text-gray-400 hover:text-indigo-600 uppercase tracking-widest transition">Özellikler</a>
                         <a href="#about" data-i18n="nav-about" class="text-[10px] font-black text-gray-400 hover:text-indigo-600 uppercase tracking-widest transition">Hakkımızda</a>
                     </div>
+                    
+                    <div class="mb-8 text-center sm:text-left">
                         <h3 class="text-3xl font-black text-gray-800" id="loginTitleText">Öğrenci Girişi</h3>
-                        <p class="text-gray-500 font-bold mt-2 text-[10px] uppercase tracking-widest"
-                            id="loginDescText">
-                            Okul Nu veya Kullanıcı Adı ile Giriş Yapın</p>
+                        <p class="text-gray-500 font-bold mt-2 text-[10px] uppercase tracking-widest" id="loginDescText">
+                            Okul Nu veya Kullanıcı Adı ile Giriş Yapın
+                        </p>
                     </div>
 
                     <form id="loginForm" class="space-y-5">
@@ -200,62 +202,6 @@
                         </button>
                     </div>
                 </div> <!-- End loginSection -->
-
-                <script>
-                    function switchLoginTab(type) {
-                        const tabs = {
-                            student: document.getElementById('tabStudent'),
-                            parent: document.getElementById('tabParent'),
-                            teacher: document.getElementById('tabTeacher'),
-                            kurum: document.getElementById('tabKurum')
-                        };
-                        const titleText = document.getElementById('loginTitleText');
-                        const descText = document.getElementById('loginDescText');
-                        const loginRoleInput = document.getElementById('loginRole');
-                        const rBlock = document.getElementById('registerBlock');
-                        const regTitle = document.getElementById('regTitle');
-
-                        const activeClass = "flex-1 py-3 text-center rounded-xl transition-all duration-300 shadow-md bg-white border border-gray-100 transform scale-100";
-                        const inactiveClass = "flex-1 py-3 text-center rounded-xl transition-all duration-300 scale-95 border border-transparent text-gray-400";
-
-                        for (const key in tabs) {
-                            if (!tabs[key]) continue;
-                            if (key === type) {
-                                let colorClass = ' text-indigo-600';
-                                if(key === 'parent') colorClass = ' text-pink-600';
-                                if(key === 'teacher') colorClass = ' text-indigo-900';
-                                if(key === 'kurum') colorClass = ' text-amber-600';
-                                tabs[key].className = activeClass + colorClass;
-                            } else {
-                                let hoverClass = ' hover:text-gray-600';
-                                if(key === 'parent') hoverClass = ' hover:text-pink-600';
-                                if(key === 'kurum') hoverClass = ' hover:text-amber-600';
-                                tabs[key].className = inactiveClass + hoverClass;
-                            }
-                        }
-
-                        rBlock.classList.add('hidden', 'opacity-0');
-                        loginRoleInput.value = (type === 'parent') ? 'student' : type; // Parent uses student role but parent path
-
-                        if (type === 'student') {
-                            titleText.innerText = "Öğrenci Girişi";
-                            descText.innerText = "Okul No veya Kullanıcı Adı ile Giriş Yapın";
-                        } else if (type === 'parent') {
-                            titleText.innerText = "Veli Girişi";
-                            descText.innerText = "Çocuğunuzun Kullanıcı Adı veya No'su ile Giriş Yapın";
-                            loginRoleInput.value = 'parent';
-                        } else if (type === 'teacher') {
-                            titleText.innerText = "Eğitmen Girişi";
-                            descText.innerText = "E-Posta veya Kullanıcı Adı ile Giriş Yapın";
-                        } else if (type === 'kurum') {
-                            titleText.innerText = "Kurum Girişi";
-                            descText.innerText = "Dil Okulu / Akademi Paneline Giriş Yapın";
-                            rBlock.classList.remove('hidden');
-                            if(regTitle) regTitle.innerText = "Kurum Kaydı";
-                            setTimeout(() => rBlock.classList.remove('opacity-0'), 50);
-                        }
-                    }
-                </script>
 
                 <div id="registerSection" class="hidden transition-opacity duration-300 opacity-0">
                     <div class="mb-8 text-center lg:text-left">
