@@ -171,84 +171,102 @@ async function saveLog(action, details = "") {
 // 2. OTURUM KONTROLÜ VE SPLASH EKRANI KAPATMA
 // ==========================================
 async function initStudentPortal() {
-    // 🌟 REDIRECT LOOP BREAK: Sayfa açılırken 700ms bekle (Supabase uyanışı için)
+    // 🌟 STABILIZATION: Supabase'in tam oturması için kısa bekleme
     await new Promise(r => setTimeout(r, 700));
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) { window.location.href = 'index.html'; return; }
+    try {
+        const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+        if (authError || !user) { 
+            console.warn("Kullanıcı bulunamadı, giriş sayfasına yönlendiriliyor.");
+            window.location.href = 'index.html'; 
+            return; 
+        }
 
-    currentStudentId = user.id;
-    
-    // 🌟 PROFİL FETCH VE RETRY (Profil bazen geç gelebilir)
-    let { data: profile, error: pError } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
-
-    if (pError || !profile) {
-        // Bir kez daha deneyelim (Network gecikmesi olabilir)
-        const retry = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
-        profile = retry.data;
-        pError = retry.error;
+        // 🌟 STEP 1: Sadece Rolü Kontrol Et (Hızlı & Güvenli)
+        const { data: roleCheck, error: roleError } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
         
-        if (pError || !profile) {
-            console.error("Profil yüklenemedi:", pError);
+        if (roleError || !roleCheck) {
+            console.error("Yetki kontrolü başarısız:", roleError);
             window.location.href = 'index.html';
             return;
         }
+
+        // Eğer buradaysak yetki TAMAM. Splash'i hemen kapatalım.
+        const splash = document.getElementById('splashScreen');
+        if (splash) {
+            splash.classList.add('opacity-0');
+            setTimeout(() => splash.classList.add('hidden'), 700);
+        }
+
+        currentStudentId = user.id;
+
+        // 🌟 STEP 2: Detaylı Verileri Arkadan Çek (Non-blocking)
+        loadExtendedStudentProfile(user.id);
+
+    } catch (e) {
+        console.error("Güvenlik sistemi hatası:", e);
     }
+}
 
-    if (profile) { 
-        // 🌟 KURUMSAL MARKALAMA (White-labeling)
-        if (profile.school_name) {
-            document.querySelectorAll('.school-name-display').forEach(el => el.innerText = profile.school_name);
-        }
-        if (profile.school_logo) {
-            document.querySelectorAll('.school-logo-display').forEach(el => el.src = profile.school_logo);
+async function loadExtendedStudentProfile(userId) {
+    try {
+        const { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
+        
+        if (error || !profile) {
+            console.warn("Profil detayları çekilemedi (Bazı kolonlar eksik olabilir):", error);
+            return;
         }
 
+        // UI Güncellemeleri
         const nameEl = document.getElementById('studentNameDisplay');
-        if(nameEl) nameEl.innerText = profile.full_name; 
+        if(nameEl) nameEl.innerText = profile.full_name || 'Öğrenci'; 
         
         const welcomeEl = document.getElementById('welcomeStudentName');
         if(welcomeEl) {
-            const firstName = profile.full_name.split(' ')[0]; 
+            const fullName = profile.full_name || 'Öğrenci';
+            const firstName = fullName.split(' ')[0];
             welcomeEl.innerText = firstName;
         }
 
-        const currentXp = profile.xp || 0;
-        const currentCoins = profile.coins || 0;
-        const currentLevel = Math.floor(currentXp / 500) + 1;
-        
+        // Markalama
+        if (profile.school_name) document.querySelectorAll('.school-name-display').forEach(el => el.innerText = profile.school_name);
+        if (profile.school_logo) document.querySelectorAll('.school-logo-display').forEach(el => el.src = profile.school_logo);
+
+        // 🌟 İSTATİSTİKLER (Hata vermemesi için korumalı)
+        const xp = profile.xp || 0;
+        const coins = profile.coins || 0;
+        const level = Math.floor(xp / 500) + 1;
+
+        document.querySelectorAll('.xp-display').forEach(el => el.innerText = xp);
+        document.querySelectorAll('.coins-display').forEach(el => el.innerText = coins);
+        document.querySelectorAll('.level-display').forEach(el => el.innerText = level);
+
         const elXp = document.getElementById('studentXpText');
         const elLevel = document.getElementById('studentLevelText');
         const elCoins = document.getElementById('studentCoinText');
         const elShopCoins = document.getElementById('shopCoinDisplay');
         
-        if(elXp) elXp.innerText = currentXp;
-        if(elLevel) elLevel.innerText = currentLevel;
-        if(elCoins) elCoins.innerText = currentCoins;
-        if(elShopCoins) elShopCoins.innerText = currentCoins;
+        if (elXp) elXp.innerText = xp;
+        if (elLevel) elLevel.innerText = level;
+        if (elCoins) elCoins.innerText = coins;
+        if (elShopCoins) elShopCoins.innerText = coins;
 
         // Avatarını Yükle
-        if (profile.avatar_config) {
+        if (profile.avatar_config && typeof applyAvatarConfig === 'function') {
             applyAvatarConfig(profile.avatar_config);
         }
 
-        // 🌟 STAGE 3: BEYAZ TAHTA VE CANLI DERS BAŞLATMA 🌟
+        // 🌟 STAGE 3: BEYAZ TAHTA VE CANLI DERS 🌟
         if (profile.teacher_id) {
-            initWhiteboardRealtime(profile.teacher_id);
-            checkLiveLesson(profile.teacher_id);
+            if (typeof initWhiteboardRealtime === 'function') initWhiteboardRealtime(profile.teacher_id);
+            if (typeof checkLiveLesson === 'function') checkLiveLesson(profile.teacher_id);
         }
+
+    } catch (e) { 
+        console.error("Öğrenci profil detay yükleme hatası:", e); 
     }
-
-    switchTab('homeworks');
-
-    setTimeout(() => {
-        const splash = document.getElementById('splashScreen');
-        if(splash) {
-            splash.classList.add('opacity-0');
-            setTimeout(() => splash.classList.add('hidden'), 700);
-        }
-    }, 400);
 }
+
 
 
 // ==========================================
