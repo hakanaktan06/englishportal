@@ -91,6 +91,9 @@ function customConfirm(message, btnText = "Evet, Onayla") {
 // GÜVENLİK VE ÇIKIŞ
 // ==========================================
 async function checkGodSecurity() {
+    // 🌟 REDIRECT LOOP BREAK: Sayfa açılırken 700ms bekle (Supabase uyanışı için)
+    await new Promise(r => setTimeout(r, 700));
+
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) { window.location.href = 'index.html'; return; }
 
