@@ -38,6 +38,19 @@ document.getElementById('showLoginBtn').addEventListener('click', () => {
 });
 
 // ==========================================
+// 1.5 DİĞER GÖRSEL YARDIMCILAR (toggleAuth vb)
+// ==========================================
+window.toggleAuth = function (mode) {
+    if (mode === 'register') {
+        const btn = document.getElementById('showRegisterBtn');
+        if (btn) btn.click();
+    } else {
+        const btn = document.getElementById('showLoginBtn');
+        if (btn) btn.click();
+    }
+};
+
+// ==========================================
 // 2. GİRİŞ (LOGIN) MOTORU
 // ==========================================
 const loginForm = document.getElementById('loginForm');
@@ -278,6 +291,65 @@ function applyTranslations() {
     });
 }
 applyTranslations();
+
+// ==========================================
+// SEKME SEÇME (STUDENT, PARENT, TEACHER, KURUM)
+// ==========================================
+window.switchLoginTab = function(type) {
+    const tabs = {
+        student: document.getElementById('tabStudent'),
+        parent: document.getElementById('tabParent'),
+        teacher: document.getElementById('tabTeacher'),
+        kurum: document.getElementById('tabKurum')
+    };
+    const titleText = document.getElementById('loginTitleText');
+    const descText = document.getElementById('loginDescText');
+    const loginRoleInput = document.getElementById('loginRole');
+    const rBlock = document.getElementById('registerBlock');
+    const regTitle = document.getElementById('regTitle');
+
+    const activeClass = "flex-1 py-3 text-center rounded-xl transition-all duration-300 shadow-md bg-white border border-gray-100 transform scale-100";
+    const inactiveClass = "flex-1 py-3 text-center rounded-xl transition-all duration-300 scale-95 border border-transparent text-gray-400";
+
+    for (const key in tabs) {
+        if (!tabs[key]) continue;
+        if (key === type) {
+            let colorClass = ' text-indigo-600';
+            if(key === 'parent') colorClass = ' text-pink-600';
+            if(key === 'teacher') colorClass = ' text-indigo-900';
+            if(key === 'kurum') colorClass = ' text-amber-600';
+            tabs[key].className = activeClass + colorClass;
+        } else {
+            let hoverClass = ' hover:text-gray-600';
+            if(key === 'parent') hoverClass = ' hover:text-pink-600';
+            if(key === 'kurum') hoverClass = ' hover:text-amber-600';
+            tabs[key].className = inactiveClass + hoverClass;
+        }
+    }
+
+    if(rBlock) rBlock.classList.add('hidden', 'opacity-0');
+    if(loginRoleInput) loginRoleInput.value = (type === 'parent') ? 'student' : type; 
+
+    if (type === 'student') {
+        if(titleText) titleText.innerText = "Öğrenci Girişi";
+        if(descText) descText.innerText = "Okul No veya Kullanıcı Adı ile Giriş Yapın";
+    } else if (type === 'parent') {
+        if(titleText) titleText.innerText = "Veli Girişi";
+        if(descText) descText.innerText = "Çocuğunuzun Kullanıcı Adı veya No'su ile Giriş Yapın";
+        if(loginRoleInput) loginRoleInput.value = 'parent';
+    } else if (type === 'teacher') {
+        if(titleText) titleText.innerText = "Eğitmen Girişi";
+        if(descText) descText.innerText = "E-Posta veya Kullanıcı Adı ile Giriş Yapın";
+    } else if (type === 'kurum') {
+        if(titleText) titleText.innerText = "Kurum Girişi";
+        if(descText) descText.innerText = "Dil Okulu / Akademi Paneline Giriş Yapın";
+        if(rBlock) {
+            rBlock.classList.remove('hidden');
+            if(regTitle) regTitle.innerText = "Kurum Kaydı";
+            setTimeout(() => rBlock.classList.remove('opacity-0'), 50);
+        }
+    }
+};
 
 async function checkActiveSession() {
     const { data: { session } } = await supabaseClient.auth.getSession();
