@@ -20,6 +20,95 @@ function escapeHTML(str) {
     });
 }
 
+// ==========================================
+// 🌟 RPG SİSTEMİ VERİLERİ (DÜKKAN VE AVATAR) 🌟
+// ==========================================
+const SHOP_DATA = {
+    bases: [
+        { id: 0, name: "Kâşif", img: "assets/avatars/base_0_v1.png" },
+        { id: 1, name: "Savaşçı", img: "assets/avatars/base_1_v1.png" },
+        { id: 2, name: "Büyücü", img: "assets/avatars/base_2_v1.png" },
+        { id: 3, name: "Robot", img: "assets/avatars/base_3_v1.png" },
+        { id: 4, name: "Ninja", img: "assets/avatars/base_4_v1.png" },
+        { id: 5, name: "Kral", img: "assets/avatars/base_5_v1.png" }
+    ],
+    skins: [
+        { id: 101, baseId: 0, img: "assets/avatars/base_0_v1.png" },
+        { id: 102, baseId: 0, img: "assets/avatars/base_0_v2.png" },
+        { id: 103, baseId: 0, img: "assets/avatars/base_0_v3.png" },
+        { id: 104, baseId: 0, img: "assets/avatars/base_0_v4.png" },
+        { id: 105, baseId: 0, img: "assets/avatars/base_0_v5.png" },
+        { id: 111, baseId: 1, img: "assets/avatars/base_1_v1.png" },
+        { id: 112, baseId: 1, img: "assets/avatars/base_1_v2.png" },
+        { id: 113, baseId: 1, img: "assets/avatars/base_1_v3.png" },
+        { id: 114, baseId: 1, img: "assets/avatars/base_1_v4.png" },
+        { id: 115, baseId: 1, img: "assets/avatars/base_1_v5.png" },
+        { id: 121, baseId: 2, img: "assets/avatars/base_2_v1.png" },
+        { id: 122, baseId: 2, img: "assets/avatars/base_2_v2.png" },
+        { id: 123, baseId: 2, img: "assets/avatars/base_2_v3.png" },
+        { id: 124, baseId: 2, img: "assets/avatars/base_2_v4.png" },
+        { id: 125, baseId: 2, img: "assets/avatars/base_2_v5.png" },
+        { id: 131, baseId: 3, img: "assets/avatars/base_3_v1.png" },
+        { id: 132, baseId: 3, img: "assets/avatars/base_3_v2.png" },
+        { id: 133, baseId: 3, img: "assets/avatars/base_3_v3.png" },
+        { id: 134, baseId: 3, img: "assets/avatars/base_3_v4.png" },
+        { id: 135, baseId: 3, img: "assets/avatars/base_3_v5.png" },
+        { id: 141, baseId: 4, img: "assets/avatars/base_4_v1.png" },
+        { id: 142, baseId: 4, img: "assets/avatars/base_4_v2.png" },
+        { id: 143, baseId: 4, img: "assets/avatars/base_4_v3.png" },
+        { id: 144, baseId: 4, img: "assets/avatars/base_4_v4.png" },
+        { id: 145, baseId: 4, img: "assets/avatars/base_4_v5.png" },
+        { id: 151, baseId: 5, img: "assets/avatars/base_5_v1.png" },
+        { id: 152, baseId: 5, img: "assets/avatars/base_5_v2.png" },
+        { id: 153, baseId: 5, img: "assets/avatars/base_5_v3.png" },
+        { id: 154, baseId: 5, img: "assets/avatars/base_5_v4.png" },
+        { id: 155, baseId: 5, img: "assets/avatars/base_5_v5.png" }
+    ],
+    pets: [
+        { id: 201, img: "assets/avatars/pet_explorer_monkey_png_1775067115822_png_1775067131574.png" },
+        { id: 202, img: "assets/avatars/pet_warrior_wolf_png_1775067131976_png_1775067151957.png" },
+        { id: 203, img: "assets/avatars/pet_mage_owl_png_1775067152062_png_1775067177801.png" },
+        { id: 204, img: "assets/avatars/pet_robot_drone_png_1775067178018_png_1775067196994.png" },
+        { id: 205, img: "assets/avatars/pet_ninja_panther_png_1775067197177_png_1775067214323.png" },
+        { id: 206, img: "assets/avatars/pet_king_eagle_png_1775067214472_png_1775067232469.png" }
+    ]
+};
+
+function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
+    if (!config || Object.keys(config).length === 0) return `<div class="${sizeClass} rounded-full bg-indigo-100 flex items-center justify-center text-indigo-400 font-bold shrink-0">?</div>`;
+    
+    // Aktif skin veya base görseli
+    let skinImg = "";
+    if (config.skin && config.skin !== -1) {
+        const s = SHOP_DATA.skins.find(x => x.id == config.skin);
+        if (s) skinImg = s.img;
+    }
+    if (!skinImg && config.base !== undefined) {
+        const b = SHOP_DATA.bases.find(x => x.id == config.base);
+        if (b) skinImg = b.img;
+    }
+
+    // Pet görseli
+    let petImg = "";
+    if (config.pet && config.pet !== -1) {
+        const p = SHOP_DATA.pets.find(x => x.id == config.pet);
+        if (p) petImg = p.img;
+    }
+
+    return `
+        <div class="relative ${sizeClass} shrink-0 group/avatar">
+            <div class="w-full h-full rounded-full bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/40 dark:to-purple-900/40 border border-indigo-100 dark:border-indigo-800 p-1 overflow-hidden shadow-inner transition-transform group-hover/avatar:scale-110">
+                <img src="${skinImg || 'assets/avatars/base_0_v1.png'}" class="w-full h-full object-contain drop-shadow-md">
+            </div>
+            ${petImg ? `
+                <div class="absolute -bottom-1 -right-1 w-1/2 h-1/2 bg-white dark:bg-slate-800 rounded-full p-0.5 shadow-lg border border-indigo-50 dark:border-indigo-900 z-10 transition-transform group-hover/avatar:scale-125">
+                    <img src="${petImg}" class="w-full h-full object-contain animate-float">
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
 
 // ==========================================
 // YENİ: SİSTEMDEKİ AKTİF ÖĞRETMENİN HAFIZASI VE LİMİT BEKÇİLERİ
@@ -217,9 +306,51 @@ async function loadExtendedTeacherProfile(userId) {
         // 🌟 PANELİ BAŞLAT (Kokpit Sekmesini Aç)
         switchTab('dashboard');
 
+        // 🌟 REALTIME LİSTENER'LARI BAŞLAT
+        initRealtimeProfileListener();
+
     } catch (e) { 
         console.error("Profil detay yükleme hatası:", e); 
     }
+}
+
+// 🌟 YENİ: ANLIK AVATAR VE PROFİL GÜNCELLEME MOTORU
+function initRealtimeProfileListener() {
+    if (!currentTeacherId) return;
+
+    // Eğer eski bir abonelik varsa temizle
+    if (window.profileSubscription) {
+        supabaseClient.removeChannel(window.profileSubscription);
+    }
+
+    console.log("REALTIME_PROFILE_LISTENER: Başlatılıyor...", currentTeacherId);
+
+    window.profileSubscription = supabaseClient
+        .channel('public:profiles:teacher_id=eq.' + currentTeacherId)
+        .on('postgres_changes', { 
+            event: 'UPDATE', 
+            schema: 'public', 
+            table: 'profiles',
+            filter: `teacher_id=eq.${currentTeacherId}`
+        }, (payload) => {
+            console.log("REALTIME_PROFILE_UPDATE:", payload);
+            
+            // 1. Eğer öğrenci listesi açıksa tazele (Thumbnail'ler için)
+            // Not: Çok sık tetiklenirse debounce eklenebilir, ama şu an için direkt fetchStudents() makul.
+            if (typeof fetchStudents === 'function') {
+                fetchStudents();
+            }
+
+            // 2. Eğer o an bu öğrencinin profili (modalı) açıksa, ordaki büyük avatarı da güncelle
+            const openProfId = document.getElementById('profStudentId')?.value;
+            if (openProfId === payload.new.id) {
+                const avatarPreview = document.getElementById('profileAvatarPreview');
+                if (avatarPreview) {
+                    avatarPreview.innerHTML = getAvatarPreviewHTML(payload.new.avatar_config, "w-16 h-16 md:w-20 md:h-20");
+                }
+            }
+        })
+        .subscribe();
 }
 
 function updatePremiumUI() {
@@ -462,7 +593,7 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
             // 🌟 GELİŞMİŞ SORGU: RLS (Yetki) sorunlarını aşmak için JOIN (birleştirme) kullanıyoruz
             // audit_logs -> profiles -> teacher_id kontrolü
             const { data: logs, error } = await supabaseClient.from('audit_logs')
-                .select('*, profiles!inner(teacher_id, full_name)')
+                .select('*, profiles!inner(teacher_id, full_name, avatar_config)')
                 .eq('profiles.teacher_id', currentTeacherId)
                 .order('created_at', { ascending: false })
                 .limit(containerId === 'studentLiveLogs' ? 10 : 50);
@@ -476,10 +607,6 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
             }
 
             if (!logs || logs.length === 0) {
-                // Eğer veri yoksa, gerçekten mi yok yoksa çekemiyor muyuz anlamak için bir test yapalım
-                const { count } = await supabaseClient.from('audit_logs').select('*', { count: 'exact', head: true }).limit(1);
-                console.log("FLOW_TABLE_TOTAL_COUNT_CHECK:", count);
-                
                 container.innerHTML = `<div class="p-10 text-center text-gray-400 font-bold uppercase tracking-widest opacity-50 italic text-[10px]">Henüz bir hareket sinyali gelmedi.</div>`;
                 return;
             }
@@ -490,28 +617,17 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
         const renderLogs = (logs) => {
             container.innerHTML = logs.map(log => {
                 const date = new Date(log.created_at).toLocaleString('tr-TR');
-                // JOIN sorgusundan gelen ismi kullan veya eşleşmezse eski öğrenciden al
                 const studentName = log.profiles?.full_name || studentMap[log.user_id] || 'Bilinmeyen Öğrenci';
+                const avatarConfig = log.profiles?.avatar_config || {};
                 
-                let icon = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
-                let iconColor = 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30';
-
-                if (log.action.includes('Sınav') || log.action.includes('Quiz')) {
-                    icon = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>`;
-                    iconColor = 'text-rose-500 bg-rose-50 dark:bg-rose-900/30';
-                } else if (log.action.includes('Ödev')) {
-                    icon = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`;
-                    iconColor = 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30';
-                } else if (log.action.includes('Giriş')) {
-                    icon = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>`;
-                    iconColor = 'text-amber-500 bg-amber-50 dark:bg-amber-900/30';
-                }
+                // Aksiyon tipine göre çerçeve rengi (opsiyonel vurgu)
+                let ringColor = 'border-indigo-100';
+                if (log.action.includes('Sınav')) ringColor = 'border-rose-200';
+                else if (log.action.includes('Ödev')) ringColor = 'border-emerald-200';
 
                 return `
-                    <div class="p-4 hover:bg-gray-50/80 dark:hover:bg-slate-700/30 transition-all flex items-start gap-3 animate-in fade-in slide-in-from-left-4 duration-500 group">
-                        <div class="w-10 h-10 rounded-xl ${iconColor} flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
-                            ${icon}
-                        </div>
+                    <div class="p-4 hover:bg-gray-50/80 dark:hover:bg-slate-700/30 transition-all flex items-start gap-4 animate-in fade-in slide-in-from-left-4 duration-500 group">
+                        ${getAvatarPreviewHTML(avatarConfig, "w-10 h-10")}
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between gap-1 mb-0.5">
                                 <h4 class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest truncate">${escapeHTML(studentName)}</h4>
@@ -1011,9 +1127,7 @@ async function fetchStudents() {
         card.innerHTML = `
             <div class="flex justify-between items-start mb-5">
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 text-indigo-600 dark:text-indigo-300 flex items-center justify-center text-lg font-black shadow-inner border border-indigo-50 dark:border-slate-600">
-                        ${escapeHTML(student.full_name.charAt(0).toUpperCase())}
-                    </div>
+                    ${getAvatarPreviewHTML(student.avatar_config)}
                     <div>
                         <h4 class="font-black text-gray-800 dark:text-white text-base leading-tight">${escapeHTML(student.full_name)}</h4>
                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Kayıt: ${dateStr}</p>
@@ -1663,6 +1777,16 @@ window.openStudentProfile = async function (id, name, phone) {
     document.getElementById('profStudentId').value = id;
     document.getElementById('profParentPhone').value = phone || '';
     document.getElementById('profileStudentName').innerText = name;
+
+    // 🌟 AVATAR YÜKLE: Öğrencinin güncel avatarını çek ve göster
+    const avatarPreview = document.getElementById('profileAvatarPreview');
+    if (avatarPreview) {
+        avatarPreview.innerHTML = '<div class="w-12 h-12 rounded-2xl bg-indigo-50 animate-pulse shrink-0"></div>';
+        const { data: profile } = await supabaseClient.from('profiles').select('avatar_config').eq('id', id).single();
+        if (profile) {
+            avatarPreview.innerHTML = getAvatarPreviewHTML(profile.avatar_config, "w-16 h-16 md:w-20 md:h-20");
+        }
+    }
 
     // 🌟 VIP KONTROLÜ: Modal açıldığı anda kilitleri kontrol et
     updatePremiumUI();
@@ -3011,7 +3135,7 @@ window.saveWhiteboard = async function() {
     btn.innerHTML = originalHTML;
     btn.disabled = false;
 }
- 
+
 window.saveLessonUrl = async function() {
     const url = document.getElementById('lessonUrlInput').value.trim();
     if (url && !url.startsWith('http')) {
