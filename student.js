@@ -84,6 +84,7 @@ document.addEventListener('click', async (e) => {
     if (e.target.closest('#studentLogoutBtn')) {
         const onay = await customConfirm("Oturumunu kapatmak istediğine emin misin?", "Evet, Çıkış Yap");
         if(!onay) return;
+        await saveLog("Sistemden Çıkış Yapıldı");
         const { error } = await supabaseClient.auth.signOut();
         if (!error) window.location.href = 'index.html';
         else showToast("Çıkış yapılamadı!", "error");
@@ -126,11 +127,13 @@ if (dmToggleBtn) {
             if (iconMoon) iconMoon.classList.add('hidden');
             if (iconSun) iconSun.classList.remove('hidden');
             showToast("Gece Modu Aktif", "success");
+            saveLog("Tema Değiştirildi", "Gece Modu Aktif");
         } else {
             localStorage.setItem('studentTheme', 'light');
             if (iconMoon) iconMoon.classList.remove('hidden');
             if (iconSun) iconSun.classList.add('hidden');
             showToast("Gündüz Modu Aktif", "success");
+            saveLog("Tema Değiştirildi", "Gündüz Modu Aktif");
         }
     });
 }
@@ -200,6 +203,7 @@ async function initStudentPortal() {
         }
 
         currentStudentId = user.id;
+        saveLog("Sisteme Giriş Yapıldı");
 
         // 🌟 STEP 2: Detaylı Verileri Arkadan Çek (Non-blocking)
         loadExtendedStudentProfile(user.id);
@@ -315,6 +319,10 @@ function switchTab(target) {
     if (target === 'quizzes') fetchQuizzes();
     if (target === 'results') fetchMyResults();
     if (target === 'shop') initShop();
+
+    // 🌟 LOG: Sekme Geçişini Kaydet
+    const tabNames = { 'homeworks': 'Ödevler', 'activities': 'Etkinlikler', 'quizzes': 'Sınavlar', 'results': 'Sonuçlar', 'shop': 'Market' };
+    saveLog("Sekme Değiştirildi", `Gidilen Sekme: ${tabNames[target] || target}`);
 }
 
 document.getElementById('btn-homeworks')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('homeworks'); });
@@ -1220,6 +1228,7 @@ window.submitWritingTask = async function() {
         await supabaseClient.from('homeworks').update({ status: 'İnceleniyor', description: finalDesc }).eq('id', hwId);
         
         showToast("Ödev, incelemesi için öğretmenine gönderildi!", "success");
+        saveLog("Yazma Görevi İncelemeye Gönderildi", `Konu: ${document.getElementById('writingTopicDisplay').innerText}`);
         document.getElementById('writingTaskModal').classList.add('hidden');
         initStudentPortal(); 
     } catch (err) {
@@ -1280,6 +1289,12 @@ window.checkLiveLesson = async function(teacherId) {
             if (data && data.lesson_url) {
                 btn.href = data.lesson_url;
                 btn.classList.remove('hidden');
+                
+                // 🌟 LOG: Derse Katılım Tıklamasını Yakala
+                if (!btn.dataset.logAttached) {
+                    btn.addEventListener('click', () => saveLog("Canlı Derse Katılım Sağlandı"));
+                    btn.dataset.logAttached = "true";
+                }
             } else {
                 btn.classList.add('hidden');
             }
