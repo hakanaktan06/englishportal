@@ -207,6 +207,10 @@ async function initStudentPortal() {
 
         // 🌟 STEP 2: Detaylı Verileri Arkadan Çek (Non-blocking)
         loadExtendedStudentProfile(user.id);
+        
+        // 🌟 4. AVATAR & SHOP MOUNT
+        initShop();
+        preloadImages(); 
 
     } catch (e) {
         console.error("Güvenlik sistemi hatası:", e);
@@ -350,66 +354,147 @@ function playSound(type) {
 // ==========================================
 // 4. AVATAR & SHOP (RPG SİSTEMİ)
 // ==========================================
-let currentAvatarConfig = { base: 0, hat: -1, pet: -1, inventory: [] };
+let currentAvatarConfig = { base: 0, skin: -1, pet: -1, inventory: [] };
 
 const SHOP_DATA = {
     bases: [
-        { id: 0, name: "Kâşif", price: 0, img: "assets/avatars/base_0.png" },
-        { id: 1, name: "Savaşçı", price: 50, img: "assets/avatars/base_1.png" },
-        { id: 2, name: "Büyücü", price: 100, img: "assets/avatars/base_2.png" },
-        { id: 3, name: "Robot", price: 150, img: "assets/avatars/base_3.png" },
-        { id: 4, name: "Ninja", price: 200, img: "assets/avatars/base_4.png" },
-        { id: 5, name: "Kral", price: 500, img: "assets/avatars/base_5.png" }
+        { id: 0, name: "Kâşif", price: 0, img: "assets/avatars/base_0_v1.png", desc: "Yeni dünyalar keşfetmeye hazır, meraklı bir gezgin." },
+        { id: 1, name: "Savaşçı", price: 100, img: "assets/avatars/base_1_v1.png", desc: "Cesareti ve kılıcıyla adalet dağıtan bir şövalye." },
+        { id: 2, name: "Büyücü", price: 250, img: "assets/avatars/base_2_v1.png", desc: "Kadim büyülerin ve elementlerin gizemli efendisi." },
+        { id: 3, name: "Robot", price: 500, img: "assets/avatars/base_3_v1.png", desc: "Geleceğin teknolojisiyle donatılmış yapay zeka." },
+        { id: 4, name: "Ninja", price: 750, img: "assets/avatars/base_4_v1.png", desc: "Gölgelerin içinde sessizce hareket eden usta bir suikastçı." },
+        { id: 5, name: "Kral", price: 1000, img: "assets/avatars/base_5_v1.png", desc: "Halkını koruyan ve ordulara hükmeden yüce bir hükümdar." }
     ],
-    hats: [
-        { id: 10, name: "Kırmızı Şapka", price: 30, img: "assets/avatars/hat_red_cap.png" },
-        { id: 11, name: "Sihirbaz Şapkası", price: 60, img: "assets/avatars/hat_wizard.png" },
-        { id: 12, name: "Altın Taç", price: 200, img: "assets/avatars/hat_king_crown.png" }
+    skins: [
+        // Kâşif Serisi (Base 0)
+        { id: 101, baseId: 0, name: "Kâşif V1 (Standart)", price: 0, img: "assets/avatars/base_0_v1.png", desc: "Maceraya yeni başlayanlar için temel donanım." },
+        { id: 102, baseId: 0, name: "Kâşif V2 (Safari)", price: 250, img: "assets/avatars/base_0_v2.png", desc: "Vahşi doğada gizlenmek ve hayatta kalmak için özel giysi." },
+        { id: 103, baseId: 0, name: "Kâşif V3 (Derin Deniz)", price: 750, img: "assets/avatars/base_0_v3.png", desc: "Okyanusun karanlık derinliklerini keşfetmek için üretildi." },
+        { id: 104, baseId: 0, name: "Kâşif V4 (Kutup)", price: 1500, img: "assets/avatars/base_0_v4.png", desc: "Dondurucu soğuklarda bile sıcak tutan termal teknoloji." },
+        { id: 105, baseId: 0, name: "Kâşif V5 (Uzay)", price: 3000, img: "assets/avatars/base_0_v5.png", desc: "Yıldızlararası yolculuklar için tasarlanmış son seviye astronot zırhı." },
+        
+        // Savaşçı Serisi (Base 1)
+        { id: 111, baseId: 1, name: "Savaşçı V1 (Bronz)", price: 0, img: "assets/avatars/base_1_v1.png", desc: "Eğitimini yeni tamamlamış bir piyade zırhı." },
+        { id: 112, baseId: 1, name: "Savaşçı V2 (Gümüş Şövalye)", price: 250, img: "assets/avatars/base_1_v2.png", desc: "Parlayan gümüş zırhıyla sahanın en asil savaşçısı." },
+        { id: 113, baseId: 1, name: "Savaşçı V3 (Paladin)", price: 750, img: "assets/avatars/base_1_v3.png", desc: "Kutsal ışıkla kutsanmış, kötülüğe karşı yıkılmaz bir kale." },
+        { id: 114, baseId: 1, name: "Savaşçı V4 (Ejderha Avcısı)", price: 1500, img: "assets/avatars/base_1_v4.png", desc: "Kanatlı devleri dize getirenlerin giydiği obsidyen zırh." },
+        { id: 115, baseId: 1, name: "Savaşçı V5 (Gök Savaşçısı)", price: 3000, img: "assets/avatars/base_1_v5.png", desc: "Galaksiyi koruduğu için gökyüzünün enerjisiyle ödüllendirildi." },
+
+        // Büyücü Serisi (Base 2)
+        { id: 121, baseId: 2, name: "Büyücü V1 (Çırak)", price: 0, img: "assets/avatars/base_2_v1.png", desc: "Temel büyü sanatlarını öğrenen bir başlangıç asası." },
+        { id: 122, baseId: 2, name: "Büyücü V2 (Simyacı)", price: 250, img: "assets/avatars/base_2_v2.png", desc: "İksirlerin ve metal dönüşümlerinin uzmanı." },
+        { id: 123, baseId: 2, name: "Büyücü V3 (Druid)", price: 750, img: "assets/avatars/base_2_v3.png", desc: "Doğanın ve hayvanların ruhuyla konuşan yeşil büyücü." },
+        { id: 124, baseId: 2, name: "Büyücü V4 (Ölüm Büyücüsü)", price: 1500, img: "assets/avatars/base_2_v4.png", desc: "Karanlık diyarlardan gelen, ruhlara hükmeden korkutucu güç." },
+        { id: 125, baseId: 2, name: "Büyücü V5 (Bilge Arş-Büyücü)", price: 3000, img: "assets/avatars/base_2_v5.png", desc: "Evrenin tüm sırlarını çözmüş, zamanı durdurabilen yüce bilge." },
+
+        // Robot Serisi (Base 3)
+        { id: 131, baseId: 3, name: "Robot V1 (Keşif Botu)", price: 0, img: "assets/avatars/base_3_v1.png", desc: "Veri toplamak ve etrafı gözlemek için programlandı." },
+        { id: 132, baseId: 3, name: "Robot V2 (Endüstriyel Titan)", price: 250, img: "assets/avatars/base_3_v2.png", desc: "Ağır yükleri taşımak ve kaleleri yıkmak için üretilen dev." },
+        { id: 133, baseId: 3, name: "Robot V3 (Tıbbi Ünite)", price: 750, img: "assets/avatars/base_3_v3.png", desc: "Gelişmiş lazer teknolojisiyle yaraları anında iyileştirir." },
+        { id: 134, baseId: 3, name: "Robot V4 (Savaş Mekası)", price: 1500, img: "assets/avatars/base_3_v4.png", desc: "Lazer toplarıyla orduyu tek başına durdurabilen bir savaş canavarı." },
+        { id: 135, baseId: 3, name: "Robot V5 (Mekanik Tiran)", price: 3000, img: "assets/avatars/base_3_v5.png", desc: "Duygulardan yoksun, sadece mutlak güç için programlanmış karanlık zeka." },
+
+        // Ninja Serisi (Base 4)
+        { id: 141, baseId: 4, name: "Ninja V1 (Klasik)", price: 0, img: "assets/avatars/base_4_v1.png", desc: "Sessiz adımlar ve temel ninjutsu eğitimi." },
+        { id: 142, baseId: 4, name: "Ninja V2 (Kızıl El)", price: 250, img: "assets/avatars/base_4_v2.png", desc: "Ateş elementini kullanan, hızıyla rakiplerini şaşırtan ninja." },
+        { id: 143, baseId: 4, name: "Ninja V3 (Siber Ninjutsu)", price: 750, img: "assets/avatars/base_4_v3.png", desc: "Neon ışıklarıyla kaplı, teknolojiyle harmanlanmış bir gölge suikastçı." },
+        { id: 144, baseId: 4, name: "Ninja V4 (Hayalet)", price: 1500, img: "assets/avatars/base_4_v4.png", desc: "Duvarların içinden geçebilen, varlığıyla yokluğu bir olan efsane." },
+        { id: 145, baseId: 4, name: "Ninja V5 (Büyük Üstat)", price: 3000, img: "assets/avatars/base_4_v5.png", desc: "Binlerce yıllık gizli tekniklerin yaşayan son temsilcisi." },
+
+        // Kral Serisi (Base 5)
+        { id: 151, baseId: 5, name: "Kral V1 (Genç Prens)", price: 0, img: "assets/avatars/base_5_v1.png", desc: "Tahtı devralmaya hazırlanan asil bir varis." },
+        { id: 152, baseId: 5, name: "Kral V2 (Firavun)", price: 250, img: "assets/avatars/base_5_v2.png", desc: "Antik Mısır'ın kumlarından gelen ölümsüz hükümdar." },
+        { id: 153, baseId: 5, name: "Kral V3 (Viking Kral Kralı)", price: 750, img: "assets/avatars/base_5_v3.png", desc: "Kuzeyin sert rüzgarlarını ve denizlerini dize getiren savaşçı kral." },
+        { id: 154, baseId: 5, name: "Kral V4 (İmparator)", price: 1500, img: "assets/avatars/base_5_v4.png", desc: "Yedi iklim ve dört bucağa hükmeden kudretli lider." },
+        { id: 155, baseId: 5, name: "Kral V5 (Gök Tanrısı)", price: 3000, img: "assets/avatars/base_5_v5.png", desc: "Yeryüzünden gökyüzüne yükselmiş, artık kadere hükmeden ilahi varlık." }
     ],
     pets: [
-        { id: 20, name: "Yavru Ejderha", price: 300, img: "assets/avatars/pet_dragon.png" },
-        { id: 21, name: "Robot Kuş", price: 400, img: "assets/avatars/pet_robot_bird.png" }
+        { id: 201, name: "Maceracı Maymun (Zıpzıp)", price: 500, img: "assets/avatars/pet_monkey.png", desc: "Kâşif dostu. En zorlu rotalarda bile yolunu bulmanı sağlar." },
+        { id: 202, name: "Zırhlı Bozkurt (Börü)", price: 750, img: "assets/avatars/pet_wolf.png", desc: "Savaşçıların sadık yoldaşı. Gümüş zırhıyla düşmanlarına korku salar." },
+        { id: 203, name: "Kozmik Baykuş (Luna)", price: 750, img: "assets/avatars/pet_owl.png", desc: "Büyücülerin gözü. Gece karanlığında bile her şeyi gören bilge kuş." },
+        { id: 204, name: "Gözlem Dronu (Cyber-Eye)", price: 600, img: "assets/avatars/pet_drone.png", desc: "Gelecekten gelen bir casus. Çevreyi tarayıp verileri senin için işler." },
+        { id: 205, name: "Gölge Panteri (Kuro)", price: 850, img: "assets/avatars/pet_panther.png", desc: "Gölgelerin efendisi. Sessiz adımlarıyla her an seni korur." },
+        { id: 206, name: "Altın Kartal (Zümrüt)", price: 1000, img: "assets/avatars/pet_eagle.png", desc: "Kralların gökyüzündeki elçisi. Marketin en asil ve görkemli yoldaşıdır." }
     ]
 };
 
+// 🌟 RESİM ÖN YÜKLEME (PRELOADING)
+function preloadImages() {
+    const urls = [
+        ...SHOP_DATA.bases.map(b => b.img),
+        ...SHOP_DATA.skins.filter(s => s.img).map(s => s.img),
+        ...SHOP_DATA.pets.map(p => p.img)
+    ];
+    urls.forEach(url => {
+        const img = new Image();
+        img.src = url;
+    });
+    console.log("Avatar görselleri ön yüklendi.");
+}
+
 function applyAvatarConfig(config) {
     if(!config) return;
-    currentAvatarConfig = { ...currentAvatarConfig, ...config };
+    // Eğer dışarıdan config geldiyse globali güncelle (mevcut yapıya uyum için)
+    if (config !== currentAvatarConfig) {
+        currentAvatarConfig = { ...currentAvatarConfig, ...config };
+    }
     if(!currentAvatarConfig.inventory) currentAvatarConfig.inventory = [];
-    
-    // Base Layer (Individual image)
+
+    // 1. ANA KATMAN (BASE + SKIN)
     const baseLayer = document.getElementById('avatarBaseLayer');
     if (baseLayer) {
-        const baseItem = SHOP_DATA.bases.find(b => b.id == (config.base ?? currentAvatarConfig.base));
-        if (baseItem) {
-            baseLayer.style.backgroundImage = `url('${baseItem.img}')`;
+        let displayImg = "";
+        const activeSkin = SHOP_DATA.skins.find(s => s.id == currentAvatarConfig.skin);
+        if (activeSkin) {
+            displayImg = activeSkin.img;
+        } else {
+            const baseItem = SHOP_DATA.bases.find(b => b.id == currentAvatarConfig.base);
+            displayImg = baseItem ? baseItem.img : "";
+        }
+
+        if (displayImg) {
+            baseLayer.style.backgroundImage = `url('${displayImg}')`;
             baseLayer.style.backgroundSize = "contain";
             baseLayer.style.backgroundPosition = "center";
-            document.getElementById('avatarNameDisplay').innerText = baseItem.name;
+            
+            const baseItem = SHOP_DATA.bases.find(b => b.id == (activeSkin ? activeSkin.baseId : currentAvatarConfig.base));
+            if (baseItem) document.getElementById('avatarNameDisplay').innerText = baseItem.name;
+        }
+
+        // Önizleme Rozeti Kontrolü
+        const isSkinOwned = !currentAvatarConfig.skin || currentAvatarConfig.skin === -1 || currentAvatarConfig.inventory.includes(currentAvatarConfig.skin) || (SHOP_DATA.skins.find(s => s.id === currentAvatarConfig.skin)?.price === 0);
+        const isPetOwned = !currentAvatarConfig.pet || currentAvatarConfig.pet === -1 || currentAvatarConfig.inventory.includes(currentAvatarConfig.pet);
+        const isBaseOwned = currentAvatarConfig.inventory.includes(currentAvatarConfig.base) || (SHOP_DATA.bases.find(b => b.id === currentAvatarConfig.base)?.price === 0);
+
+        let previewBadge = document.getElementById('previewBadge');
+        if (!isSkinOwned || !isPetOwned || !isBaseOwned) {
+            if (!previewBadge) {
+                previewBadge = document.createElement('div');
+                previewBadge.id = 'previewBadge';
+                previewBadge.className = 'preview-badge';
+                previewBadge.innerText = 'ÖNİZLEME';
+                baseLayer.parentElement.appendChild(previewBadge);
+            }
+        } else if (previewBadge) {
+            previewBadge.remove();
         }
     }
 
-    // Hat Layer
-    const hatLayer = document.getElementById('avatarHatLayer');
-    if (hatLayer) {
-        const hatId = config.hat ?? currentAvatarConfig.hat;
-        const hatItem = SHOP_DATA.hats.find(h => h.id == hatId);
-        hatLayer.innerHTML = hatItem ? `<img src="${hatItem.img}" class="w-24 h-24 drop-shadow-2xl object-contain">` : '';
-    }
-
-    // Pet Layer
+    // 2. PET KATMANI
     const petLayer = document.getElementById('avatarPetLayer');
     if (petLayer) {
-        const petId = config.pet ?? currentAvatarConfig.pet;
+        const petId = currentAvatarConfig.pet;
         const petItem = SHOP_DATA.pets.find(p => p.id == petId);
-        petLayer.innerHTML = petItem ? `<img src="${petItem.img}" class="w-full h-full drop-shadow-md object-contain animate-bounce">` : '';
+        petLayer.innerHTML = petItem ? `<img src="${petItem.img}" class="w-full h-full drop-shadow-md object-contain animate-float">` : '';
     }
 
     // Level Display
     const xp = parseInt(document.getElementById('studentXpText').innerText) || 0;
     const level = Math.floor(xp / 500) + 1;
     const levelNames = ["Çaylak", "Girişken", "Usta", "Efsane", "VIP Star"];
-    document.getElementById('avatarLevelDisplay').innerText = levelNames[Math.min(level-1, 4)] + " Seviye";
+    if (document.getElementById('avatarLevelDisplay')) {
+        document.getElementById('avatarLevelDisplay').innerText = levelNames[Math.min(level-1, 4)] + " Seviye";
+    }
 }
 
 async function initShop() {
@@ -433,54 +518,101 @@ function renderShopItems(category) {
 
     let items = [];
     if (category === 'inventory') {
-        const allItems = [...SHOP_DATA.bases, ...SHOP_DATA.hats, ...SHOP_DATA.pets];
+        const allItems = [...SHOP_DATA.bases, ...SHOP_DATA.skins, ...SHOP_DATA.pets];
         items = allItems.filter(item => currentAvatarConfig.inventory.includes(item.id));
+    } else if (category === 'skins') {
+        items = SHOP_DATA.skins.filter(s => s.baseId === (currentAvatarConfig.base || 0));
     } else {
         items = SHOP_DATA[category];
     }
 
     if(!items || items.length === 0) {
-        container.innerHTML = '<p class="col-span-full text-center text-gray-400 py-10 font-bold italic opacity-60">Burada henüz bir şey yok :(</p>';
+        const msg = category === 'skins' ? "Bu karakter için henüz özel kostüm yok. Yakında gelecek!" : "Burada henüz bir şey yok :(";
+        container.innerHTML = `<p class="col-span-full text-center text-gray-400 py-10 font-bold italic opacity-60">${msg}</p>`;
         return;
     }
 
     items.forEach(item => {
         const isOwned = category === 'inventory' || currentAvatarConfig.inventory.includes(item.id) || item.price === 0;
-        const isActive = currentAvatarConfig.base == item.id || currentAvatarConfig.hat == item.id || currentAvatarConfig.pet == item.id;
+        const isActive = (category === 'bases' && currentAvatarConfig.base == item.id) || 
+                         (category === 'skins' && currentAvatarConfig.skin == item.id) || 
+                         (category === 'pets' && currentAvatarConfig.pet == item.id);
 
         const card = document.createElement('div');
-        card.className = `shop-item-card bg-white dark:bg-slate-800 rounded-3xl p-5 border-2 ${isActive ? 'border-indigo-500 shadow-lg' : 'border-gray-50 dark:border-slate-700'} flex flex-col items-center group hover:scale-[1.02] transition cursor-pointer`;
+        card.className = `shop-item-card bg-white dark:bg-slate-800 rounded-3xl p-5 border-2 ${isActive ? 'border-indigo-500 shadow-lg' : 'border-gray-50 dark:border-slate-700'} flex flex-col items-center group hover:scale-[1.02] transition cursor-pointer relative`;
         
-        // RESİM DÜZELTME: Artık her karakter ayrı bir PNG, sprite karmaşası bitti
-        let thumbnailHtml = "";
-        if (category === 'bases') {
-            thumbnailHtml = `<img src="${item.img}" class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110">`;
-        } else {
-            thumbnailHtml = `<img src="${item.img}" class="w-full h-full object-contain transform group-hover:scale-125 transition-transform duration-500 ${category === 'pets' ? 'animate-bounce' : ''}">`;
-        }
+        // Kilit ve Blur logic
+        let thumbnailClasses = `w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 ${category === 'pets' ? 'animate-bounce' : ''}`;
+        if (!isOwned) thumbnailClasses += " locked-image";
+
+        let lockOverlay = !isOwned ? `
+            <div class="lock-overlay">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" /></svg>
+            </div>
+        ` : '';
 
         card.innerHTML = `
             <div class="w-full aspect-square bg-slate-50 dark:bg-slate-900 rounded-3xl mb-4 p-4 flex items-center justify-center overflow-hidden relative border border-gray-100 dark:border-slate-700/50">
-                ${thumbnailHtml}
+                ${lockOverlay}
+                <img src="${item.img}" class="${thumbnailClasses}">
             </div>
             <h5 class="font-black text-gray-800 dark:text-white text-sm mb-1">${item.name}</h5>
-            <p class="text-[10px] font-bold text-amber-600 mb-3">${isOwned ? 'SAHİPSİN' : item.price + ' EP-COIN'}</p>
-            <button onclick="${isOwned ? `selectItem('${category}', ${item.id})` : `buyItem('${category}', ${item.id})`}" 
-                class="w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition ${isOwned ? (isActive ? 'bg-indigo-600 text-white shadow-inner' : 'bg-gray-100 dark:bg-slate-700 text-gray-500 hover:bg-indigo-500 hover:text-white shadow-sm') : 'bg-amber-500 text-white hover:bg-amber-600 shadow-md'}">
-                ${isOwned ? (isActive ? 'SEÇİLDİ' : 'GİY / SEÇ') : 'SATIN AL'}
-            </button>
+            <p class="item-lore text-gray-400 mb-3">${item.desc || ''}</p>
+            <p class="text-[10px] font-bold text-amber-600 mb-4">${isOwned ? 'SAHİPSİN' : item.price + ' EP-COIN'}</p>
+            
+            <div class="w-full flex gap-2">
+                ${!isOwned ? `
+                    <button onclick="selectItem('${category}', ${item.id}, true)" 
+                        class="flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition whitespace-nowrap">
+                        ÖNİZLEME
+                    </button>
+                    <button onclick="buyItem('${category}', ${item.id})" 
+                        class="flex-[2] py-2 rounded-xl text-[9px] font-black uppercase tracking-widest bg-amber-500 text-white hover:bg-amber-600 shadow-md">
+                        SATIN AL
+                    </button>
+                ` : `
+                    <button onclick="selectItem('${category}', ${item.id})" 
+                        class="w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition ${isActive ? 'bg-indigo-600 text-white shadow-inner' : 'bg-gray-100 dark:bg-slate-700 text-gray-500 hover:bg-indigo-500 hover:text-white shadow-sm'}">
+                        ${isActive ? 'SEÇİLDİ' : 'GİY / SEÇ'}
+                    </button>
+                `}
+            </div>
         `;
         container.appendChild(card);
     });
 }
 
-function selectItem(category, itemId) {
-    if (category === 'bases') currentAvatarConfig.base = itemId;
-    if (category === 'hat') currentAvatarConfig.hat = itemId;
-    if (category === 'pet') currentAvatarConfig.pet = itemId;
+function selectItem(category, itemId, isPreview = false) {
+    if (category === 'bases') {
+        currentAvatarConfig.base = itemId;
+        currentAvatarConfig.skin = -1; // Ana karakter değişince skini sıfırla
+    }
+    if (category === 'skins' || category === 'inventory') {
+        const skin = SHOP_DATA.skins.find(s => s.id === itemId);
+        if (skin) {
+            currentAvatarConfig.skin = itemId;
+            currentAvatarConfig.base = skin.baseId;
+        }
+        
+        const pet = SHOP_DATA.pets.find(p => p.id === itemId);
+        if (pet) currentAvatarConfig.pet = itemId;
+
+        const base = SHOP_DATA.bases.find(b => b.id === itemId);
+        if (base) {
+            currentAvatarConfig.base = itemId;
+            currentAvatarConfig.skin = -1;
+        }
+    }
+    if (category === 'pets') currentAvatarConfig.pet = itemId;
     
     applyAvatarConfig(currentAvatarConfig);
-    renderShopItems(document.querySelector('.active-shop-tab').dataset.category);
+    
+    const activeTab = document.querySelector('.active-shop-tab');
+    if (activeTab) renderShopItems(activeTab.dataset.category);
+    
+    if (isPreview) {
+        showToast("Önizleme modu: Bu öğeye sahip değilsin!", "info");
+    }
     playSound('click');
 }
 
@@ -513,12 +645,32 @@ async function buyItem(category, itemId) {
 }
 
 async function saveAvatarConfig() {
+    // Sahip olunmayan öğe kontrolü
+    const skin = SHOP_DATA.skins.find(s => s.id === currentAvatarConfig.skin);
+    const pet = SHOP_DATA.pets.find(p => p.id === currentAvatarConfig.pet);
+    const base = SHOP_DATA.bases.find(b => b.id === currentAvatarConfig.base);
+
+    const isSkinLocked = skin && skin.price > 0 && !currentAvatarConfig.inventory.includes(skin.id);
+    const isPetLocked = pet && pet.price > 0 && !currentAvatarConfig.inventory.includes(pet.id);
+    const isBaseLocked = base && base.price > 0 && !currentAvatarConfig.inventory.includes(base.id);
+
+    if (isSkinLocked || isPetLocked || isBaseLocked) {
+        showToast("Sahip olmadığın bir öğeyi kaydedemezsin! Lütfen önce satın al.", "error");
+        playSound('error');
+        return;
+    }
+
     const { error } = await supabaseClient.from('profiles').update({ avatar_config: currentAvatarConfig }).eq('id', currentStudentId);
-    if (error) showToast("Hata oluştu!", "error");
-    else {
+    if (error) {
+        showToast("Hata oluştu!", "error");
+    } else {
         showToast("Avatar görünümü başarıyla kaydedildi!", "success");
         playSound('success');
         saveLog("Avatar Güncellendi", "Görünüm detayları kaydedildi.");
+        
+        // Önizleme badge'ini kaldır (eğer varsa)
+        const pb = document.getElementById('previewBadge');
+        if (pb) pb.remove();
     }
 }
 
