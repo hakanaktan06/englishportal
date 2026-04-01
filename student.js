@@ -457,6 +457,15 @@ function applyAvatarConfig(config) {
             baseLayer.style.backgroundSize = "contain";
             baseLayer.style.backgroundPosition = "center";
             
+            // 🌟 ZOOM AYARI: Büyücü (2), Ninja (4) ve Kral (5) çok küçük göründüğü için onlara zoom yapıyoruz
+            if ([2, 4, 5].includes(currentAvatarConfig.base)) {
+                baseLayer.style.transform = "scale(1.4)";
+                baseLayer.style.marginTop = "-5%";
+            } else {
+                baseLayer.style.transform = "scale(1)";
+                baseLayer.style.marginTop = "0";
+            }
+            
             const baseItem = SHOP_DATA.bases.find(b => b.id == (activeSkin ? activeSkin.baseId : currentAvatarConfig.base));
             if (baseItem) document.getElementById('avatarNameDisplay').innerText = baseItem.name;
         }
@@ -519,7 +528,11 @@ function renderShopItems(category) {
     let items = [];
     if (category === 'inventory') {
         const allItems = [...SHOP_DATA.bases, ...SHOP_DATA.skins, ...SHOP_DATA.pets];
-        items = allItems.filter(item => currentAvatarConfig.inventory.includes(item.id));
+        // 🌟 MANTIK GÜNCELLEMESİ: 6 Ana Karakter her zaman var, diğerleri envanterde olmalı
+        items = allItems.filter(item => {
+            const isBase = item.id >= 0 && item.id <= 5; // İlk 6 karakter (v1'ler)
+            return isBase || currentAvatarConfig.inventory.includes(item.id);
+        });
     } else if (category === 'skins') {
         items = SHOP_DATA.skins.filter(s => s.baseId === (currentAvatarConfig.base || 0));
     } else {
@@ -542,7 +555,10 @@ function renderShopItems(category) {
         card.className = `shop-item-card bg-white dark:bg-slate-800 rounded-3xl p-5 border-2 ${isActive ? 'border-indigo-500 shadow-lg' : 'border-gray-50 dark:border-slate-700'} flex flex-col items-center group hover:scale-[1.02] transition cursor-pointer relative`;
         
         // Kilit ve Blur logic
-        let thumbnailClasses = `w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 ${category === 'pets' ? 'animate-bounce' : ''}`;
+        let zoomClass = "";
+        if ([2, 4, 5].includes(item.baseId || item.id)) zoomClass = "scale-[1.4] origin-center translate-y-[-5%]";
+
+        let thumbnailClasses = `w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 ${category === 'pets' ? 'animate-bounce' : ''} ${zoomClass}`;
         if (!isOwned) thumbnailClasses += " locked-image";
 
         let lockOverlay = !isOwned ? `
