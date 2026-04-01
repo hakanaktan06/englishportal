@@ -455,15 +455,17 @@ function applyAvatarConfig(config) {
         if (displayImg) {
             baseLayer.style.backgroundImage = `url('${displayImg}')`;
             baseLayer.style.backgroundSize = "contain";
-            baseLayer.style.backgroundPosition = "center";
+            baseLayer.style.backgroundPosition = "center bottom";
             
-            // 🌟 ZOOM AYARI: Büyücü (2), Ninja (4) ve Kral (5) çok küçük göründüğü için onlara zoom yapıyoruz
+            // 🌟 AGRESİF ZOOM VE HİALAMA: Mage (2), Ninja (4) ve Kral (5) için Kâşif ve Savaşçı siluetine uyum sağlama
             if ([2, 4, 5].includes(currentAvatarConfig.base)) {
-                baseLayer.style.transform = "scale(1.4)";
-                baseLayer.style.marginTop = "-5%";
+                baseLayer.style.transform = "scale(1.75)";
+                baseLayer.style.marginTop = "-8%"; // Yukarı çekerek ayak izini diğerleriyle eşitliyoruz
+                baseLayer.style.height = "145%"; // Sanal boyutu artırarak dolguyu sağlıyoruz
             } else {
                 baseLayer.style.transform = "scale(1)";
                 baseLayer.style.marginTop = "0";
+                baseLayer.style.height = "100%";
             }
             
             const baseItem = SHOP_DATA.bases.find(b => b.id == (activeSkin ? activeSkin.baseId : currentAvatarConfig.base));
@@ -473,7 +475,9 @@ function applyAvatarConfig(config) {
         // Önizleme Rozeti Kontrolü
         const isSkinOwned = !currentAvatarConfig.skin || currentAvatarConfig.skin === -1 || currentAvatarConfig.inventory.includes(currentAvatarConfig.skin) || (SHOP_DATA.skins.find(s => s.id === currentAvatarConfig.skin)?.price === 0);
         const isPetOwned = !currentAvatarConfig.pet || currentAvatarConfig.pet === -1 || currentAvatarConfig.inventory.includes(currentAvatarConfig.pet);
-        const isBaseOwned = currentAvatarConfig.inventory.includes(currentAvatarConfig.base) || (SHOP_DATA.bases.find(b => b.id === currentAvatarConfig.base)?.price === 0);
+        
+        // 🌟 MANTIK GÜNCELLEMESİ: 0'dan 5'e kadar olan 6 ana karakter HER ZAMAN "owned" sayılır, önizleme rozeti çıkartmaz.
+        const isBaseOwned = (currentAvatarConfig.base >= 0 && currentAvatarConfig.base <= 5);
 
         let previewBadge = document.getElementById('previewBadge');
         if (!isSkinOwned || !isPetOwned || !isBaseOwned) {
@@ -546,7 +550,8 @@ function renderShopItems(category) {
     }
 
     items.forEach(item => {
-        const isOwned = category === 'inventory' || currentAvatarConfig.inventory.includes(item.id) || item.price === 0;
+        // 🌟 MANTIK GÜNCELLEMESİ: Karakterler (bases) kategorisindeki her şey her zaman AÇIK olmalı.
+        const isOwned = category === 'inventory' || category === 'bases' || currentAvatarConfig.inventory.includes(item.id) || item.price === 0;
         const isActive = (category === 'bases' && currentAvatarConfig.base == item.id) || 
                          (category === 'skins' && currentAvatarConfig.skin == item.id) || 
                          (category === 'pets' && currentAvatarConfig.pet == item.id);
@@ -556,7 +561,9 @@ function renderShopItems(category) {
         
         // Kilit ve Blur logic
         let zoomClass = "";
-        if ([2, 4, 5].includes(item.baseId || item.id)) zoomClass = "scale-[1.4] origin-center translate-y-[-5%]";
+        if ([2, 4, 5].includes(item.baseId || item.id)) {
+            zoomClass = "scale-[1.75] origin-center translate-y-[-8%]";
+        }
 
         let thumbnailClasses = `w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 ${category === 'pets' ? 'animate-bounce' : ''} ${zoomClass}`;
         if (!isOwned) thumbnailClasses += " locked-image";
