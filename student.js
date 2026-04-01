@@ -457,11 +457,11 @@ function applyAvatarConfig(config) {
             baseLayer.style.backgroundSize = "contain";
             baseLayer.style.backgroundPosition = "center bottom";
             
-            // 🌟 AGRESİF ZOOM VE HİALAMA: Mage (2), Ninja (4) ve Kral (5) için Kâşif ve Savaşçı siluetine uyum sağlama
+            // 🌟 AGRESİF ZOOM VE HİZALAMA: Mage (2), Ninja (4) ve Kral (5) için Kâşif ve Savaşçı siluetine uyum sağlama
             if ([2, 4, 5].includes(currentAvatarConfig.base)) {
-                baseLayer.style.transform = "scale(1.75)";
-                baseLayer.style.marginTop = "-8%"; // Yukarı çekerek ayak izini diğerleriyle eşitliyoruz
-                baseLayer.style.height = "145%"; // Sanal boyutu artırarak dolguyu sağlıyoruz
+                baseLayer.style.transform = "scale(1.55) translateY(-18%)";
+                baseLayer.style.marginTop = "0";
+                baseLayer.style.height = "100%";
             } else {
                 baseLayer.style.transform = "scale(1)";
                 baseLayer.style.marginTop = "0";
@@ -562,7 +562,7 @@ function renderShopItems(category) {
         // Kilit ve Blur logic
         let zoomClass = "";
         if ([2, 4, 5].includes(item.baseId || item.id)) {
-            zoomClass = "scale-[1.75] origin-center translate-y-[-8%]";
+            zoomClass = "scale-[1.55] origin-center translate-y-[-18%]";
         }
 
         let thumbnailClasses = `w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 ${category === 'pets' ? 'animate-bounce' : ''} ${zoomClass}`;
