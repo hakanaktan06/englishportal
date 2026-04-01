@@ -246,3 +246,51 @@ body {
 .dark .item-lore {
     color: #94a3b8;
 }
+
+/* 🌟 SHOP & AVATAR UI POLISH 🌟 */
+.locked-image {
+    filter: blur(8px) grayscale(100%) brightness(0.8);
+    opacity: 0.6;
+    transition: all 0.5s ease;
+}
+
+.shop-item-card:hover .locked-image {
+    filter: blur(3px) grayscale(50%) brightness(0.9);
+    opacity: 0.8;
+}
+
+.lock-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.15);
+    backdrop-filter: blur(1px);
+    z-index: 20;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 1.5rem;
+    pointer-events: none;
+}
+
+.lock-overlay svg {
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    width: 2rem;
+    height: 2rem;
+}
+
+.preview-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #fbbf24;
+    color: #000;
+    font-size: 8px;
+    font-weight: 900;
+    padding: 3px 6px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 10px rgba(251, 191, 36, 0.3);
+    z-index: 30;
+    animation: pulse-gold 2s infinite;
+}
