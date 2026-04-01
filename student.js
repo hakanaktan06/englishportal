@@ -362,13 +362,13 @@ const SHOP_DATA = {
         { id: 5, name: "Kral", price: 500, pos: "100% 0%" }
     ],
     hats: [
-        { id: 10, name: "Kırmızı Şapka", price: 30, color: "bg-red-500" },
-        { id: 11, name: "Sihirbaz Şapkası", price: 60, color: "bg-purple-900" },
-        { id: 12, name: "Altın Tac", price: 200, color: "bg-yellow-400" }
+        { id: 10, name: "Kırmızı Şapka", price: 30, color: "text-red-500", icon: `<svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3C7 3 3 6 3 9s1 5 1 5l1 7h14l1-7s1-2 1-5-4-6-9-6z"/></svg>` },
+        { id: 11, name: "Sihirbaz Şapkası", price: 60, color: "text-purple-600", icon: `<svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l-8 16h16L12 2zM4 19h16v2H4v-2z"/></svg>` },
+        { id: 12, name: "Altın Taç", price: 200, color: "text-yellow-500", icon: `<svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16l3-8 4 4 4-4 3 8H5zM12 2l2 4 4 2-4 2-2 4-2-4-4-2 4-2 2-4z"/></svg>` }
     ],
     pets: [
-        { id: 20, name: "Yavru Ejderha", price: 300, color: "text-emerald-500" },
-        { id: 21, name: "Robot Kuş", price: 400, color: "text-blue-400" }
+        { id: 20, name: "Yavru Ejderha", price: 300, color: "text-emerald-500", icon: `<svg class="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/><circle cx="9" cy="9" r="1.5"/><circle cx="15" cy="9" r="1.5"/><path d="M12 17c2.2 0 4-1.8 4-4H8c0 2.2 1.8 4 4 4z"/></svg>` },
+        { id: 21, name: "Robot Kuş", price: 400, color: "text-blue-400", icon: `<svg class="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M21 12l-18 10V2l18 10z"/></svg>` }
     ]
 };
 
@@ -379,11 +379,27 @@ function applyAvatarConfig(config) {
     // Base Layer (Grid position)
     const baseLayer = document.getElementById('avatarBaseLayer');
     if (baseLayer) {
-        const baseItem = SHOP_DATA.bases.find(b => b.id == currentAvatarConfig.base);
+        const baseItem = SHOP_DATA.bases.find(b => b.id == (config.base ?? currentAvatarConfig.base));
         if (baseItem) {
             baseLayer.style.backgroundPosition = baseItem.pos;
             document.getElementById('avatarNameDisplay').innerText = baseItem.name;
         }
+    }
+
+    // Hat Layer
+    const hatLayer = document.getElementById('avatarHatLayer');
+    if (hatLayer) {
+        const hatId = config.hat ?? currentAvatarConfig.hat;
+        const hatItem = SHOP_DATA.hats.find(h => h.id == hatId);
+        hatLayer.innerHTML = hatItem ? `<div class="${hatItem.color} drop-shadow-lg transform -translate-y-12 scale-125">${hatItem.icon}</div>` : '';
+    }
+
+    // Pet Layer
+    const petLayer = document.getElementById('avatarPetLayer');
+    if (petLayer) {
+        const petId = config.pet ?? currentAvatarConfig.pet;
+        const petItem = SHOP_DATA.pets.find(p => p.id == petId);
+        petLayer.innerHTML = petItem ? `<div class="${petItem.color} drop-shadow-md animate-bounce">${petItem.icon}</div>` : '';
     }
 
     // Level Display
@@ -426,8 +442,10 @@ function renderShopItems(category) {
         card.className = `shop-item-card bg-white dark:bg-slate-800 rounded-3xl p-5 border-2 ${isActive ? 'border-indigo-500 shadow-lg' : 'border-gray-50 dark:border-slate-700'} flex flex-col items-center group hover:scale-[1.02] transition cursor-pointer`;
         
         card.innerHTML = `
-            <div class="w-full aspect-square bg-slate-50 dark:bg-slate-900 rounded-2xl mb-4 p-4 flex items-center justify-center overflow-hidden relative">
-                ${category === 'bases' ? `<img src="assets/avatars/bases.png" style="width:500%; max-width:none; position:absolute; left:-${SHOP_DATA.bases.indexOf(item)*100}%" class="${!isOwned ? 'grayscale opacity-30' : ''}">` : `<div class="w-12 h-12 ${item.color || 'bg-gray-400'} rounded-full animate-bounce"></div>`}
+            <div class="w-full aspect-square bg-slate-50 dark:bg-slate-900 rounded-3xl mb-4 p-4 flex items-center justify-center overflow-hidden relative border border-gray-100 dark:border-slate-700/50">
+                ${category === 'bases' 
+                    ? `<img src="assets/avatars/bases.png" style="width:600%; max-width:none; position:absolute; left:-${SHOP_DATA.bases.findIndex(b => b.id === item.id)*100}%" class="${!isOwned ? 'grayscale opacity-30' : 'group-hover:scale-110 transition-transform duration-500'}">` 
+                    : `<div class="w-16 h-16 ${item.color || 'text-gray-400'} flex items-center justify-center transform group-hover:scale-125 transition-transform duration-500 ${category === 'pets' ? 'animate-bounce' : ''}">${item.icon || ''}</div>`}
             </div>
             <h5 class="font-black text-gray-800 dark:text-white text-sm mb-1">${item.name}</h5>
             <p class="text-[10px] font-bold text-amber-600 mb-3">${isOwned ? 'SAHİPSİN' : item.price + ' EP-COIN'}</p>
