@@ -65,12 +65,12 @@ const SHOP_DATA = {
         { id: 155, baseId: 5, img: "assets/avatars/base_5_v5.png" }
     ],
     pets: [
-        { id: 201, img: "assets/avatars/pet_explorer_monkey_png_1775067115822_png_1775067131574.png" },
-        { id: 202, img: "assets/avatars/pet_warrior_wolf_png_1775067131976_png_1775067151957.png" },
-        { id: 203, img: "assets/avatars/pet_mage_owl_png_1775067152062_png_1775067177801.png" },
-        { id: 204, img: "assets/avatars/pet_robot_drone_png_1775067178018_png_1775067196994.png" },
-        { id: 205, img: "assets/avatars/pet_ninja_panther_png_1775067197177_png_1775067214323.png" },
-        { id: 206, img: "assets/avatars/pet_king_eagle_png_1775067214472_png_1775067232469.png" }
+        { id: 201, img: "assets/avatars/pet_monkey.png" },
+        { id: 202, img: "assets/avatars/pet_wolf.png" },
+        { id: 203, img: "assets/avatars/pet_owl.png" },
+        { id: 204, img: "assets/avatars/pet_drone.png" },
+        { id: 205, img: "assets/avatars/pet_panther.png" },
+        { id: 206, img: "assets/avatars/pet_eagle.png" }
     ]
 };
 
