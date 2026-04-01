@@ -95,10 +95,16 @@ function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
         if (p) petImg = p.img;
     }
 
+    // 🌟 ZOOM AYARI: Büyücü (2), Ninja (4) ve Kral (5) çok küçük göründüğü için onlara zoom yapıyoruz
+    let zoomClass = "";
+    if ([2, 4, 5].includes(config.base)) {
+        zoomClass = "scale-[1.4] origin-center translate-y-[-5%]";
+    }
+
     return `
         <div class="relative ${sizeClass} shrink-0 group/avatar">
             <div class="w-full h-full rounded-full bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/40 dark:to-purple-900/40 border border-indigo-100 dark:border-indigo-800 p-1 overflow-hidden shadow-inner transition-transform group-hover/avatar:scale-110">
-                <img src="${skinImg || 'assets/avatars/base_0_v1.png'}" class="w-full h-full object-contain drop-shadow-md">
+                <img src="${skinImg || 'assets/avatars/base_0_v1.png'}" class="w-full h-full object-contain drop-shadow-md ${zoomClass}">
             </div>
             ${petImg ? `
                 <div class="absolute -bottom-1 -right-1 w-1/2 h-1/2 bg-white dark:bg-slate-800 rounded-full p-0.5 shadow-lg border border-indigo-50 dark:border-indigo-900 z-10 transition-transform group-hover/avatar:scale-125">
