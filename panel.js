@@ -95,10 +95,10 @@ function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
         if (p) petImg = p.img;
     }
 
-    // 🌟 ZOOM AYARI: Büyücü (2), Ninja (4) ve Kral (5) çok küçük göründüğü için onlara zoom yapıyoruz
+    // 🌟 AGRESİF ZOOM VE HİZALAMA: Mage (2), Ninja (4) ve Kral (5) için Kâşif ve Savaşçı siluetine uyum sağlama
     let zoomClass = "";
     if ([2, 4, 5].includes(config.base)) {
-        zoomClass = "scale-[1.4] origin-center translate-y-[-5%]";
+        zoomClass = "scale-[1.75] origin-center translate-y-[-8%]";
     }
 
     return `
