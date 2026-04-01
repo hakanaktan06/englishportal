@@ -19,7 +19,7 @@ function escapeHTML(str) {
         return charsToReplace[tag] || tag;
     });
 }
- 
+
 // ==========================================
 // 🌟 RPG SİSTEMİ VERİLERİ (DÜKKAN VE AVATAR) 🌟
 // ==========================================
@@ -95,10 +95,10 @@ function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
         if (p) petImg = p.img;
     }
 
-    // 🌟 AGRESİF ZOOM VE HİZALAMA: Mage (2), Ninja (4) ve Kral (5) için Kâşif ve Savaşçı siluetine uyum sağlama
+    // 🌟 AGRESİF ZOOM VE HİZALAMA: Ninja (4) ve Kral (5) için Warrior profilini yakalama
     let zoomClass = "";
-    if ([2, 4, 5].includes(config.base)) {
-        zoomClass = "scale-[1.55] origin-center translate-y-[-18%]";
+    if ([4, 5].includes(config.base)) {
+        zoomClass = "scale-[1.7] origin-center translate-y-[-12%]";
     }
 
     return `
