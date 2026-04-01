@@ -354,21 +354,21 @@ let currentAvatarConfig = { base: 0, hat: -1, pet: -1, inventory: [] };
 
 const SHOP_DATA = {
     bases: [
-        { id: 0, name: "Kâşif", price: 0, pos: "0% 0%" },
-        { id: 1, name: "Savaşçı", price: 50, pos: "20% 0%" },
-        { id: 2, name: "Büyücü", price: 100, pos: "40% 0%" },
-        { id: 3, name: "Robot", price: 150, pos: "60% 0%" },
-        { id: 4, name: "Ninja", price: 200, pos: "80% 0%" },
-        { id: 5, name: "Kral", price: 500, pos: "100% 0%" }
+        { id: 0, name: "Kâşif", price: 0, img: "assets/avatars/base_0.png" },
+        { id: 1, name: "Savaşçı", price: 50, img: "assets/avatars/base_1.png" },
+        { id: 2, name: "Büyücü", price: 100, img: "assets/avatars/base_2.png" },
+        { id: 3, name: "Robot", price: 150, img: "assets/avatars/base_3.png" },
+        { id: 4, name: "Ninja", price: 200, img: "assets/avatars/base_4.png" },
+        { id: 5, name: "Kral", price: 500, img: "assets/avatars/base_5.png" }
     ],
     hats: [
-        { id: 10, name: "Kırmızı Şapka", price: 30, color: "text-red-500", icon: `<svg class="w-16 h-16 drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3C7 3 3 6 3 9s1 5 1 5l1 7h14l1-7s1-2 1-5-4-6-9-6z"/></svg>` },
-        { id: 11, name: "Sihirbaz Şapkası", price: 60, color: "text-purple-600", icon: `<svg class="w-16 h-16 drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l-8 16h16L12 2zM4 19h16v2H4v-2z"/></svg>` },
-        { id: 12, name: "Altın Taç", price: 200, color: "text-yellow-500", icon: `<svg class="w-16 h-16 drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16l3-8 4 4 4-4 3 8H5zM12 2l2 4 4 2-4 2-2 4-2-4-4-2 4-2 2-4z"/></svg>` }
+        { id: 10, name: "Kırmızı Şapka", price: 30, img: "assets/avatars/hat_red_cap.png" },
+        { id: 11, name: "Sihirbaz Şapkası", price: 60, img: "assets/avatars/hat_wizard.png" },
+        { id: 12, name: "Altın Taç", price: 200, img: "assets/avatars/hat_king_crown.png" }
     ],
     pets: [
-        { id: 20, name: "Yavru Ejderha", price: 300, color: "text-emerald-500", icon: `<svg class="w-12 h-12 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/><circle cx="9" cy="9" r="1.5"/><circle cx="15" cy="9" r="1.5"/><path d="M12 17c2.2 0 4-1.8 4-4H8c0 2.2 1.8 4 4 4z"/></svg>` },
-        { id: 21, name: "Robot Kuş", price: 400, color: "text-blue-400", icon: `<svg class="w-12 h-12 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M21 12l-18 10V2l18 10z"/></svg>` }
+        { id: 20, name: "Yavru Ejderha", price: 300, img: "assets/avatars/pet_dragon.png" },
+        { id: 21, name: "Robot Kuş", price: 400, img: "assets/avatars/pet_robot_bird.png" }
     ]
 };
 
@@ -377,12 +377,14 @@ function applyAvatarConfig(config) {
     currentAvatarConfig = { ...currentAvatarConfig, ...config };
     if(!currentAvatarConfig.inventory) currentAvatarConfig.inventory = [];
     
-    // Base Layer (Grid position)
+    // Base Layer (Individual image)
     const baseLayer = document.getElementById('avatarBaseLayer');
     if (baseLayer) {
         const baseItem = SHOP_DATA.bases.find(b => b.id == (config.base ?? currentAvatarConfig.base));
         if (baseItem) {
-            baseLayer.style.backgroundPosition = baseItem.pos;
+            baseLayer.style.backgroundImage = `url('${baseItem.img}')`;
+            baseLayer.style.backgroundSize = "contain";
+            baseLayer.style.backgroundPosition = "center";
             document.getElementById('avatarNameDisplay').innerText = baseItem.name;
         }
     }
@@ -392,7 +394,7 @@ function applyAvatarConfig(config) {
     if (hatLayer) {
         const hatId = config.hat ?? currentAvatarConfig.hat;
         const hatItem = SHOP_DATA.hats.find(h => h.id == hatId);
-        hatLayer.innerHTML = hatItem ? `<div class="${hatItem.color} drop-shadow-lg transform -translate-y-12 scale-125">${hatItem.icon}</div>` : '';
+        hatLayer.innerHTML = hatItem ? `<img src="${hatItem.img}" class="w-24 h-24 drop-shadow-2xl object-contain">` : '';
     }
 
     // Pet Layer
@@ -400,7 +402,7 @@ function applyAvatarConfig(config) {
     if (petLayer) {
         const petId = config.pet ?? currentAvatarConfig.pet;
         const petItem = SHOP_DATA.pets.find(p => p.id == petId);
-        petLayer.innerHTML = petItem ? `<div class="${petItem.color} drop-shadow-md animate-bounce">${petItem.icon}</div>` : '';
+        petLayer.innerHTML = petItem ? `<img src="${petItem.img}" class="w-full h-full drop-shadow-md object-contain animate-bounce">` : '';
     }
 
     // Level Display
@@ -449,12 +451,12 @@ function renderShopItems(category) {
         const card = document.createElement('div');
         card.className = `shop-item-card bg-white dark:bg-slate-800 rounded-3xl p-5 border-2 ${isActive ? 'border-indigo-500 shadow-lg' : 'border-gray-50 dark:border-slate-700'} flex flex-col items-center group hover:scale-[1.02] transition cursor-pointer`;
         
-        // SPRITE DÜZELTME: img yerine background-image kullanarak kesin hizalama yapıyoruz
+        // RESİM DÜZELTME: Artık her karakter ayrı bir PNG, sprite karmaşası bitti
         let thumbnailHtml = "";
         if (category === 'bases') {
-            thumbnailHtml = `<div style="width:100%; height:100%; background-image:url('assets/avatars/bases.png'); background-size:600% 100%; background-position:${item.pos};" class="rounded-2xl transition-transform duration-500 group-hover:scale-110"></div>`;
+            thumbnailHtml = `<img src="${item.img}" class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110">`;
         } else {
-            thumbnailHtml = `<div class="w-16 h-16 ${item.color || 'text-gray-400'} flex items-center justify-center transform group-hover:scale-125 transition-transform duration-500 ${category === 'pets' ? 'animate-bounce' : ''}">${item.icon || ''}</div>`;
+            thumbnailHtml = `<img src="${item.img}" class="w-full h-full object-contain transform group-hover:scale-125 transition-transform duration-500 ${category === 'pets' ? 'animate-bounce' : ''}">`;
         }
 
         card.innerHTML = `
