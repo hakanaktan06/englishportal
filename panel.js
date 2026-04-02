@@ -95,11 +95,9 @@ function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
         if (p) petImg = p.img;
     }
 
-    // 🌟 AGRESİF ZOOM VE HİZALAMA: Ninja (4) ve Kral (5) için Warrior profilini yakalama
+    // 🌟 AGRESİF ZOOM VE HİZALAMA TEMİZLENDİ: Tüm karakterler artık senin attığın yeni geniş görsellerle 
+    // kadrajı doldurduğu için ekstra zoom yapmaya gerek kalmadı, hepsini standart ölçeğe çektik.
     let zoomClass = "";
-    if ([4, 5].includes(config.base)) {
-        zoomClass = "scale-[1.7] origin-center translate-y-[-12%]";
-    }
 
     return `
         <div class="relative ${sizeClass} shrink-0 group/avatar">
