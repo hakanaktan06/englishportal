@@ -358,63 +358,63 @@ let currentAvatarConfig = { base: 0, skin: -1, pet: -1, inventory: [] };
 
 const SHOP_DATA = {
     bases: [
-        { id: 0, name: "Kâşif", price: 0, img: "assets/avatars/base_0_v1.png", desc: "Yeni dünyalar keşfetmeye hazır, meraklı bir gezgin." },
-        { id: 1, name: "Savaşçı", price: 100, img: "assets/avatars/base_1_v1.png", desc: "Cesareti ve kılıcıyla adalet dağıtan bir şövalye." },
-        { id: 2, name: "Büyücü", price: 250, img: "assets/avatars/base_2_v1.png", desc: "Kadim büyülerin ve elementlerin gizemli efendisi." },
-        { id: 3, name: "Robot", price: 500, img: "assets/avatars/base_3_v1.png", desc: "Geleceğin teknolojisiyle donatılmış yapay zeka." },
-        { id: 4, name: "Ninja", price: 750, img: "assets/avatars/base_4_v1.png", desc: "Gölgelerin içinde sessizce hareket eden usta bir suikastçı." },
-        { id: 5, name: "Kral", price: 1000, img: "assets/avatars/base_5_v1.png", desc: "Halkını koruyan ve ordulara hükmeden yüce bir hükümdar." }
+        { id: 0, name: "Kâşif", price: 0, img: "/assets/avatars/base_0_v1.png", desc: "Yeni dünyalar keşfetmeye hazır, meraklı bir gezgin." },
+        { id: 1, name: "Savaşçı", price: 100, img: "/assets/avatars/base_1_v1.png", desc: "Cesareti ve kılıcıyla adalet dağıtan bir şövalye." },
+        { id: 2, name: "Büyücü", price: 250, img: "/assets/avatars/base_2_v1.png", desc: "Kadim büyülerin ve elementlerin gizemli efendisi." },
+        { id: 3, name: "Robot", price: 500, img: "/assets/avatars/base_3_v1.png", desc: "Geleceğin teknolojisiyle donatılmış yapay zeka." },
+        { id: 4, name: "Ninja", price: 750, img: "/assets/avatars/base_4_v1.png", desc: "Gölgelerin içinde sessizce hareket eden usta bir suikastçı." },
+        { id: 5, name: "Kral", price: 1000, img: "/assets/avatars/base_5_v1.png", desc: "Halkını koruyan ve ordulara hükmeden yüce bir hükümdar." }
     ],
     skins: [
         // Kâşif Serisi (Base 0)
-        { id: 101, baseId: 0, name: "Kâşif V1 (Standart)", price: 0, img: "assets/avatars/base_0_v1.png", desc: "Maceraya yeni başlayanlar için temel donanım." },
-        { id: 102, baseId: 0, name: "Kâşif V2 (Safari)", price: 250, img: "assets/avatars/base_0_v2.png", desc: "Vahşi doğada gizlenmek ve hayatta kalmak için özel giysi." },
-        { id: 103, baseId: 0, name: "Kâşif V3 (Derin Deniz)", price: 750, img: "assets/avatars/base_0_v3.png", desc: "Okyanusun karanlık derinliklerini keşfetmek için üretildi." },
-        { id: 104, baseId: 0, name: "Kâşif V4 (Kutup)", price: 1500, img: "assets/avatars/base_0_v4.png", desc: "Dondurucu soğuklarda bile sıcak tutan termal teknoloji." },
-        { id: 105, baseId: 0, name: "Kâşif V5 (Uzay)", price: 3000, img: "assets/avatars/base_0_v5.png", desc: "Yıldızlararası yolculuklar için tasarlanmış son seviye astronot zırhı." },
+        { id: 101, baseId: 0, name: "Kâşif V1 (Standart)", price: 0, img: "/assets/avatars/base_0_v1.png", desc: "Maceraya yeni başlayanlar için temel donanım." },
+        { id: 102, baseId: 0, name: "Kâşif V2 (Safari)", price: 250, img: "/assets/avatars/base_0_v2.png", desc: "Vahşi doğada gizlenmek ve hayatta kalmak için özel giysi." },
+        { id: 103, baseId: 0, name: "Kâşif V3 (Derin Deniz)", price: 750, img: "/assets/avatars/base_0_v3.png", desc: "Okyanusun karanlık derinliklerini keşfetmek için üretildi." },
+        { id: 104, baseId: 0, name: "Kâşif V4 (Kutup)", price: 1500, img: "/assets/avatars/base_0_v4.png", desc: "Dondurucu soğuklarda bile sıcak tutan termal teknoloji." },
+        { id: 105, baseId: 0, name: "Kâşif V5 (Uzay)", price: 3000, img: "/assets/avatars/base_0_v5.png", desc: "Yıldızlararası yolculuklar için tasarlanmış son seviye astronot zırhı." },
         
         // Savaşçı Serisi (Base 1)
-        { id: 111, baseId: 1, name: "Savaşçı V1 (Bronz)", price: 0, img: "assets/avatars/base_1_v1.png", desc: "Eğitimini yeni tamamlamış bir piyade zırhı." },
-        { id: 112, baseId: 1, name: "Savaşçı V2 (Gümüş Şövalye)", price: 250, img: "assets/avatars/base_1_v2.png", desc: "Parlayan gümüş zırhıyla sahanın en asil savaşçısı." },
-        { id: 113, baseId: 1, name: "Savaşçı V3 (Paladin)", price: 750, img: "assets/avatars/base_1_v3.png", desc: "Kutsal ışıkla kutsanmış, kötülüğe karşı yıkılmaz bir kale." },
-        { id: 114, baseId: 1, name: "Savaşçı V4 (Ejderha Avcısı)", price: 1500, img: "assets/avatars/base_1_v4.png", desc: "Kanatlı devleri dize getirenlerin giydiği obsidyen zırh." },
-        { id: 115, baseId: 1, name: "Savaşçı V5 (Gök Savaşçısı)", price: 3000, img: "assets/avatars/base_1_v5.png", desc: "Galaksiyi koruduğu için gökyüzünün enerjisiyle ödüllendirildi." },
+        { id: 111, baseId: 1, name: "Savaşçı V1 (Bronz)", price: 0, img: "/assets/avatars/base_1_v1.png", desc: "Eğitimini yeni tamamlamış bir piyade zırhı." },
+        { id: 112, baseId: 1, name: "Savaşçı V2 (Gümüş Şövalye)", price: 250, img: "/assets/avatars/base_1_v2.png", desc: "Parlayan gümüş zırhıyla sahanın en asil savaşçısı." },
+        { id: 113, baseId: 1, name: "Savaşçı V3 (Paladin)", price: 750, img: "/assets/avatars/base_1_v3.png", desc: "Kutsal ışıkla kutsanmış, kötülüğe karşı yıkılmaz bir kale." },
+        { id: 114, baseId: 1, name: "Savaşçı V4 (Ejderha Avcısı)", price: 1500, img: "/assets/avatars/base_1_v4.png", desc: "Kanatlı devleri dize getirenlerin giydiği obsidyen zırh." },
+        { id: 115, baseId: 1, name: "Savaşçı V5 (Gök Savaşçısı)", price: 3000, img: "/assets/avatars/base_1_v5.png", desc: "Galaksiyi koruduğu için gökyüzünün enerjisiyle ödüllendirildi." },
 
         // Büyücü Serisi (Base 2)
-        { id: 121, baseId: 2, name: "Büyücü V1 (Çırak)", price: 0, img: "assets/avatars/base_2_v1.png", desc: "Temel büyü sanatlarını öğrenen bir başlangıç asası." },
-        { id: 122, baseId: 2, name: "Büyücü V2 (Simyacı)", price: 250, img: "assets/avatars/base_2_v2.png", desc: "İksirlerin ve metal dönüşümlerinin uzmanı." },
-        { id: 123, baseId: 2, name: "Büyücü V3 (Druid)", price: 750, img: "assets/avatars/base_2_v3.png", desc: "Doğanın ve hayvanların ruhuyla konuşan yeşil büyücü." },
-        { id: 124, baseId: 2, name: "Büyücü V4 (Ölüm Büyücüsü)", price: 1500, img: "assets/avatars/base_2_v4.png", desc: "Karanlık diyarlardan gelen, ruhlara hükmeden korkutucu güç." },
-        { id: 125, baseId: 2, name: "Büyücü V5 (Bilge Arş-Büyücü)", price: 3000, img: "assets/avatars/base_2_v5.png", desc: "Evrenin tüm sırlarını çözmüş, zamanı durdurabilen yüce bilge." },
+        { id: 121, baseId: 2, name: "Büyücü V1 (Çırak)", price: 0, img: "/assets/avatars/base_2_v1.png", desc: "Temel büyü sanatlarını öğrenen bir başlangıç asası." },
+        { id: 122, baseId: 2, name: "Büyücü V2 (Simyacı)", price: 250, img: "/assets/avatars/base_2_v2.png", desc: "İksirlerin ve metal dönüşümlerinin uzmanı." },
+        { id: 123, baseId: 2, name: "Büyücü V3 (Druid)", price: 750, img: "/assets/avatars/base_2_v3.png", desc: "Doğanın ve hayvanların ruhuyla konuşan yeşil büyücü." },
+        { id: 124, baseId: 2, name: "Büyücü V4 (Ölüm Büyücüsü)", price: 1500, img: "/assets/avatars/base_2_v4.png", desc: "Karanlık diyarlardan gelen, ruhlara hükmeden korkutucu güç." },
+        { id: 125, baseId: 2, name: "Büyücü V5 (Bilge Arş-Büyücü)", price: 3000, img: "/assets/avatars/base_2_v5.png", desc: "Evrenin tüm sırlarını çözmüş, zamanı durdurabilen yüce bilge." },
 
         // Robot Serisi (Base 3)
-        { id: 131, baseId: 3, name: "Robot V1 (Keşif Botu)", price: 0, img: "assets/avatars/base_3_v1.png", desc: "Veri toplamak ve etrafı gözlemek için programlandı." },
-        { id: 132, baseId: 3, name: "Robot V2 (Endüstriyel Titan)", price: 250, img: "assets/avatars/base_3_v2.png", desc: "Ağır yükleri taşımak ve kaleleri yıkmak için üretilen dev." },
-        { id: 133, baseId: 3, name: "Robot V3 (Tıbbi Ünite)", price: 750, img: "assets/avatars/base_3_v3.png", desc: "Gelişmiş lazer teknolojisiyle yaraları anında iyileştirir." },
-        { id: 134, baseId: 3, name: "Robot V4 (Savaş Mekası)", price: 1500, img: "assets/avatars/base_3_v4.png", desc: "Lazer toplarıyla orduyu tek başına durdurabilen bir savaş canavarı." },
-        { id: 135, baseId: 3, name: "Robot V5 (Mekanik Tiran)", price: 3000, img: "assets/avatars/base_3_v5.png", desc: "Duygulardan yoksun, sadece mutlak güç için programlanmış karanlık zeka." },
+        { id: 131, baseId: 3, name: "Robot V1 (Keşif Botu)", price: 0, img: "/assets/avatars/base_3_v1.png", desc: "Veri toplamak ve etrafı gözlemek için programlandı." },
+        { id: 132, baseId: 3, name: "Robot V2 (Endüstriyel Titan)", price: 250, img: "/assets/avatars/base_3_v2.png", desc: "Ağır yükleri taşımak ve kaleleri yıkmak için üretilen dev." },
+        { id: 133, baseId: 3, name: "Robot V3 (Tıbbi Ünite)", price: 750, img: "/assets/avatars/base_3_v3.png", desc: "Gelişmiş lazer teknolojisiyle yaraları anında iyileştirir." },
+        { id: 134, baseId: 3, name: "Robot V4 (Savaş Mekası)", price: 1500, img: "/assets/avatars/base_3_v4.png", desc: "Lazer toplarıyla orduyu tek başına durdurabilen bir savaş canavarı." },
+        { id: 135, baseId: 3, name: "Robot V5 (Mekanik Tiran)", price: 3000, img: "/assets/avatars/base_3_v5.png", desc: "Duygulardan yoksun, sadece mutlak güç için programlanmış karanlık zeka." },
 
         // Ninja Serisi (Base 4)
-        { id: 141, baseId: 4, name: "Ninja V1 (Klasik)", price: 0, img: "assets/avatars/base_4_v1.png", desc: "Sessiz adımlar ve temel ninjutsu eğitimi." },
-        { id: 142, baseId: 4, name: "Ninja V2 (Kızıl El)", price: 250, img: "assets/avatars/base_4_v2.png", desc: "Ateş elementini kullanan, hızıyla rakiplerini şaşırtan ninja." },
-        { id: 143, baseId: 4, name: "Ninja V3 (Siber Ninjutsu)", price: 750, img: "assets/avatars/base_4_v3.png", desc: "Neon ışıklarıyla kaplı, teknolojiyle harmanlanmış bir gölge suikastçı." },
-        { id: 144, baseId: 4, name: "Ninja V4 (Hayalet)", price: 1500, img: "assets/avatars/base_4_v4.png", desc: "Duvarların içinden geçebilen, varlığıyla yokluğu bir olan efsane." },
-        { id: 145, baseId: 4, name: "Ninja V5 (Büyük Üstat)", price: 3000, img: "assets/avatars/base_4_v5.png", desc: "Binlerce yıllık gizli tekniklerin yaşayan son temsilcisi." },
+        { id: 141, baseId: 4, name: "Ninja V1 (Klasik)", price: 0, img: "/assets/avatars/base_4_v1.png", desc: "Sessiz adımlar ve temel ninjutsu eğitimi." },
+        { id: 142, baseId: 4, name: "Ninja V2 (Kızıl El)", price: 250, img: "/assets/avatars/base_4_v2.png", desc: "Ateş elementini kullanan, hızıyla rakiplerini şaşırtan ninja." },
+        { id: 143, baseId: 4, name: "Ninja V3 (Siber Ninjutsu)", price: 750, img: "/assets/avatars/base_4_v3.png", desc: "Neon ışıklarıyla kaplı, teknolojiyle harmanlanmış bir gölge suikastçı." },
+        { id: 144, baseId: 4, name: "Ninja V4 (Hayalet)", price: 1500, img: "/assets/avatars/base_4_v4.png", desc: "Duvarların içinden geçebilen, varlığıyla yokluğu bir olan efsane." },
+        { id: 145, baseId: 4, name: "Ninja V5 (Büyük Üstat)", price: 3000, img: "/assets/avatars/base_4_v5.png", desc: "Binlerce yıllık gizli tekniklerin yaşayan son temsilcisi." },
 
         // Kral Serisi (Base 5)
-        { id: 151, baseId: 5, name: "Kral V1 (Genç Prens)", price: 0, img: "assets/avatars/base_5_v1.png", desc: "Tahtı devralmaya hazırlanan asil bir varis." },
-        { id: 152, baseId: 5, name: "Kral V2 (Firavun)", price: 250, img: "assets/avatars/base_5_v2.png", desc: "Antik Mısır'ın kumlarından gelen ölümsüz hükümdar." },
-        { id: 153, baseId: 5, name: "Kral V3 (Viking Kral Kralı)", price: 750, img: "assets/avatars/base_5_v3.png", desc: "Kuzeyin sert rüzgarlarını ve denizlerini dize getiren savaşçı kral." },
-        { id: 154, baseId: 5, name: "Kral V4 (İmparator)", price: 1500, img: "assets/avatars/base_5_v4.png", desc: "Yedi iklim ve dört bucağa hükmeden kudretli lider." },
-        { id: 155, baseId: 5, name: "Kral V5 (Gök Tanrısı)", price: 3000, img: "assets/avatars/base_5_v5.png", desc: "Yeryüzünden gökyüzüne yükselmiş, artık kadere hükmeden ilahi varlık." }
+        { id: 151, baseId: 5, name: "Kral V1 (Genç Prens)", price: 0, img: "/assets/avatars/base_5_v1.png", desc: "Tahtı devralmaya hazırlanan asil bir varis." },
+        { id: 152, baseId: 5, name: "Kral V2 (Firavun)", price: 250, img: "/assets/avatars/base_5_v2.png", desc: "Antik Mısır'ın kumlarından gelen ölümsüz hükümdar." },
+        { id: 153, baseId: 5, name: "Kral V3 (Viking Kral Kralı)", price: 750, img: "/assets/avatars/base_5_v3.png", desc: "Kuzeyin sert rüzgarlarını ve denizlerini dize getiren savaşçı kral." },
+        { id: 154, baseId: 5, name: "Kral V4 (İmparator)", price: 1500, img: "/assets/avatars/base_5_v4.png", desc: "Yedi iklim ve dört bucağa hükmeden kudretli lider." },
+        { id: 155, baseId: 5, name: "Kral V5 (Gök Tanrısı)", price: 3000, img: "/assets/avatars/base_5_v5.png", desc: "Yeryüzünden gökyüzüne yükselmiş, artık kadere hükmeden ilahi varlık." }
     ],
     pets: [
-        { id: 201, name: "Maceracı Maymun (Zıpzıp)", price: 500, img: "assets/avatars/pet_monkey.png", desc: "Kâşif dostu. En zorlu rotalarda bile yolunu bulmanı sağlar." },
-        { id: 202, name: "Zırhlı Bozkurt (Börü)", price: 750, img: "assets/avatars/pet_wolf.png", desc: "Savaşçıların sadık yoldaşı. Gümüş zırhıyla düşmanlarına korku salar." },
-        { id: 203, name: "Kozmik Baykuş (Luna)", price: 750, img: "assets/avatars/pet_owl.png", desc: "Büyücülerin gözü. Gece karanlığında bile her şeyi gören bilge kuş." },
-        { id: 204, name: "Gözlem Dronu (Cyber-Eye)", price: 600, img: "assets/avatars/pet_drone.png", desc: "Gelecekten gelen bir casus. Çevreyi tarayıp verileri senin için işler." },
-        { id: 205, name: "Gölge Panteri (Kuro)", price: 850, img: "assets/avatars/pet_panther.png", desc: "Gölgelerin efendisi. Sessiz adımlarıyla her an seni korur." },
-        { id: 206, name: "Altın Kartal (Zümrüt)", price: 1000, img: "assets/avatars/pet_eagle.png", desc: "Kralların gökyüzündeki elçisi. Marketin en asil ve görkemli yoldaşıdır." }
+        { id: 201, name: "Maceracı Maymun (Zıpzıp)", price: 500, img: "/assets/avatars/pet_monkey.png", desc: "Kâşif dostu. En zorlu rotalarda bile yolunu bulmanı sağlar." },
+        { id: 202, name: "Zırhlı Bozkurt (Börü)", price: 750, img: "/assets/avatars/pet_wolf.png", desc: "Savaşçıların sadık yoldaşı. Gümüş zırhıyla düşmanlarına korku salar." },
+        { id: 203, name: "Kozmik Baykuş (Luna)", price: 750, img: "/assets/avatars/pet_owl.png", desc: "Büyücülerin gözü. Gece karanlığında bile her şeyi gören bilge kuş." },
+        { id: 204, name: "Gözlem Dronu (Cyber-Eye)", price: 600, img: "/assets/avatars/pet_drone.png", desc: "Gelecekten gelen bir casus. Çevreyi tarayıp verileri senin için işler." },
+        { id: 205, name: "Gölge Panteri (Kuro)", price: 850, img: "/assets/avatars/pet_panther.png", desc: "Gölgelerin efendisi. Sessiz adımlarıyla her an seni korur." },
+        { id: 206, name: "Altın Kartal (Zümrüt)", price: 1000, img: "/assets/avatars/pet_eagle.png", desc: "Kralların gökyüzündeki elçisi. Marketin en asil ve görkemli yoldaşıdır." }
     ]
 };
 
