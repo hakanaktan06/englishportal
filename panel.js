@@ -77,6 +77,9 @@ const SHOP_DATA = {
 function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
     if (!config || Object.keys(config).length === 0) return `<div class="${sizeClass} rounded-full bg-indigo-100 flex items-center justify-center text-indigo-400 font-bold shrink-0">?</div>`;
     
+    // Config'i güvenli hale getirip string olarak saklıyoruz
+    const configStr = config ? JSON.stringify(config).replace(/"/g, '&quot;') : '';
+    
     // Aktif skin veya base görseli
     let skinImg = "";
     if (config.skin && config.skin !== -1) {
@@ -100,7 +103,9 @@ function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
     let zoomClass = "";
 
     return `
-        <div class="relative ${sizeClass} shrink-0 group/avatar">
+        <div class="relative ${sizeClass} shrink-0 group/avatar cursor-zoom-in" 
+             onclick="event.stopPropagation(); zoomAvatar('${configStr}')" 
+             title="Yakınlaştır">
             <div class="w-full h-full rounded-full border-2 border-gray-100 p-1 overflow-hidden transition-transform group-hover/avatar:scale-110 shadow-sm" style="background-color: white !important;">
                 <img src="${skinImg || 'assets/avatars/base_0_v1.png'}" class="w-full h-full object-contain ${zoomClass}">
             </div>
@@ -112,6 +117,48 @@ function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
         </div>
     `;
 }
+
+// 🌟 AVATAR ZOOM SİSTEMİ 🌟
+window.zoomAvatar = function(configJson) {
+    try {
+        if (!configJson) return;
+        const config = JSON.parse(configJson.replace(/&quot;/g, '"'));
+        const modal = document.getElementById('avatarZoomModal');
+        const content = document.getElementById('avatarZoomContent');
+        
+        if (!modal || !content) return;
+
+        // Büyük hali için HTML üret (Pet de dahil)
+        // Zoom modunda tıklanabilirliği ve zoom cursorunu kaldırıyoruz
+        const zoomedHTML = getAvatarPreviewHTML(config, "w-64 h-64 md:w-80 md:h-80")
+                            .replace('cursor-zoom-in', '')
+                            .replace('onclick="event.stopPropagation(); zoomAvatar', 'onclick="');
+        
+        content.innerHTML = zoomedHTML;
+        
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0', 'scale-95');
+        }, 10);
+    } catch (e) {
+        console.error("Avatar Zoom Hatası:", e);
+    }
+}
+
+window.closeAvatarZoom = function() {
+    const modal = document.getElementById('avatarZoomModal');
+    if (!modal || modal.classList.contains('hidden')) return;
+    
+    modal.classList.add('opacity-0', 'scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+// Ekranın herhangi bir yerine tıklayınca zoom'u kapat
+document.addEventListener('click', () => {
+    closeAvatarZoom();
+});
 
 
 // ==========================================
