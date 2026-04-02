@@ -589,14 +589,30 @@ function renderShopItems(category) {
 function selectItem(category, itemId, isPreview = false) {
     if (category === 'bases') {
         currentAvatarConfig.base = itemId;
-        currentAvatarConfig.skin = -1; // Ana karakter değişince skini sıfırla
+        currentAvatarConfig.skin = -1; 
     }
-        
-        const base = SHOP_DATA.bases.find(b => b.id === itemId);
-        if (base) {
-            currentAvatarConfig.base = itemId;
-            currentAvatarConfig.skin = -1;
-        }
+    
+    // Skin seçimi
+    const skin = SHOP_DATA.skins.find(s => s.id === itemId);
+    if (skin) {
+        currentAvatarConfig.skin = itemId;
+        currentAvatarConfig.base = skin.baseId;
+    }
+    
+    // Base seçimi (Farklı kategoriden gelirse)
+    const base = SHOP_DATA.bases.find(b => b.id === itemId);
+    if (base) {
+        currentAvatarConfig.base = itemId;
+        currentAvatarConfig.skin = -1;
+    }
+    
+    applyAvatarConfig(currentAvatarConfig);
+    
+    const activeTab = document.querySelector('.active-shop-tab');
+    if (activeTab) renderShopItems(activeTab.dataset.category);
+    
+    if (isPreview) {
+        showToast("Önizleme modu: Bu öğeye sahip değilsin!", "info");
     }
     playSound('click');
 }
@@ -632,16 +648,12 @@ async function buyItem(category, itemId) {
 async function saveAvatarConfig() {
     // Sahip olunmayan öğe kontrolü
     const skin = SHOP_DATA.skins.find(s => s.id === currentAvatarConfig.skin);
-    const pet = SHOP_DATA.pets.find(p => p.id === currentAvatarConfig.pet);
     const base = SHOP_DATA.bases.find(b => b.id === currentAvatarConfig.base);
 
     const isSkinLocked = skin && skin.price > 0 && !currentAvatarConfig.inventory.includes(skin.id);
-    const isPetLocked = pet && pet.price > 0 && !currentAvatarConfig.inventory.includes(pet.id);
-    
-    // 🌟 MANTIK GÜNCELLEMESİ: 0-5 arası ana karakterler her zaman ÜCRETSİZ ve SAHİP olunmuş sayılır.
     const isBaseLocked = base && (base.id < 0 || base.id > 5) && base.price > 0 && !currentAvatarConfig.inventory.includes(base.id);
 
-    if (isSkinLocked || isPetLocked || isBaseLocked) {
+    if (isSkinLocked || isBaseLocked) {
         showToast("Sahip olmadığın bir öğeyi kaydedemezsin! Lütfen önce satın al.", "error");
         playSound('error');
         return;
@@ -1484,5 +1496,14 @@ window.checkLiveLesson = async function(teacherId) {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initStudentPortal);
 } else {
+    // SPLASH GÜVENLİK (Safety Timeout: 5sn içinde açılmazsa zorla aç)
+    setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        if (splash) {
+            splash.style.opacity = '0';
+            setTimeout(() => splash.remove(), 500);
+            console.warn("Splash screen safety timeout triggered.");
+        }
+    }, 5000);
     initStudentPortal();
 }
