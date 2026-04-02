@@ -1,10 +1,10 @@
-const CACHE_NAME = 'ep-vip-v2'; // Versiyon Atlatıldı (Force Update)
+const CACHE_NAME = 'ep-vip-v3'; // Versiyon Atlatıldı (Teacher Panel Fix)
 const urlsToCache = [
   '/',
   '/index.html',
   '/style.css',
   '/login.js',
-  '/panel.js',
+  '/teacher.js',
   '/student.js',
   '/veli.js'
 ];
