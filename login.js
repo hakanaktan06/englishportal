@@ -352,16 +352,32 @@ window.switchLoginTab = function(type) {
     if (type === 'student') {
         if(titleText) titleText.innerText = "Öğrenci Girişi";
         if(descText) descText.innerText = "OKUL NU VEYA KULLANICI ADI İLE GİRİŞ YAPIN";
+        const label = document.getElementById('loginEmailLabel');
+        const input = document.getElementById('loginEmail');
+        if(label) label.innerText = "Kullanıcı Adı / Okul No";
+        if(input) input.placeholder = "ali_kaya";
     } else if (type === 'parent') {
         if(titleText) titleText.innerText = "Veli Girişi";
         if(descText) descText.innerText = "ÇOCUĞUNUZUN KULLANICI ADI VEYA NO'SU İLE GİRİŞ YAPIN";
         if(loginRoleInput) loginRoleInput.value = 'parent';
+        const label = document.getElementById('loginEmailLabel');
+        const input = document.getElementById('loginEmail');
+        if(label) label.innerText = "Çocuk Kullanıcı Adı / No";
+        if(input) input.placeholder = "ali_kaya";
     } else if (type === 'teacher') {
         if(titleText) titleText.innerText = "Eğitmen Girişi";
         if(descText) descText.innerText = "E-POSTA VEYA KULLANICI ADI İLE GİRİŞ YAPIN";
+        const label = document.getElementById('loginEmailLabel');
+        const input = document.getElementById('loginEmail');
+        if(label) label.innerText = "E-Posta Adresi / Kullanıcı Adı";
+        if(input) input.placeholder = "ornek@gmail.com";
     } else if (type === 'kurum') {
         if(titleText) titleText.innerText = "Kurum Girişi";
         if(descText) descText.innerText = "DİL OKULU / AKADEMİ PANELİNE GİRİŞ YAPIN";
+        const label = document.getElementById('loginEmailLabel');
+        const input = document.getElementById('loginEmail');
+        if(label) label.innerText = "Kurumsal E-Posta / Kullanıcı Adı";
+        if(input) input.placeholder = "ornek@gmail.com";
         if(rBlock) {
             rBlock.classList.remove('hidden');
             setTimeout(() => rBlock.classList.remove('opacity-0'), 50);
