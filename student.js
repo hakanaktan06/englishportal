@@ -495,7 +495,12 @@ function applyAvatarConfig(config) {
     if (petLayer) {
         const petId = currentAvatarConfig.pet;
         const petItem = SHOP_DATA.pets.find(p => p.id == petId);
-        petLayer.innerHTML = petItem ? `<img src="${petItem.img}" class="w-full h-full drop-shadow-md object-contain animate-float">` : '';
+        
+        if (petItem && petItem.img && petId != -1) {
+            petLayer.innerHTML = `<img src="${petItem.img}" class="w-full h-full drop-shadow-md object-contain animate-float">`;
+        } else {
+            petLayer.innerHTML = '';
+        }
     }
 
     // Level Display
@@ -632,6 +637,20 @@ function selectItem(category, itemId, isPreview = false) {
         showToast("Önizleme modu: Bu öğeye sahip değilsin!", "info");
     }
     playSound('click');
+}
+
+window.deselectPet = function() {
+    if (!currentAvatarConfig.pet || currentAvatarConfig.pet === -1) return;
+    
+    currentAvatarConfig.pet = -1;
+    applyAvatarConfig(currentAvatarConfig);
+    showToast("Evcil hayvan çıkarıldı (Önizleme).", "info");
+    
+    // Market görünümünü tazele (Seçili olma durumu kalksın diye)
+    const activeTab = document.querySelector('.active-shop-tab');
+    if (activeTab && activeTab.dataset.category === 'pets') {
+        renderShopItems('pets');
+    }
 }
 
 async function buyItem(category, itemId) {
