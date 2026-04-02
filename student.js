@@ -497,10 +497,10 @@ function applyAvatarConfig(config) {
         const petItem = SHOP_DATA.pets.find(p => p.id == petId);
         
         if (petItem && petItem.img && petId != -1) {
-            petLayer.innerHTML = `<img src="${petItem.img}" class="w-full h-full object-contain animate-float" style="filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3)); mix-blend-mode: multiply;">`;
-            // Karakteri hafif sola çekerek yer açalım
+            petLayer.innerHTML = `<img src="${petItem.img}" class="w-full h-full object-contain animate-float" style="filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2)); mix-blend-mode: multiply;">`;
+            // Karakteri merkezde tutalım
             const baseLayer = document.getElementById('avatarBaseLayer');
-            if(baseLayer) baseLayer.style.transform = "translateX(-15px)";
+            if(baseLayer) baseLayer.style.transform = "translateX(0)";
         } else {
             petLayer.innerHTML = '';
             const baseLayer = document.getElementById('avatarBaseLayer');
