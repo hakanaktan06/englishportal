@@ -468,14 +468,67 @@ window.sendPersonalMessage = async function (teacherId) {
     }
 };
 
-// KURUMSAL SİLME MOTORU
+// 🌟 ULTRA GÜÇLÜ ÖĞRETMEN SİLME MOTORU (DERİN TEMİZLİK - DEEP WIPE) 🌟
 window.deleteTeacher = async function (id) {
-    const isConfirmed = await customConfirm("Öğretmen kaydını sistemden kalıcı olarak silmek istediğinizi onaylıyor musunuz? Bu işlem geri alınamaz.", "Kalıcı Olarak Sil");
+    const isConfirmed = await customConfirm("BU ÖĞRETMENİ VE TÜM EKOSİSTEMİNİ (Öğrenciler, Ödevler, Sınavlar, Kayıtlar vb.) SİSTEMDEN TAMAMEN KAZIMAK İSTEDİĞİNİZE EMİN MİSİNİZ?\n\n⚠️ DİKKAT: Bu hocaya bağlı tüm öğrenciler ve verileri de silinecektir!", "KÖKTEN SİL");
     if (!isConfirmed) return;
 
-    const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
-    if (error) { if (typeof showToast === "function") showToast("Silme işlemi başarısız oldu.", "error"); }
-    else { if (typeof showToast === "function") showToast("Öğretmen kaydı başarıyla silindi.", "success"); fetchTeachers(); fetchGodMetrics(); }
+    if (typeof showToast === "function") showToast("Derin temizlik başlatıldı. Veriler taranıyor...", "info");
+
+    try {
+        // 1. ÖĞRENCİLERİN VERİLERİNİ TEMİZLE
+        // Hocaya bağlı öğrencilerin ID'lerini alalım
+        const { data: myStudents } = await supabaseClient.from('profiles').select('id').eq('teacher_id', id).eq('role', 'student');
+        
+        if (myStudents && myStudents.length > 0) {
+            const studentIds = myStudents.map(s => s.id);
+            
+            // Öğrencilerin işlem geçmişlerini (Logs) temizle
+            await supabaseClient.from('audit_logs').delete().in('user_id', studentIds);
+            
+            // Öğrencileri SİL (Profiles)
+            const { error: studDelErr } = await supabaseClient.from('profiles').delete().in('id', studentIds);
+            if (studDelErr) console.warn("Bazı öğrenciler silinemedi:", studDelErr);
+        }
+
+        // 2. ÖDEVLERİ, ETKİNLİKLERİ VE DERSLERİ TEMİZLE
+        // Güvenlik: Sadece bu hocaya ait olanları siler.
+        await supabaseClient.from('homeworks').delete().eq('teacher_id', id);
+        await supabaseClient.from('activities').delete().eq('teacher_id', id);
+        await supabaseClient.from('private_lessons').delete().eq('teacher_id', id);
+
+        // 3. SINAVLARI VE SORULARI TEMİZLE
+        const { data: myQuizzes } = await supabaseClient.from('quizzes').select('id').eq('teacher_id', id);
+        if (myQuizzes && myQuizzes.length > 0) {
+            const quizIds = myQuizzes.map(q => q.id);
+            // Soruları sil
+            await supabaseClient.from('questions').delete().in('quiz_id', quizIds);
+            // Sınav sonuçlarını sil
+            await supabaseClient.from('quiz_results').delete().in('quiz_id', quizIds);
+            // Sınavları sil
+            await supabaseClient.from('quizzes').delete().eq('teacher_id', id);
+        }
+        
+        // 4. HOCANIN KENDİ İŞLEM KAYITLARINI TEMİZLE
+        await supabaseClient.from('audit_logs').delete().eq('user_id', id);
+
+        // 5. FİNAL: ÖĞRETMEN PROFİLİNİ SİL
+        const { error: finalError } = await supabaseClient.from('profiles').delete().eq('id', id);
+
+        if (finalError) {
+            console.error("Deep wipe final error:", finalError);
+            if (typeof showToast === "function") showToast("Hata: " + finalError.message, "error");
+        } else {
+            if (typeof showToast === "function") showToast("Öğretmen ve ona bağlı TÜM ekosistem başarıyla silindi.", "success");
+            // Listeyi yenile
+            if (typeof fetchTeachers === "function") fetchTeachers();
+            if (typeof fetchGodMetrics === "function") fetchGodMetrics();
+        }
+
+    } catch (err) {
+        console.error("Zincirleme silme hatası:", err);
+        if (typeof showToast === "function") showToast("Sistem hatası: Operasyon tamamlanamadı.", "error");
+    }
 }
 
 // ŞİFRE SIFIRLAMA MOTORU
@@ -643,9 +696,15 @@ window.updateKurumVip = async function(id, targetStatus) {
 }
 
 window.deleteKurum = async (id, name) => {
-    const onay = await customConfirm(`"${name}" kurumunu ve bağlı verilerini silmek istediğinize emin misiniz?`, "SİSTEMDEN KALDIR");
+    const onay = await customConfirm(`"${name}" kurumunu ve bağlı verilerini silmek istediğinize emin misiniz?\n\nNot: Bu kuruma bağlı öğretmenler silinmez, bağımsız hale gelir.`, "SİSTEMDEN KALDIR");
     if(!onay) return;
     
+    if (typeof showToast === "function") showToast("Kurumsal temizlik başlatıldı...", "info");
+
+    // 1. Bu kuruma bağlı öğretmenleri boşa çıkar (Detaching Teachers)
+    const { error: detachErr } = await supabaseClient.from('profiles').update({ school_id: null }).eq('school_id', id);
+    if (detachErr) console.warn("Kurum öğretmenleri boşa çıkarılamadı:", detachErr);
+
     const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
     if(error) showToast(error.message, 'error');
     else {
