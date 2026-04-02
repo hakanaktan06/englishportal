@@ -547,8 +547,9 @@ function renderShopItems(category) {
     }
 
     items.forEach(item => {
-        // 🌟 MANTIK GÜNCELLEMESİ: Karakterler (bases) kategorisindeki her şey her zaman AÇIK olmalı.
-        const isOwned = category === 'inventory' || category === 'bases' || currentAvatarConfig.inventory.includes(item.id) || item.price === 0;
+        // 🌟 MANTIK GÜNCELLEMESİ: 0-5 arası ana karakterler HER YERDE (market, envanter, kostüm sekmeleri) SAHİP olunmuş sayılır.
+        const isDefaultBase = (item.id >= 0 && item.id <= 5);
+        const isOwned = isDefaultBase || category === 'inventory' || category === 'bases' || currentAvatarConfig.inventory.includes(item.id) || item.price === 0;
         const isActive = (category === 'bases' && currentAvatarConfig.base == item.id) || 
                          (category === 'skins' && currentAvatarConfig.skin == item.id) || 
                          (category === 'pets' && currentAvatarConfig.pet == item.id);
@@ -669,7 +670,9 @@ async function saveAvatarConfig() {
 
     const isSkinLocked = skin && skin.price > 0 && !currentAvatarConfig.inventory.includes(skin.id);
     const isPetLocked = pet && pet.price > 0 && !currentAvatarConfig.inventory.includes(pet.id);
-    const isBaseLocked = base && base.price > 0 && !currentAvatarConfig.inventory.includes(base.id);
+    
+    // 🌟 MANTIK GÜNCELLEMESİ: 0-5 arası ana karakterler her zaman ÜCRETSİZ ve SAHİP olunmuş sayılır.
+    const isBaseLocked = base && (base.id < 0 || base.id > 5) && base.price > 0 && !currentAvatarConfig.inventory.includes(base.id);
 
     if (isSkinLocked || isPetLocked || isBaseLocked) {
         showToast("Sahip olmadığın bir öğeyi kaydedemezsin! Lütfen önce satın al.", "error");
