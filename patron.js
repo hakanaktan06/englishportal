@@ -468,66 +468,38 @@ window.sendPersonalMessage = async function (teacherId) {
     }
 };
 
-// 🌟 ULTRA GÜÇLÜ ÖĞRETMEN SİLME MOTORU (DERİN TEMİZLİK - DEEP WIPE) 🌟
+// 🌟 ULTRA GÜÇLÜ ÖĞRETMEN SİLME MOTORU (DERİN TEMİZLİK - SERVER-SIDE) 🌟
 window.deleteTeacher = async function (id) {
     const isConfirmed = await customConfirm("BU ÖĞRETMENİ VE TÜM EKOSİSTEMİNİ (Öğrenciler, Ödevler, Sınavlar, Kayıtlar vb.) SİSTEMDEN TAMAMEN KAZIMAK İSTEDİĞİNİZE EMİN MİSİNİZ?\n\n⚠️ DİKKAT: Bu hocaya bağlı tüm öğrenciler ve verileri de silinecektir!", "KÖKTEN SİL");
     if (!isConfirmed) return;
 
-    if (typeof showToast === "function") showToast("Derin temizlik başlatıldı. Veriler taranıyor...", "info");
+    if (typeof showToast === "function") showToast("Cihazlar arası derin temizlik başlatıldı...", "info");
 
     try {
-        // 1. ÖĞRENCİLERİN VERİLERİNİ TEMİZLE
-        // Hocaya bağlı öğrencilerin ID'lerini alalım
-        const { data: myStudents } = await supabaseClient.from('profiles').select('id').eq('teacher_id', id).eq('role', 'student');
-        
-        if (myStudents && myStudents.length > 0) {
-            const studentIds = myStudents.map(s => s.id);
-            
-            // Öğrencilerin işlem geçmişlerini (Logs) temizle
-            await supabaseClient.from('audit_logs').delete().in('user_id', studentIds);
-            
-            // Öğrencileri SİL (Profiles)
-            const { error: studDelErr } = await supabaseClient.from('profiles').delete().in('id', studentIds);
-            if (studDelErr) console.warn("Bazı öğrenciler silinemedi:", studDelErr);
-        }
+        const apiUrl = window.location.protocol === 'file:'
+            ? 'https://englishportalvip.vercel.app/api/delete-user' // Yerel test için fallback
+            : '/api/delete-user';
 
-        // 2. ÖDEVLERİ, ETKİNLİKLERİ VE DERSLERİ TEMİZLE
-        // Güvenlik: Sadece bu hocaya ait olanları siler.
-        await supabaseClient.from('homeworks').delete().eq('teacher_id', id);
-        await supabaseClient.from('activities').delete().eq('teacher_id', id);
-        await supabaseClient.from('private_lessons').delete().eq('teacher_id', id);
+        const res = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetUserId: id })
+        });
 
-        // 3. SINAVLARI VE SORULARI TEMİZLE
-        const { data: myQuizzes } = await supabaseClient.from('quizzes').select('id').eq('teacher_id', id);
-        if (myQuizzes && myQuizzes.length > 0) {
-            const quizIds = myQuizzes.map(q => q.id);
-            // Soruları sil
-            await supabaseClient.from('questions').delete().in('quiz_id', quizIds);
-            // Sınav sonuçlarını sil
-            await supabaseClient.from('quiz_results').delete().in('quiz_id', quizIds);
-            // Sınavları sil
-            await supabaseClient.from('quizzes').delete().eq('teacher_id', id);
-        }
-        
-        // 4. HOCANIN KENDİ İŞLEM KAYITLARINI TEMİZLE
-        await supabaseClient.from('audit_logs').delete().eq('user_id', id);
+        const data = await res.json();
 
-        // 5. FİNAL: ÖĞRETMEN PROFİLİNİ SİL
-        const { error: finalError } = await supabaseClient.from('profiles').delete().eq('id', id);
-
-        if (finalError) {
-            console.error("Deep wipe final error:", finalError);
-            if (typeof showToast === "function") showToast("Hata: " + finalError.message, "error");
-        } else {
-            if (typeof showToast === "function") showToast("Öğretmen ve ona bağlı TÜM ekosistem başarıyla silindi.", "success");
-            // Listeyi yenile
+        if (res.ok && data.success) {
+            if (typeof showToast === "function") showToast("Öğretmen ve ona bağlı TÜM ekosistem sistemden kazındı.", "success");
             if (typeof fetchTeachers === "function") fetchTeachers();
             if (typeof fetchGodMetrics === "function") fetchGodMetrics();
+        } else {
+            console.error("Deep wipe final error:", data.error);
+            if (typeof showToast === "function") showToast("Hata: " + (data.error || "Operasyon başarısız"), "error");
         }
 
     } catch (err) {
         console.error("Zincirleme silme hatası:", err);
-        if (typeof showToast === "function") showToast("Sistem hatası: Operasyon tamamlanamadı.", "error");
+        if (typeof showToast === "function") showToast("Ağ bağlantısı hatası: Sunucu meşgul.", "error");
     }
 }
 
@@ -699,18 +671,30 @@ window.deleteKurum = async (id, name) => {
     const onay = await customConfirm(`"${name}" kurumunu ve bağlı verilerini silmek istediğinize emin misiniz?\n\nNot: Bu kuruma bağlı öğretmenler silinmez, bağımsız hale gelir.`, "SİSTEMDEN KALDIR");
     if(!onay) return;
     
-    if (typeof showToast === "function") showToast("Kurumsal temizlik başlatıldı...", "info");
+    if (typeof showToast === "function") showToast("Kurumsal derin temizlik başlatıldı...", "info");
 
-    // 1. Bu kuruma bağlı öğretmenleri boşa çıkar (Detaching Teachers)
-    const { error: detachErr } = await supabaseClient.from('profiles').update({ school_id: null }).eq('school_id', id);
-    if (detachErr) console.warn("Kurum öğretmenleri boşa çıkarılamadı:", detachErr);
+    try {
+        const apiUrl = window.location.protocol === 'file:'
+            ? 'https://englishportalvip.vercel.app/api/delete-user' // Yerel test için fallback
+            : '/api/delete-user';
 
-    const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
-    if(error) showToast(error.message, 'error');
-    else {
-        showToast("Kurum sistemden kaldırıldı.", "success");
-        fetchKurumlar();
-        fetchGodMetrics();
+        const res = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetUserId: id })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            showToast("Kurum sistemden ebediyen kaldırıldı.", "success");
+            fetchKurumlar();
+            fetchGodMetrics();
+        } else {
+            showToast("Hata: " + (data.error || "Operasyon başarısız"), "error");
+        }
+    } catch (err) {
+        showToast("Ağ hatası: Sunucu meşgul.", "error");
     }
 };
 
