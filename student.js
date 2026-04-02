@@ -354,7 +354,7 @@ function playSound(type) {
 // ==========================================
 // 4. AVATAR & SHOP (RPG SİSTEMİ)
 // ==========================================
-let currentAvatarConfig = { base: 0, skin: -1, pet: -1, inventory: [] };
+let currentAvatarConfig = { base: 0, skin: -1, inventory: [] };
 
 const SHOP_DATA = {
     bases: [
@@ -408,22 +408,14 @@ const SHOP_DATA = {
         { id: 154, baseId: 5, name: "Kral V4 (İmparator)", price: 1500, img: "/assets/avatars/base_5_v4.png", desc: "Yedi iklim ve dört bucağa hükmeden kudretli lider." },
         { id: 155, baseId: 5, name: "Kral V5 (Gök Tanrısı)", price: 3000, img: "/assets/avatars/base_5_v5.png", desc: "Yeryüzünden gökyüzüne yükselmiş, artık kadere hükmeden ilahi varlık." }
     ],
-    pets: [
-        { id: 201, name: "Maceracı Maymun (Zıpzıp)", price: 500, img: "/assets/avatars/pet_monkey.png", desc: "Kâşif dostu. En zorlu rotalarda bile yolunu bulmanı sağlar." },
-        { id: 202, name: "Zırhlı Bozkurt (Börü)", price: 750, img: "/assets/avatars/pet_wolf.png", desc: "Savaşçıların sadık yoldaşı. Gümüş zırhıyla düşmanlarına korku salar." },
-        { id: 203, name: "Kozmik Baykuş (Luna)", price: 750, img: "/assets/avatars/pet_owl.png", desc: "Büyücülerin gözü. Gece karanlığında bile her şeyi gören bilge kuş." },
-        { id: 204, name: "Gözlem Dronu (Cyber-Eye)", price: 600, img: "/assets/avatars/pet_drone.png", desc: "Gelecekten gelen bir casus. Çevreyi tarayıp verileri senin için işler." },
-        { id: 205, name: "Gölge Panteri (Kuro)", price: 850, img: "/assets/avatars/pet_panther.png", desc: "Gölgelerin efendisi. Sessiz adımlarıyla her an seni korur." },
-        { id: 206, name: "Altın Kartal (Zümrüt)", price: 1000, img: "/assets/avatars/pet_eagle.png", desc: "Kralların gökyüzündeki elçisi. Marketin en asil ve görkemli yoldaşıdır." }
-    ]
+    pets: []
 };
 
 // 🌟 RESİM ÖN YÜKLEME (PRELOADING)
 function preloadImages() {
     const urls = [
         ...SHOP_DATA.bases.map(b => b.img),
-        ...SHOP_DATA.skins.filter(s => s.img).map(s => s.img),
-        ...SHOP_DATA.pets.map(p => p.img)
+        ...SHOP_DATA.skins.filter(s => s.img).map(s => s.img)
     ];
     urls.forEach(url => {
         const img = new Image();
@@ -471,13 +463,13 @@ function applyAvatarConfig(config) {
 
         // Önizleme Rozeti Kontrolü
         const isSkinOwned = !currentAvatarConfig.skin || currentAvatarConfig.skin === -1 || currentAvatarConfig.inventory.includes(currentAvatarConfig.skin) || (SHOP_DATA.skins.find(s => s.id === currentAvatarConfig.skin)?.price === 0);
-        const isPetOwned = !currentAvatarConfig.pet || currentAvatarConfig.pet === -1 || currentAvatarConfig.inventory.includes(currentAvatarConfig.pet);
+        
         
         // 🌟 MANTIK GÜNCELLEMESİ: 0'dan 5'e kadar olan 6 ana karakter HER ZAMAN "owned" sayılır, önizleme rozeti çıkartmaz.
         const isBaseOwned = (currentAvatarConfig.base >= 0 && currentAvatarConfig.base <= 5);
 
         let previewBadge = document.getElementById('previewBadge');
-        if (!isSkinOwned || !isPetOwned || !isBaseOwned) {
+        if (!isSkinOwned || !isBaseOwned) {
             if (!previewBadge) {
                 previewBadge = document.createElement('div');
                 previewBadge.id = 'previewBadge';
@@ -490,23 +482,7 @@ function applyAvatarConfig(config) {
         }
     }
 
-    // 2. PET KATMANI
-    const petLayer = document.getElementById('avatarPetLayer');
-    if (petLayer) {
-        const petId = currentAvatarConfig.pet;
-        const petItem = SHOP_DATA.pets.find(p => p.id == petId);
-        
-        if (petItem && petItem.img && petId != -1) {
-            petLayer.innerHTML = `<img src="${petItem.img}" class="w-full h-full object-contain animate-float" style="filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2)); mix-blend-mode: multiply;">`;
-            // Karakteri merkezde tutalım
-            const baseLayer = document.getElementById('avatarBaseLayer');
-            if(baseLayer) baseLayer.style.transform = "translateX(0)";
-        } else {
-            petLayer.innerHTML = '';
-            const baseLayer = document.getElementById('avatarBaseLayer');
-            if(baseLayer) baseLayer.style.transform = "translateX(0)";
-        }
-    }
+
 
     // Level Display
     const xp = parseInt(document.getElementById('studentXpText').innerText) || 0;
@@ -615,47 +591,14 @@ function selectItem(category, itemId, isPreview = false) {
         currentAvatarConfig.base = itemId;
         currentAvatarConfig.skin = -1; // Ana karakter değişince skini sıfırla
     }
-    if (category === 'skins' || category === 'inventory') {
-        const skin = SHOP_DATA.skins.find(s => s.id === itemId);
-        if (skin) {
-            currentAvatarConfig.skin = itemId;
-            currentAvatarConfig.base = skin.baseId;
-        }
         
-        const pet = SHOP_DATA.pets.find(p => p.id === itemId);
-        if (pet) currentAvatarConfig.pet = itemId;
-
         const base = SHOP_DATA.bases.find(b => b.id === itemId);
         if (base) {
             currentAvatarConfig.base = itemId;
             currentAvatarConfig.skin = -1;
         }
     }
-    if (category === 'pets') currentAvatarConfig.pet = itemId;
-    
-    applyAvatarConfig(currentAvatarConfig);
-    
-    const activeTab = document.querySelector('.active-shop-tab');
-    if (activeTab) renderShopItems(activeTab.dataset.category);
-    
-    if (isPreview) {
-        showToast("Önizleme modu: Bu öğeye sahip değilsin!", "info");
-    }
     playSound('click');
-}
-
-window.deselectPet = function() {
-    if (!currentAvatarConfig.pet || currentAvatarConfig.pet === -1) return;
-    
-    currentAvatarConfig.pet = -1;
-    applyAvatarConfig(currentAvatarConfig);
-    showToast("Evcil hayvan çıkarıldı (Önizleme).", "info");
-    
-    // Market görünümünü tazele (Seçili olma durumu kalksın diye)
-    const activeTab = document.querySelector('.active-shop-tab');
-    if (activeTab && activeTab.dataset.category === 'pets') {
-        renderShopItems('pets');
-    }
 }
 
 async function buyItem(category, itemId) {
