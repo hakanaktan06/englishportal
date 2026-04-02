@@ -101,7 +101,7 @@ function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
 
     return `
         <div class="relative ${sizeClass} shrink-0 group/avatar">
-            <div class="w-full h-full rounded-full bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/40 dark:to-purple-900/40 border border-indigo-100 dark:border-indigo-800 p-1 overflow-hidden shadow-inner transition-transform group-hover/avatar:scale-110">
+            <div class="w-full h-full rounded-full bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 p-1 overflow-hidden shadow-inner transition-transform group-hover/avatar:scale-110">
                 <img src="${skinImg || 'assets/avatars/base_0_v1.png'}" class="w-full h-full object-contain drop-shadow-md ${zoomClass}">
             </div>
             ${petImg ? `
