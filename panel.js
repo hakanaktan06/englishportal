@@ -1,9 +1,9 @@
 // ==========================================
 // 1. SUPABASE BAĞLANTISI (Sistem Anahtarı)
 // ==========================================
-var TEACHER_SUPABASE_URL = 'https://vucpxabicxqfmmmqvkpv.supabase.co';
-var TEACHER_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1Y3B4YWJpY3hxZm1tbXF2a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDIwMDYsImV4cCI6MjA4ODkxODAwNn0.wYXmIDO4H7ml8nC9pQzRmW8tPK_ihtqFy3r4SqN3cTk';
-var TEACHER_SUPABASE_CLIENT = supabase.createClient(TEACHER_SUPABASE_URL, TEACHER_SUPABASE_KEY);
+var supabaseUrl = 'https://vucpxabicxqfmmmqvkpv.supabase.co';
+var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1Y3B4YWJpY3hxZm1tbXF2a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDIwMDYsImV4cCI6MjA4ODkxODAwNn0.wYXmIDO4H7ml8nC9pQzRmW8tPK_ihtqFy3r4SqN3cTk';
+var supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 // XSS GÜVENLİK FİLTRESİ (Gümrük Memuru)
 function escapeHTML(str) {
@@ -250,7 +250,7 @@ async function checkActiveSession() {
     await new Promise(r => setTimeout(r, 700));
 
     try {
-        const { data: { user }, error: authError } = await TEACHER_SUPABASE_CLIENT.auth.getUser();
+        const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
         if (authError || !user) { 
             console.warn("Kullanıcı bulunamadı, giriş sayfasına yönlendiriliyor.");
             window.location.href = 'index.html'; 
@@ -258,7 +258,7 @@ async function checkActiveSession() {
         }
 
         // 🌟 STEP 1: Sadece Rolü Kontrol Et (Hızlı & Güvenli)
-        const { data: roleCheck, error: roleError } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('role').eq('id', user.id).single();
+        const { data: roleCheck, error: roleError } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
         
         if (roleError || !roleCheck) {
             console.error("Yetki kontrolü başarısız:", roleError);
@@ -291,7 +291,7 @@ async function checkActiveSession() {
 
 async function loadExtendedTeacherProfile(userId) {
     try {
-        const { data: profile, error } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('*').eq('id', userId).single();
+        const { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
         
         if (error || !profile) {
             console.warn("Profil detayları çekilemedi (Bazı kolonlar eksik olabilir):", error);
@@ -312,7 +312,7 @@ async function loadExtendedTeacherProfile(userId) {
         // Markalama (B2B Kurumsal Yapı)
         if (profile.school_id) {
             // Eğer hoca bir kuruma bağlıysa, kurumun logosunu ve adını çek
-            const { data: schoolData } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('school_name, school_logo').eq('id', profile.school_id).single();
+            const { data: schoolData } = await supabaseClient.from('profiles').select('school_name, school_logo').eq('id', profile.school_id).single();
             if (schoolData) {
                 if (schoolData.school_name) document.querySelectorAll('.school-name-display').forEach(el => el.innerText = schoolData.school_name);
                 if (schoolData.school_logo) document.querySelectorAll('.school-logo-display').forEach(el => el.src = schoolData.school_logo);
@@ -335,7 +335,7 @@ async function loadExtendedTeacherProfile(userId) {
         // 4. KURUMLAR İÇİN VIP KONTROLÜ (GÜNCELLENDİ: Kurum VIP mirası)
         if (profile.school_id && !isPremiumTeacher) {
             // Eğer hoca kendisi VIP değilse ama bir kuruma bağlıysa, kurumun durumuna bakıyoruz
-            const { data: schoolProfile } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('is_premium').eq('id', profile.school_id).single();
+            const { data: schoolProfile } = await supabaseClient.from('profiles').select('is_premium').eq('id', profile.school_id).single();
             if (schoolProfile && schoolProfile.is_premium) {
                 isPremiumTeacher = true; // Kurum VIP ise hoca da VIP'dir!
             }
@@ -368,12 +368,12 @@ function initRealtimeProfileListener() {
 
     // Eğer eski bir abonelik varsa temizle
     if (window.profileSubscription) {
-        TEACHER_SUPABASE_CLIENT.removeChannel(window.profileSubscription);
+        supabaseClient.removeChannel(window.profileSubscription);
     }
 
     console.log("REALTIME_PROFILE_LISTENER: Başlatılıyor...", currentTeacherId);
 
-    window.profileSubscription = TEACHER_SUPABASE_CLIENT
+    window.profileSubscription = supabaseClient
         .channel('public:profiles:teacher_id=eq.' + currentTeacherId)
         .on('postgres_changes', { 
             event: 'UPDATE', 
@@ -435,7 +435,7 @@ document.addEventListener('click', async (e) => {
     if (e.target.closest('#logoutBtn')) {
         const onay = await customConfirm("Yönetim panelinden çıkmak istediğinize emin misiniz?", "Evet, Çıkış Yap");
         if (!onay) return;
-        const { error } = await TEACHER_SUPABASE_CLIENT.auth.signOut();
+        const { error } = await supabaseClient.auth.signOut();
         if (!error) window.location.href = 'index.html';
         else showToast("Çıkış yapılamadı!", "error");
     }
@@ -554,7 +554,7 @@ if (btnStudentFlow) btnStudentFlow.onclick = () => switchTab('student-flow');
 
 async function saveLog(action, details = "") {
     try {
-        const { data: { user } } = await TEACHER_SUPABASE_CLIENT.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
         // Cihaz ve tarayıcı bilgisini al
@@ -562,7 +562,7 @@ async function saveLog(action, details = "") {
         const enrichedDetails = `${details}${details ? ' | ' : ''}Cihaz: ${device}`;
 
         console.log("LOG KAYIT:", action, enrichedDetails);
-        await TEACHER_SUPABASE_CLIENT.from('audit_logs').insert([{
+        await supabaseClient.from('audit_logs').insert([{
             user_id: user.id,
             action: action,
             details: enrichedDetails,
@@ -575,8 +575,8 @@ async function loadLogs() {
     const container = document.getElementById('logsContainer');
     container.innerHTML = '<div class="p-10 text-center text-gray-400 italic animate-pulse">Kayıtlar getiriliyor...</div>';
 
-    const { data: { user } } = await TEACHER_SUPABASE_CLIENT.auth.getUser();
-    const { data: logs, error } = await TEACHER_SUPABASE_CLIENT.from('audit_logs').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    const { data: logs, error } = await supabaseClient.from('audit_logs').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
 
     if (error || !logs || logs.length === 0) {
         container.innerHTML = '<div class="p-20 text-center text-gray-400 font-bold uppercase tracking-widest opacity-50">Henüz bir işlem kaydı bulunmuyor.</div>';
@@ -612,7 +612,7 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
 
     // Eğer eski bir abonelik varsa temizle
     if (window.studentFlowSubscription) {
-        TEACHER_SUPABASE_CLIENT.removeChannel(window.studentFlowSubscription);
+        supabaseClient.removeChannel(window.studentFlowSubscription);
     }
 
     container.innerHTML = `
@@ -622,7 +622,7 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
         </div>`;
 
     try {
-        const { data: students, error: sErr } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('id, full_name').eq('teacher_id', currentTeacherId).eq('role', 'student');
+        const { data: students, error: sErr } = await supabaseClient.from('profiles').select('id, full_name').eq('teacher_id', currentTeacherId).eq('role', 'student');
         
         console.log("FLOW_STUDENTS_QUERY:", { students, sErr, currentTeacherId });
 
@@ -640,7 +640,7 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
         const loadInitialLogs = async () => {
             // 🌟 GELİŞMİŞ SORGU: RLS (Yetki) sorunlarını aşmak için JOIN (birleştirme) kullanıyoruz
             // audit_logs -> profiles -> teacher_id kontrolü
-            const { data: logs, error } = await TEACHER_SUPABASE_CLIENT.from('audit_logs')
+            const { data: logs, error } = await supabaseClient.from('audit_logs')
                 .select('*, profiles!inner(teacher_id, full_name, avatar_config)')
                 .eq('profiles.teacher_id', currentTeacherId)
                 .order('created_at', { ascending: false })
@@ -692,7 +692,7 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
 
         // 🌟 DÜZELTME: Her abone olunduğunda benzersiz bir kanal ismi kullanılarak hatanın önüne geçilir
         const uniqueChannelId = `student-flow-${containerId}-${Date.now()}`;
-        window.studentFlowSubscription = TEACHER_SUPABASE_CLIENT
+        window.studentFlowSubscription = supabaseClient
             .channel(uniqueChannelId)
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, (payload) => {
                 if (studentIds.includes(payload.new.user_id)) {
@@ -739,7 +739,7 @@ window.saveBankSettings = async function() {
     }
 
     try {
-        const { error } = await TEACHER_SUPABASE_CLIENT.from('profiles').update({
+        const { error } = await supabaseClient.from('profiles').update({
             bank_iban: iban,
             bank_receiver: receiver
         }).eq('id', currentTeacherId);
@@ -765,21 +765,21 @@ async function fetchDashboardStats() {
     if (!currentTeacherId) return;
 
     // SAYILARI AL VE LİMİT İÇİN HAFIZAYA KAYDET
-    const { count: studentCount } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student').eq('teacher_id', currentTeacherId);
+    const { count: studentCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student').eq('teacher_id', currentTeacherId);
     currentStudentCount = studentCount || 0;
     const dStud = document.getElementById('dashStudentCount');
     if (dStud) dStud.innerText = studentCount || 0;
 
-    const { count: quizCount } = await TEACHER_SUPABASE_CLIENT.from('quizzes').select('*', { count: 'exact', head: true }).eq('teacher_id', currentTeacherId);
+    const { count: quizCount } = await supabaseClient.from('quizzes').select('*', { count: 'exact', head: true }).eq('teacher_id', currentTeacherId);
     currentQuizCount = quizCount || 0;
     const dQuiz = document.getElementById('dashQuizCount');
     if (dQuiz) dQuiz.innerText = quizCount || 0;
 
-    const { count: hwCount } = await TEACHER_SUPABASE_CLIENT.from('homeworks').select('*', { count: 'exact', head: true }).eq('teacher_id', currentTeacherId);
+    const { count: hwCount } = await supabaseClient.from('homeworks').select('*', { count: 'exact', head: true }).eq('teacher_id', currentTeacherId);
     const dHw = document.getElementById('dashHwCount');
     if (dHw) dHw.innerText = hwCount || 0;
 
-    const { data: results } = await TEACHER_SUPABASE_CLIENT.from('quiz_results').select('score, profiles!inner(*)').eq('profiles.teacher_id', currentTeacherId);
+    const { data: results } = await supabaseClient.from('quiz_results').select('score, profiles!inner(*)').eq('profiles.teacher_id', currentTeacherId);
     let avgScore = 0;
     if (results && results.length > 0) {
         const total = results.reduce((sum, r) => sum + r.score, 0);
@@ -806,14 +806,14 @@ async function fetchAgenda() {
     console.log("AJANDA_SORGUSU_PARAMETRELERI:", { startDateStr, currentTeacherId });
 
     try {
-        const { data: lessons, error: lErr } = await TEACHER_SUPABASE_CLIENT.from('private_lessons')
+        const { data: lessons, error: lErr } = await supabaseClient.from('private_lessons')
             .select('lesson_date, lesson_time, topic, profiles!inner(full_name)')
             .gte('lesson_date', startDateStr)
             .eq('teacher_id', currentTeacherId);
         
         if(lErr) console.error("Ajanda Ders Hatası:", lErr);
 
-        const { data: homeworks, error: hErr } = await TEACHER_SUPABASE_CLIENT.from('homeworks')
+        const { data: homeworks, error: hErr } = await supabaseClient.from('homeworks')
             .select('due_date, title, status, profiles!inner(full_name)')
             .gte('due_date', startDateStr)
             .eq('teacher_id', currentTeacherId);
@@ -951,12 +951,12 @@ if (studentFormEl) {
 
         const dummyEmail = rawUsername.replace(/\s+/g, '').toLowerCase() + '@englishportal.com';
 
-        const { data, error } = await TEACHER_SUPABASE_CLIENT.auth.signUp({ email: dummyEmail, password: password });
+        const { data, error } = await supabaseClient.auth.signUp({ email: dummyEmail, password: password });
 
         if (error) { showToast("Hata: " + error.message, "error"); submitBtn.innerText = originalText; return; }
 
         if (data.user) {
-            const { error: profileError } = await TEACHER_SUPABASE_CLIENT.from('profiles').insert([{
+            const { error: profileError } = await supabaseClient.from('profiles').insert([{
                 id: data.user.id,
                 full_name: name,
                 email: dummyEmail,
@@ -982,7 +982,7 @@ if (studentFormEl) {
 window.deleteStudent = async function (id, name) {
     const onay = await safeDelete(`"${escapeHTML(name)}" öğrencisini ve TÜM verilerini silmek üzeresiniz. Bu işlem geri alınamaz!`);
     if (!onay) return;
-    const { error } = await TEACHER_SUPABASE_CLIENT.from('profiles').delete().eq('id', id);
+    const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
     if (error) showToast("Silerken hata oldu: " + error.message, "error");
     else { 
         showToast("Öğrenci silindi.", "success"); 
@@ -1092,10 +1092,10 @@ async function fetchStudents() {
 
     listContainer.innerHTML = '<div class="w-full py-10 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 animate-pulse"><svg class="w-8 h-8 mb-3 opacity-50 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg><span class="text-sm font-bold uppercase tracking-widest">Öğrenci Verileri Yükleniyor...</span></div>';
 
-    const { data: students, error: studErr } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('*').eq('role', 'student').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
-    const { data: quizResults } = await TEACHER_SUPABASE_CLIENT.from('quiz_results').select('student_id, score, profiles!inner(*)').eq('profiles.teacher_id', currentTeacherId);
-    const { data: lessons } = await TEACHER_SUPABASE_CLIENT.from('private_lessons').select('student_id, price, is_paid').eq('teacher_id', currentTeacherId);
-    const { data: homeworks } = await TEACHER_SUPABASE_CLIENT.from('homeworks').select('student_id, status').eq('teacher_id', currentTeacherId);
+    const { data: students, error: studErr } = await supabaseClient.from('profiles').select('*').eq('role', 'student').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
+    const { data: quizResults } = await supabaseClient.from('quiz_results').select('student_id, score, profiles!inner(*)').eq('profiles.teacher_id', currentTeacherId);
+    const { data: lessons } = await supabaseClient.from('private_lessons').select('student_id, price, is_paid').eq('teacher_id', currentTeacherId);
+    const { data: homeworks } = await supabaseClient.from('homeworks').select('student_id, status').eq('teacher_id', currentTeacherId);
 
     if (studErr || !students || students.length === 0) {
         document.getElementById('statTotalStudents').innerText = "0";
@@ -1226,7 +1226,7 @@ async function fetchStudents() {
 window.deleteHomework = async function (id, title) {
     const onay = await safeDelete(`"${escapeHTML(title)}" ödevini silmek istediğinize emin misiniz?`);
     if (!onay) return;
-    const { error } = await TEACHER_SUPABASE_CLIENT.from('homeworks').delete().eq('id', id);
+    const { error } = await supabaseClient.from('homeworks').delete().eq('id', id);
     if (error) showToast("Ödev silinirken hata oldu!", "error");
     else { 
         showToast("Ödev silindi.", "success"); 
@@ -1242,8 +1242,8 @@ async function fillStudentSelect() {
 
     select.innerHTML = '<option value="">Yükleniyor...</option>';
 
-    const { data: students } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
-    const { data: classes } = await TEACHER_SUPABASE_CLIENT.from('classes').select('id, name').eq('teacher_id', currentTeacherId);
+    const { data: students } = await supabaseClient.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
+    const { data: classes } = await supabaseClient.from('classes').select('id, name').eq('teacher_id', currentTeacherId);
 
     let html = '<option value="">Kime Gönderilecek?</option>';
 
@@ -1283,7 +1283,7 @@ if (homeworkFormEl) {
         let studentIds = [];
         if (target.startsWith('class_')) {
             const classId = target.replace('class_', '');
-            const { data } = await TEACHER_SUPABASE_CLIENT.from('class_students').select('student_id').eq('class_id', classId);
+            const { data } = await supabaseClient.from('class_students').select('student_id').eq('class_id', classId);
             studentIds = data.map(d => d.student_id);
         } else {
             studentIds = [target];
@@ -1304,7 +1304,7 @@ if (homeworkFormEl) {
             status: 'Bekliyor'
         }));
 
-        const { error } = await TEACHER_SUPABASE_CLIENT.from('homeworks').insert(inserts);
+        const { error } = await supabaseClient.from('homeworks').insert(inserts);
 
         if (error) {
             showToast("Ödev hatası: " + error.message, "error");
@@ -1320,7 +1320,7 @@ if (homeworkFormEl) {
 }
 
 async function fetchHomeworks() {
-    const { data, error } = await TEACHER_SUPABASE_CLIENT.from('homeworks').select('*, profiles!inner(full_name)').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
+    const { data, error } = await supabaseClient.from('homeworks').select('*, profiles!inner(full_name)').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
     const tbodyPending = document.getElementById('pendingHomeworkList');
     const tbodyCompleted = document.getElementById('completedHomeworkList');
 
@@ -1430,17 +1430,17 @@ window.approveHomework = async function (hwId, studentId) {
 
     showToast("Ödev onaylanıyor...", "info");
 
-    const { error } = await TEACHER_SUPABASE_CLIENT.from('homeworks').update({ status: 'Tamamlandı' }).eq('id', hwId);
+    const { error } = await supabaseClient.from('homeworks').update({ status: 'Tamamlandı' }).eq('id', hwId);
     if (error) {
         showToast("Hata oluştu: " + error.message, "error");
         return;
     }
 
-    const { data: prof } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('xp, coins').eq('id', studentId).single();
+    const { data: prof } = await supabaseClient.from('profiles').select('xp, coins').eq('id', studentId).single();
     if (prof) {
         const newXp = (prof.xp || 0) + 50;
         const newCoins = (prof.coins || 0) + 10;
-        await TEACHER_SUPABASE_CLIENT.from('profiles').update({ xp: newXp, coins: newCoins }).eq('id', studentId);
+        await supabaseClient.from('profiles').update({ xp: newXp, coins: newCoins }).eq('id', studentId);
     }
 
     showToast("Ödev onaylandı! +50 XP ve +10 EP-Coin eklendi. 🪙", "success");
@@ -1460,7 +1460,7 @@ if (activityFormEl) {
         const originalBtnText = btn.innerText;
         btn.innerText = "Yükleniyor...";
 
-        const { error } = await TEACHER_SUPABASE_CLIENT.from('activities').insert([{
+        const { error } = await supabaseClient.from('activities').insert([{
             title: document.getElementById('actTitle').value,
             category: document.getElementById('actCategory').value,
             link: document.getElementById('actLink').value,
@@ -1480,12 +1480,12 @@ if (activityFormEl) {
 window.deleteActivity = async (id) => {
     const onay = await customConfirm("Bu etkinliği sileyim mi?", "Evet, Sil");
     if (!onay) return;
-    const { error } = await TEACHER_SUPABASE_CLIENT.from('activities').delete().eq('id', id);
+    const { error } = await supabaseClient.from('activities').delete().eq('id', id);
     if (error) showToast("Silinirken hata!", "error"); else fetchActivities();
 };
 
 async function fetchActivities() {
-    const { data, error } = await TEACHER_SUPABASE_CLIENT.from('activities').select('*').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
+    const { data, error } = await supabaseClient.from('activities').select('*').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
     const container = document.getElementById('activityCards');
     if (!container || error) return;
 
@@ -1577,7 +1577,7 @@ if (saveQuizTitleBtn) {
 
         saveQuizTitleBtn.innerText = "Bekle...";
 
-        const { data, error } = await TEACHER_SUPABASE_CLIENT.from('quizzes').insert([{ title, time_limit: timeLimit, teacher_id: currentTeacherId }]).select();
+        const { data, error } = await supabaseClient.from('quizzes').insert([{ title, time_limit: timeLimit, teacher_id: currentTeacherId }]).select();
 
         if (error) { showToast("Hata!", "error"); }
         else {
@@ -1606,7 +1606,7 @@ window.openQuestionEditor = function (id, title) {
 };
 
 async function fetchQuestionsForQuiz(quizId) {
-    const { data, error } = await TEACHER_SUPABASE_CLIENT.from('questions').select('*').eq('quiz_id', quizId).order('created_at', { ascending: true });
+    const { data, error } = await supabaseClient.from('questions').select('*').eq('quiz_id', quizId).order('created_at', { ascending: true });
     const listContainer = document.getElementById('addedQuestionsList');
     const countDisplay = document.getElementById('questionCount');
 
@@ -1649,7 +1649,7 @@ if (questionFormEl) {
         const btn = questionFormEl.querySelector('button[type="submit"]');
         btn.innerText = "Kaydediliyor...";
 
-        const { error } = await TEACHER_SUPABASE_CLIENT.from('questions').insert([{
+        const { error } = await supabaseClient.from('questions').insert([{
             quiz_id: currentActiveQuizId,
             question_text: document.getElementById('qText').value,
             option_a: document.getElementById('optA').value,
@@ -1672,13 +1672,13 @@ if (questionFormEl) {
 window.deleteQuestion = async (id) => {
     const onay = await customConfirm("Bu soruyu sileyim mi?", "Evet, Sil");
     if (!onay) return;
-    await TEACHER_SUPABASE_CLIENT.from('questions').delete().eq('id', id);
+    await supabaseClient.from('questions').delete().eq('id', id);
     showToast("Soru silindi.", "success");
     fetchQuestionsForQuiz(currentActiveQuizId);
 };
 
 async function fetchQuizzes() {
-    const { data, error } = await TEACHER_SUPABASE_CLIENT.from('quizzes').select('*').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
+    const { data, error } = await supabaseClient.from('quizzes').select('*').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
     const container = document.getElementById('quizList');
     if (!container || error) return;
 
@@ -1717,7 +1717,7 @@ async function fetchQuizzes() {
 window.deleteQuiz = async (id, title) => {
     const onay = await safeDelete(`"${escapeHTML(title)}" sınavını ve içindeki TÜM soruları silmek istediğinize emin misiniz?`);
     if (!onay) return;
-    const { error } = await TEACHER_SUPABASE_CLIENT.from('quizzes').delete().eq('id', id);
+    const { error } = await supabaseClient.from('quizzes').delete().eq('id', id);
     if(error) { showToast("Hata: " + error.message, "error"); return; }
     showToast("Sınav tamamen silindi.", "success");
     saveLog("Sınav Silindi", `"${title}" sınavı ve içeriği silindi.`);
@@ -1731,7 +1731,7 @@ window.deleteQuiz = async (id, title) => {
 let currentResultsData = {};
 
 async function fetchResults() {
-    const { data, error } = await TEACHER_SUPABASE_CLIENT.from('quiz_results')
+    const { data, error } = await supabaseClient.from('quiz_results')
         .select(`*, profiles!inner(id, full_name, teacher_id), quizzes(title)`)
         .eq('profiles.teacher_id', currentTeacherId)
         .order('created_at', { ascending: false });
@@ -1773,7 +1773,7 @@ async function fetchResults() {
 window.deleteResult = async function (id) {
     const onay = await safeDelete("Bu öğrencinin sınav sonucunu kalıcı olarak silmek istediğinizden emin misiniz?");
     if (!onay) return;
-    const { error } = await TEACHER_SUPABASE_CLIENT.from('quiz_results').delete().eq('id', id);
+    const { error } = await supabaseClient.from('quiz_results').delete().eq('id', id);
     if(error) { showToast("Hata: " + error.message, "error"); return; }
     showToast("Sınav sonucu silindi.", "success");
     saveLog("Sınav Sonucu Silindi", `Bir sınav sonucu kaydı silindi.`);
@@ -1830,7 +1830,7 @@ window.openStudentProfile = async function (id, name, phone) {
     const avatarPreview = document.getElementById('profileAvatarPreview');
     if (avatarPreview) {
         avatarPreview.innerHTML = '<div class="w-12 h-12 rounded-2xl bg-indigo-50 animate-pulse shrink-0"></div>';
-        const { data: profile } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('avatar_config').eq('id', id).single();
+        const { data: profile } = await supabaseClient.from('profiles').select('avatar_config').eq('id', id).single();
         if (profile) {
             avatarPreview.innerHTML = getAvatarPreviewHTML(profile.avatar_config, "w-16 h-16 md:w-20 md:h-20");
         }
@@ -1868,7 +1868,7 @@ if (newLessonForm) {
         const lPrice = document.getElementById('lessonPrice').value;
         const lIsPaid = document.getElementById('lessonIsPaid').value === 'true';
 
-        const { error } = await TEACHER_SUPABASE_CLIENT.from('private_lessons').insert([{
+        const { error } = await supabaseClient.from('private_lessons').insert([{
             student_id: studentId, lesson_date: lDate, lesson_time: lTime, duration_hours: lDuration, topic: lTopic, price: lPrice, is_paid: lIsPaid, teacher_id: currentTeacherId
         }]);
 
@@ -1888,7 +1888,7 @@ let profileChartInstance = null;
 let pdfChartInstance = null;
 
 async function fetchStudentLessons(studentId) {
-    const { data: lessons } = await TEACHER_SUPABASE_CLIENT.from('private_lessons').select('*').eq('student_id', studentId).order('lesson_date', { ascending: false });
+    const { data: lessons } = await supabaseClient.from('private_lessons').select('*').eq('student_id', studentId).order('lesson_date', { ascending: false });
     const list = document.getElementById('lessonList');
     const pdfList = document.getElementById('pdfLessonList');
     if (!list || !pdfList) return;
@@ -1947,7 +1947,7 @@ async function fetchStudentLessons(studentId) {
         else { badgeEl.classList.add('hidden'); }
     }
 
-    const { data: results } = await TEACHER_SUPABASE_CLIENT.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: true });
+    const { data: results } = await supabaseClient.from('quiz_results').select('score, quizzes(title)').eq('student_id', studentId).order('created_at', { ascending: true });
     const pdfQuizList = document.getElementById('pdfQuizList');
     let labels = [], scores = [];
 
@@ -1990,14 +1990,14 @@ async function fetchStudentLessons(studentId) {
 
 window.deleteLesson = async function (id) {
     if (!await customConfirm("Ders kaydını silmek istediğine emin misin?", "Evet, Sil")) return;
-    await TEACHER_SUPABASE_CLIENT.from('private_lessons').delete().eq('id', id);
+    await supabaseClient.from('private_lessons').delete().eq('id', id);
     fetchStudentLessons(document.getElementById('profStudentId').value);
     fetchStudents();
 }
 
 window.markAsPaid = async function (lessonId, studentId) {
     showToast("Tahsilat işleniyor...", "info");
-    const { error } = await TEACHER_SUPABASE_CLIENT.from('private_lessons').update({ is_paid: true }).eq('id', lessonId);
+    const { error } = await supabaseClient.from('private_lessons').update({ is_paid: true }).eq('id', lessonId);
     if (error) showToast("Hata oluştu: " + error.message, "error");
     else {
         showToast("Para kasaya girdi, ders ödendi olarak işaretlendi!", "success");
@@ -2193,7 +2193,7 @@ if (btnGenerateAI) {
 
         // NOT: Artık API key önyüzde çekilmiyor.
         /*
-        const { data: godProfile, error: godErr } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('openai_key').eq('role', 'god').single();
+        const { data: godProfile, error: godErr } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
         if (godErr || !godProfile || !godProfile.openai_key) {
             showToast("Sistem hatası: API şifresi bulunamadı! Lütfen patrona bildirin.", "error");
             btnGenerateAI.innerHTML = originalText;
@@ -2232,7 +2232,7 @@ if (btnGenerateAI) {
                 quiz_id: currentActiveQuizId, question_text: q.q, option_a: q.a, option_b: q.b, option_c: q.c, option_d: q.d, correct_option: q.correct
             }));
 
-            const { error } = await TEACHER_SUPABASE_CLIENT.from('questions').insert(inserts);
+            const { error } = await supabaseClient.from('questions').insert(inserts);
             if (error) throw error;
 
             showToast(`Sihir gerçekleşti! ${questions.length} soru eklendi.`, 'success');
@@ -2277,7 +2277,7 @@ window.closePaywall = function () {
 // 17. DİNAMİK FİYAT VE ÖDEME LİNKİ ÇEKME MOTORU
 // ==========================================
 async function fetchGodVipPrice() {
-    const { data } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('vip_price').eq('role', 'god').single();
+    const { data } = await supabaseClient.from('profiles').select('vip_price').eq('role', 'god').single();
 
     // Fiyat etiketleri
     const el1 = document.getElementById('displayPrice1');
@@ -2330,7 +2330,7 @@ window.openFlashcardSihirbazi = async function () {
         return;
     }
 
-    const { data } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
+    const { data } = await supabaseClient.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
     const select = document.getElementById('fcStudentSelect');
     if (data && select) {
         select.innerHTML = '<option value="">Öğrenci Seçin...</option><option value="all" class="text-purple-600 font-black">🌟 TÜM SINIFA GÖNDER 🌟</option>';
@@ -2353,7 +2353,7 @@ if (btnGenerateFlashcards) {
 
         // NOT: API Key artık sunucuda gizli tutuluyor.
         /*
-        const { data: godProfile, error: godErr } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('openai_key').eq('role', 'god').single();
+        const { data: godProfile, error: godErr } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
         if (godErr || !godProfile || !godProfile.openai_key) {
             showToast("Sistem hatası: API şifresi bulunamadı! Lütfen patrona bildirin.", "error");
             btnGenerateFlashcards.innerHTML = originalText;
@@ -2431,7 +2431,7 @@ if (btnAssignFlashcards) {
         let inserts = [];
         if (studentId === 'all') {
             // Sınıftaki herkese ata
-            const { data: allStudents } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('id').eq('role', 'student').eq('teacher_id', currentTeacherId);
+            const { data: allStudents } = await supabaseClient.from('profiles').select('id').eq('role', 'student').eq('teacher_id', currentTeacherId);
             inserts = allStudents.map(s => ({
                 student_id: s.id, title: taskTitle, description: taskData, due_date: dueDateStr, status: 'Bekliyor', teacher_id: currentTeacherId
             }));
@@ -2442,7 +2442,7 @@ if (btnAssignFlashcards) {
             }];
         }
 
-        const { error } = await TEACHER_SUPABASE_CLIENT.from('homeworks').insert(inserts);
+        const { error } = await supabaseClient.from('homeworks').insert(inserts);
 
         if (error) { showToast("Atama hatası!", "error"); }
         else {
@@ -2461,10 +2461,10 @@ if (btnAssignFlashcards) {
 // ==========================================
 async function checkAnnouncements() {
     try {
-        const { data: godData } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('announcement').eq('role', 'god').single();
+        const { data: godData } = await supabaseClient.from('profiles').select('announcement').eq('role', 'god').single();
         const globalMsg = godData?.announcement?.trim();
-        const { data: { user } } = await TEACHER_SUPABASE_CLIENT.auth.getUser();
-        const { data: myData } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('announcement').eq('id', user.id).single();
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const { data: myData } = await supabaseClient.from('profiles').select('announcement').eq('id', user.id).single();
         const personalMsg = myData?.announcement?.trim();
 
         const dashboardSection = document.getElementById('section-dashboard');
@@ -2548,10 +2548,10 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 // ==========================================
 async function pingLastLogin() {
     try {
-        const { data: { user } } = await TEACHER_SUPABASE_CLIENT.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (user) {
             // Sadece sisteme giren öğretmenin last_login sütununa o anki saati yazar
-            await TEACHER_SUPABASE_CLIENT.from('profiles').update({ last_login: new Date().toISOString() }).eq('id', user.id);
+            await supabaseClient.from('profiles').update({ last_login: new Date().toISOString() }).eq('id', user.id);
         }
     } catch (e) {
         console.log("Radar ping hatası (Önemsiz):", e);
@@ -2589,7 +2589,7 @@ window.openWritingModal = async function () {
     if (!isPremiumTeacher) { openPaywall("AI Gramer Asistanı VIP Bir Özelliktir"); return; }
 
     // Öğrencileri listeye doldur
-    const { data } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
+    const { data } = await supabaseClient.from('profiles').select('id, full_name').eq('role', 'student').eq('teacher_id', currentTeacherId);
     const select = document.getElementById('awStudentSelect');
     if (data && select) {
         select.innerHTML = '<option value="">Öğrenci Seçin...</option><option value="all" class="text-blue-600 font-black">🌟 TÜM SINIFA GÖNDER 🌟</option>';
@@ -2626,7 +2626,7 @@ if (btnAssignWriting) {
 
         let inserts = [];
         if (studentId === 'all') {
-            const { data: allStudents } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('id').eq('role', 'student').eq('teacher_id', currentTeacherId);
+            const { data: allStudents } = await supabaseClient.from('profiles').select('id').eq('role', 'student').eq('teacher_id', currentTeacherId);
             inserts = allStudents.map(s => ({
                 student_id: s.id, title: taskTitle, description: desc, due_date: dueDate, status: 'Bekliyor', teacher_id: currentTeacherId
             }));
@@ -2636,7 +2636,7 @@ if (btnAssignWriting) {
             }];
         }
 
-        const { error } = await TEACHER_SUPABASE_CLIENT.from('homeworks').insert(inserts);
+        const { error } = await supabaseClient.from('homeworks').insert(inserts);
 
         if (error) {
             showToast("Görev atanamadı: " + error.message, "error");
@@ -2700,17 +2700,17 @@ window.generateRedemptionQuiz = async function () {
     const onay = await customConfirm(`${firstName} isimli öğrencinin geçmiş sınavlardaki tüm yanlışlarından özel bir Telafi Sınavı üretmek istiyor musunuz?`, "Evet, Üret");
     if (!onay) return;
     showToast("Yapay zeka geçmiş hataları tarıyor...", "info");
-    const { data: results } = await TEACHER_SUPABASE_CLIENT.from('quiz_results').select('details').eq('student_id', studentId);
+    const { data: results } = await supabaseClient.from('quiz_results').select('details').eq('student_id', studentId);
     if (!results || results.length === 0) { showToast("Geçmiş sınav verisi yok.", "error"); return; }
     let wrongQs = [];
     results.forEach(res => { if (res.details) res.details.forEach(d => { if (!d.is_correct) wrongQs.push(d); }); });
     const uniqueWrongs = Array.from(new Map(wrongQs.map(item => [item.q_text, item])).values());
     if (uniqueWrongs.length === 0) { showToast("Harika! Bu öğrencinin hiç yanlışı yok.", "success"); return; }
     const selected = uniqueWrongs.slice(0, 10); // Maksimum 10 soru çek
-    const { data: quizData, error: quizErr } = await TEACHER_SUPABASE_CLIENT.from('quizzes').insert([{ title: `[TELAFİ] ${firstName} - Eksik Kapatma Sınavı`, time_limit: 15, teacher_id: currentTeacherId }]).select();
+    const { data: quizData, error: quizErr } = await supabaseClient.from('quizzes').insert([{ title: `[TELAFİ] ${firstName} - Eksik Kapatma Sınavı`, time_limit: 15, teacher_id: currentTeacherId }]).select();
     if (quizErr) { showToast("Sınav oluşturulamadı.", "error"); return; }
     const inserts = selected.map(q => ({ quiz_id: quizData[0].id, question_text: q.q_text, option_a: q.optA, option_b: q.optB, option_c: q.optC, option_d: q.optD, correct_option: q.correct_opt }));
-    await TEACHER_SUPABASE_CLIENT.from('questions').insert(inserts);
+    await supabaseClient.from('questions').insert(inserts);
     showToast(`Mükemmel! ${selected.length} soruluk telafi sınavı oluşturuldu.`, "success");
 }
 
@@ -2719,7 +2719,7 @@ window.sendPersonalMessage = async function (teacherId) {
     const inputEl = document.getElementById(`ann_${teacherId}`);
     if (!inputEl) return;
     showToast("Özel mesaj iletiliyor...", "info");
-    const { error } = await TEACHER_SUPABASE_CLIENT.from('profiles').update({ announcement: inputEl.value }).eq('id', teacherId);
+    const { error } = await supabaseClient.from('profiles').update({ announcement: inputEl.value }).eq('id', teacherId);
     if (error) showToast("Mesaj gönderilemedi!", "error");
     else showToast("Özel mesaj hocanın paneline sabitlendi!", "success");
 };
@@ -2753,9 +2753,9 @@ window.openAIReportModal = async function () {
     showToast("Yapay zeka öğrenci verilerini tarıyor...", "info");
 
     // Veritabanından öğrencinin röntgenini çekiyoruz
-    const { data: quizResults } = await TEACHER_SUPABASE_CLIENT.from('quiz_results').select('score').eq('student_id', studentId);
-    const { data: homeworks } = await TEACHER_SUPABASE_CLIENT.from('homeworks').select('status').eq('student_id', studentId);
-    const { data: lessons } = await TEACHER_SUPABASE_CLIENT.from('private_lessons').select('topic, is_paid, price').eq('student_id', studentId);
+    const { data: quizResults } = await supabaseClient.from('quiz_results').select('score').eq('student_id', studentId);
+    const { data: homeworks } = await supabaseClient.from('homeworks').select('status').eq('student_id', studentId);
+    const { data: lessons } = await supabaseClient.from('private_lessons').select('topic, is_paid, price').eq('student_id', studentId);
 
     let avg = 0;
     if (quizResults && quizResults.length > 0) avg = Math.round(quizResults.reduce((a, b) => a + b.score, 0) / quizResults.length);
@@ -2775,7 +2775,7 @@ window.openAIReportModal = async function () {
 
     // NOT: API şifresi backend tarafında tutuluyor.
     /*
-    const { data: godProfile } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('openai_key').eq('role', 'god').single();
+    const { data: godProfile } = await supabaseClient.from('profiles').select('openai_key').eq('role', 'god').single();
     if (!godProfile || !godProfile.openai_key) {
         textArea.placeholder = "API şifresi eksik. İşlem başarısız.";
         return;
@@ -2855,7 +2855,7 @@ window.saveBankSettings = async function() {
 
     showToast("Bilgiler güncelleniyor...", "info");
 
-    const { error } = await TEACHER_SUPABASE_CLIENT
+    const { error } = await supabaseClient
         .from('profiles')
         .update({ 
             bank_iban: newIban,
@@ -2884,7 +2884,7 @@ window.openAddClassModal = async function() {
     modal.classList.remove('hidden');
     container.innerHTML = '<div class="text-center p-4 text-xs text-gray-400">Öğrenciler yükleniyor...</div>';
 
-    const { data: students } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('id, full_name').eq('teacher_id', currentTeacherId).eq('role', 'student');
+    const { data: students } = await supabaseClient.from('profiles').select('id, full_name').eq('teacher_id', currentTeacherId).eq('role', 'student');
     
     if(!students || students.length === 0) {
         container.innerHTML = '<div class="text-center p-4 text-xs text-red-400 font-bold">Henüz kayıtlı öğrenciniz yok.</div>';
@@ -2922,25 +2922,25 @@ if(addClassForm) {
 
         if (editingClassId) {
             // GÜNCELLEME MODU
-            const { error: updateErr } = await TEACHER_SUPABASE_CLIENT.from('classes').update({ name: name }).eq('id', editingClassId);
+            const { error: updateErr } = await supabaseClient.from('classes').update({ name: name }).eq('id', editingClassId);
             if(updateErr) { showToast("Sınıf güncellenemedi!", "error"); btn.innerText = originalText; btn.disabled = false; return; }
 
             // Eski öğrencileri sil ve yenileri ekle
-            await TEACHER_SUPABASE_CLIENT.from('class_students').delete().eq('class_id', editingClassId);
+            await supabaseClient.from('class_students').delete().eq('class_id', editingClassId);
             if(selectedStudents.length > 0) {
                 const inserts = selectedStudents.map(sid => ({ class_id: editingClassId, student_id: sid }));
-                await TEACHER_SUPABASE_CLIENT.from('class_students').insert(inserts);
+                await supabaseClient.from('class_students').insert(inserts);
             }
             showToast("Sınıf başarıyla güncellendi.", "success");
             saveLog("Sınıf Güncellendi", `"${name}" sınıfı düzenlendi. Toplam ${selectedStudents.length} öğrenci.`);
         } else {
             // YENİ OLUŞTURMA MODU
-            const { data: cls, error } = await TEACHER_SUPABASE_CLIENT.from('classes').insert([{ teacher_id: currentTeacherId, name: name }]).select().single();
+            const { data: cls, error } = await supabaseClient.from('classes').insert([{ teacher_id: currentTeacherId, name: name }]).select().single();
             if(error) { showToast("Sınıf oluşturulamadı!", "error"); btn.innerText = originalText; btn.disabled = false; return; }
 
             if(selectedStudents.length > 0) {
                 const inserts = selectedStudents.map(sid => ({ class_id: cls.id, student_id: sid }));
-                await TEACHER_SUPABASE_CLIENT.from('class_students').insert(inserts);
+                await supabaseClient.from('class_students').insert(inserts);
             }
             showToast("Sınıf başarıyla oluşturuldu.", "success");
             saveLog("Sınıf Oluşturuldu", `${name} isimli sınıf ${selectedStudents.length} öğrenci ile kuruldu.`);
@@ -2956,7 +2956,7 @@ if(addClassForm) {
 
 window.manageClassStudents = async function(id) {
     editingClassId = id;
-    const { data: cls } = await TEACHER_SUPABASE_CLIENT.from('classes').select('name, class_students(student_id)').eq('id', id).single();
+    const { data: cls } = await supabaseClient.from('classes').select('name, class_students(student_id)').eq('id', id).single();
     if (!cls) return;
 
     document.getElementById('className').value = cls.name;
@@ -2985,7 +2985,7 @@ async function fetchClasses() {
     if(!container) return;
     container.innerHTML = '<div class="col-span-full text-center py-20 animate-pulse text-indigo-400 font-bold uppercase tracking-widest leading-relaxed">Sınıf Yapıları Hazırlanıyor...</div>';
 
-    const { data: classes, error } = await TEACHER_SUPABASE_CLIENT.from('classes').select('*, class_students(student_id, profiles(full_name))').eq('teacher_id', currentTeacherId);
+    const { data: classes, error } = await supabaseClient.from('classes').select('*, class_students(student_id, profiles(full_name))').eq('teacher_id', currentTeacherId);
 
     if(error || !classes || classes.length === 0) {
         container.innerHTML = `
@@ -3037,7 +3037,7 @@ window.deleteClass = async function(id, name) {
     const confirmed = await safeDelete(`"${name}" sınıfını silmek üzeresiniz. Bu işlem sınıf listesini temizler ancak öğrencileri silmez.`);
     if(!confirmed) return;
 
-    const { error } = await TEACHER_SUPABASE_CLIENT.from('classes').delete().eq('id', id);
+    const { error } = await supabaseClient.from('classes').delete().eq('id', id);
     if(error) { showToast("Sınıf silinemedi!", "error"); return; }
 
     showToast("Sınıf silindi.", "success");
@@ -3095,8 +3095,8 @@ window.exportDataToCSV = async function() {
     showToast("Veriler derleniyor...", "info");
     
     // Öğrenciler ve Sınav Sonuçlarını Çek
-    const { data: students } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('*').eq('teacher_id', currentTeacherId).eq('role', 'student');
-    const { data: results } = await TEACHER_SUPABASE_CLIENT.from('quiz_results').select('*, profiles!inner(*)').eq('profiles.teacher_id', currentTeacherId);
+    const { data: students } = await supabaseClient.from('profiles').select('*').eq('teacher_id', currentTeacherId).eq('role', 'student');
+    const { data: results } = await supabaseClient.from('quiz_results').select('*, profiles!inner(*)').eq('profiles.teacher_id', currentTeacherId);
 
     let csvContent = "\uFEFF"; // UTF-8 BOM
     csvContent += "English Portal VIP - Sistem Yedegi\n";
@@ -3139,7 +3139,7 @@ async function fetchWhiteboard() {
     if (!textarea) return;
 
     // 1. Beyaz Tahta İçeriğini Çek
-    const { data: wb } = await TEACHER_SUPABASE_CLIENT.from('whiteboard').select('content').eq('teacher_id', currentTeacherId).maybeSingle();
+    const { data: wb } = await supabaseClient.from('whiteboard').select('content').eq('teacher_id', currentTeacherId).maybeSingle();
     if (wb) {
         textarea.value = wb.content;
     } else {
@@ -3147,7 +3147,7 @@ async function fetchWhiteboard() {
     }
 
     // 2. Canlı Ders Linkini Çek (Profil Tablosundan)
-    const { data: prof } = await TEACHER_SUPABASE_CLIENT.from('profiles').select('lesson_url').eq('id', currentTeacherId).single();
+    const { data: prof } = await supabaseClient.from('profiles').select('lesson_url').eq('id', currentTeacherId).single();
     if (prof && lessonInput) {
         lessonInput.value = prof.lesson_url || "";
     }
@@ -3162,14 +3162,14 @@ window.saveWhiteboard = async function() {
     btn.disabled = true;
 
     // Önce kaydın olup olmadığını kontrol et
-    const { data: existing } = await TEACHER_SUPABASE_CLIENT.from('whiteboard').select('id').eq('teacher_id', currentTeacherId).maybeSingle();
+    const { data: existing } = await supabaseClient.from('whiteboard').select('id').eq('teacher_id', currentTeacherId).maybeSingle();
 
     let error;
     if (existing) {
-        const { error: err } = await TEACHER_SUPABASE_CLIENT.from('whiteboard').update({ content: content, updated_at: new Date().toISOString() }).eq('teacher_id', currentTeacherId);
+        const { error: err } = await supabaseClient.from('whiteboard').update({ content: content, updated_at: new Date().toISOString() }).eq('teacher_id', currentTeacherId);
         error = err;
     } else {
-        const { error: err } = await TEACHER_SUPABASE_CLIENT.from('whiteboard').insert([{ teacher_id: currentTeacherId, content: content }]);
+        const { error: err } = await supabaseClient.from('whiteboard').insert([{ teacher_id: currentTeacherId, content: content }]);
         error = err;
     }
 
@@ -3191,7 +3191,7 @@ window.saveLessonUrl = async function() {
         return;
     }
 
-    const { error } = await TEACHER_SUPABASE_CLIENT.from('profiles').update({ lesson_url: url }).eq('id', currentTeacherId);
+    const { error } = await supabaseClient.from('profiles').update({ lesson_url: url }).eq('id', currentTeacherId);
 
     if (error) {
         showToast("Link güncellenemedi!", "error");
