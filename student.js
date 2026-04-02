@@ -293,7 +293,7 @@ function switchTab(target) {
         toggleMobileSidebar();
     }
 
-    const sections = ['section-homeworks', 'section-activities', 'section-quizzes', 'section-results'];
+    const sections = ['section-homeworks', 'section-activities', 'section-quizzes', 'section-results', 'section-shop'];
     sections.forEach(sec => {
         const el = document.getElementById(sec);
         if(el) el.classList.add('hidden');
