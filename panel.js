@@ -101,11 +101,11 @@ function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
 
     return `
         <div class="relative ${sizeClass} shrink-0 group/avatar">
-            <div class="w-full h-full rounded-full bg-white dark:bg-slate-800 border-2 border-gray-100 dark:border-slate-700 p-1 overflow-hidden transition-transform group-hover/avatar:scale-110">
+            <div class="w-full h-full rounded-full border-2 border-gray-100 p-1 overflow-hidden transition-transform group-hover/avatar:scale-110 shadow-sm" style="background-color: white !important;">
                 <img src="${skinImg || 'assets/avatars/base_0_v1.png'}" class="w-full h-full object-contain ${zoomClass}">
             </div>
             ${petImg ? `
-                <div class="absolute -bottom-1 -right-1 w-1/2 h-1/2 bg-white dark:bg-slate-800 rounded-full p-0.5 shadow-lg border border-indigo-50 dark:border-indigo-900 z-10 transition-transform group-hover/avatar:scale-125">
+                <div class="absolute -bottom-1 -right-1 w-1/2 h-1/2 rounded-full p-0.5 border border-gray-100 z-10 transition-transform group-hover/avatar:scale-125 shadow-md" style="background-color: white !important;">
                     <img src="${petImg}" class="w-full h-full object-contain animate-float">
                 </div>
             ` : ''}
