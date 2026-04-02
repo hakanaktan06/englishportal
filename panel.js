@@ -74,6 +74,7 @@ const SHOP_DATA = {
     ]
 };
 
+/*
 function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
     if (!config || Object.keys(config).length === 0) return `<div class="${sizeClass} rounded-full bg-indigo-100 flex items-center justify-center text-indigo-400 font-bold shrink-0">?</div>`;
     
@@ -159,6 +160,37 @@ window.closeAvatarZoom = function() {
 document.addEventListener('click', () => {
     closeAvatarZoom();
 });
+*/
+
+function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
+    if (!config || Object.keys(config).length === 0) return `<div class="${sizeClass} rounded-full bg-indigo-100 flex items-center justify-center text-indigo-400 font-bold shrink-0">?</div>`;
+    let skinImg = "";
+    if (config.skin && config.skin !== -1) {
+        const s = SHOP_DATA.skins.find(x => x.id == config.skin);
+        if (s) skinImg = s.img;
+    }
+    if (!skinImg && config.base !== undefined) {
+        const b = SHOP_DATA.bases.find(x => x.id == config.base);
+        if (b) skinImg = b.img;
+    }
+    let petImg = "";
+    if (config.pet && config.pet !== -1) {
+        const p = SHOP_DATA.pets.find(x => x.id == config.pet);
+        if (p) petImg = p.img;
+    }
+    return `
+        <div class="relative ${sizeClass} shrink-0 group/avatar">
+            <div class="w-full h-full rounded-full border-2 border-gray-100 p-1 overflow-hidden transition-transform group-hover/avatar:scale-110 shadow-sm" style="background-color: white !important;">
+                <img src="${skinImg || 'assets/avatars/base_0_v1.png'}" class="w-full h-full object-contain">
+            </div>
+            ${petImg ? `
+                <div class="absolute -bottom-1 -right-1 w-1/2 h-1/2 rounded-full p-0.5 border border-gray-100 z-10 transition-transform group-hover/avatar:scale-125 shadow-md" style="background-color: white !important;">
+                    <img src="${petImg}" class="w-full h-full object-contain animate-float">
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
 
 
 // ==========================================
