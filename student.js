@@ -570,7 +570,7 @@ function renderShopItems(category) {
         ` : '';
 
         card.innerHTML = `
-            <div class="w-full aspect-square bg-slate-50 dark:bg-slate-900 rounded-3xl mb-4 p-4 flex items-center justify-center overflow-hidden relative border border-gray-100 dark:border-slate-700/50">
+            <div class="w-full aspect-square bg-white rounded-3xl mb-4 p-4 flex items-center justify-center overflow-hidden relative border border-gray-100 dark:border-slate-700/50" style="background-color: white !important;">
                 ${lockOverlay}
                 <img src="${item.img}" class="${thumbnailClasses}">
             </div>
