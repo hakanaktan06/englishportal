@@ -459,15 +459,11 @@ function applyAvatarConfig(config) {
             
             // 🌟 AGRESİF ZOOM VE HİZALAMA: Ninja (4) ve Kral (5) için Warrior profilini yakalama
             // Not: Mage (2) artık yeni görseliyle kadrajı doldurduğu için ona zoom yapmıyoruz.
-            if ([4, 5].includes(currentAvatarConfig.base)) {
-                baseLayer.style.transform = "scale(1.7) translateY(-12%)";
-                baseLayer.style.marginTop = "0";
-                baseLayer.style.height = "100%";
-            } else {
-                baseLayer.style.transform = "scale(1)";
-                baseLayer.style.marginTop = "0";
-                baseLayer.style.height = "100%";
-            }
+            // Tüm karakterler artık senin attığın yeni geniş görsellerle kadrajı doldurduğu için 
+            // ekstra zoom yapmaya gerek kalmadı, hepsini standart 1:1 ölçeğe çekiyoruz.
+            baseLayer.style.transform = "scale(1)";
+            baseLayer.style.marginTop = "0";
+            baseLayer.style.height = "100%";
             
             const baseItem = SHOP_DATA.bases.find(b => b.id == (activeSkin ? activeSkin.baseId : currentAvatarConfig.base));
             if (baseItem) document.getElementById('avatarNameDisplay').innerText = baseItem.name;
@@ -560,11 +556,8 @@ function renderShopItems(category) {
         const card = document.createElement('div');
         card.className = `shop-item-card bg-white dark:bg-slate-800 rounded-3xl p-5 border-2 ${isActive ? 'border-indigo-500 shadow-lg' : 'border-gray-50 dark:border-slate-700'} flex flex-col items-center group hover:scale-[1.02] transition cursor-pointer relative`;
         
-        // Kilit ve Blur logic
+        // Market/Envanter önizlemelerinde de zoom karmaşasını bitirip standart hizalamaya geçtik.
         let zoomClass = "";
-        if ([4, 5].includes(item.baseId || item.id)) {
-            zoomClass = "scale-[1.7] origin-center translate-y-[-12%]";
-        }
 
         let thumbnailClasses = `w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 ${category === 'pets' ? 'animate-bounce' : ''} ${zoomClass}`;
         if (!isOwned) thumbnailClasses += " locked-image";
