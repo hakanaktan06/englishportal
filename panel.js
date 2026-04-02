@@ -1,9 +1,9 @@
 // ==========================================
 // 1. SUPABASE BAĞLANTISI (Sistem Anahtarı)
 // ==========================================
-const supabaseUrl = 'https://vucpxabicxqfmmmqvkpv.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1Y3B4YWJpY3hxZm1tbXF2a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDIwMDYsImV4cCI6MjA4ODkxODAwNn0.wYXmIDO4H7ml8nC9pQzRmW8tPK_ihtqFy3r4SqN3cTk';
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+var supabaseUrl = 'https://vucpxabicxqfmmmqvkpv.supabase.co';
+var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1Y3B4YWJpY3hxZm1tbXF2a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDIwMDYsImV4cCI6MjA4ODkxODAwNn0.wYXmIDO4H7ml8nC9pQzRmW8tPK_ihtqFy3r4SqN3cTk';
+var supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 // XSS GÜVENLİK FİLTRESİ (Gümrük Memuru)
 function escapeHTML(str) {
@@ -74,12 +74,8 @@ const SHOP_DATA = {
     ]
 };
 
-/*
 function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
     if (!config || Object.keys(config).length === 0) return `<div class="${sizeClass} rounded-full bg-indigo-100 flex items-center justify-center text-indigo-400 font-bold shrink-0">?</div>`;
-    
-    // Config'i güvenli hale getirip string olarak saklıyoruz
-    const configStr = config ? JSON.stringify(config).replace(/"/g, '&quot;') : '';
     
     // Aktif skin veya base görseli
     let skinImg = "";
@@ -99,16 +95,17 @@ function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
         if (p) petImg = p.img;
     }
 
-    // 🌟 AGRESİF ZOOM VE HİZALAMA TEMİZLENDİ: Tüm karakterler artık senin attığın yeni geniş görsellerle 
-    // kadrajı doldurduğu için ekstra zoom yapmaya gerek kalmadı, hepsini standart ölçeğe çektik.
-    let zoomClass = "";
+    // Config'i güvenli hale getirmek için Base64 veya Attribute kullanıyoruz.
+    // En temizi: dataset üzerinden okumak.
+    const configData = encodeURIComponent(JSON.stringify(config));
 
     return `
         <div class="relative ${sizeClass} shrink-0 group/avatar cursor-zoom-in" 
-             onclick="event.stopPropagation(); zoomAvatar('${configStr}')" 
+             data-avatar-config="${configData}"
+             onclick="event.stopPropagation(); zoomAvatar(this.dataset.avatarConfig)" 
              title="Yakınlaştır">
             <div class="w-full h-full rounded-full border-2 border-gray-100 p-1 overflow-hidden transition-transform group-hover/avatar:scale-110 shadow-sm" style="background-color: white !important;">
-                <img src="${skinImg || 'assets/avatars/base_0_v1.png'}" class="w-full h-full object-contain ${zoomClass}">
+                <img src="${skinImg || 'assets/avatars/base_0_v1.png'}" class="w-full h-full object-contain">
             </div>
             ${petImg ? `
                 <div class="absolute -bottom-1 -right-1 w-1/2 h-1/2 rounded-full p-0.5 border border-gray-100 z-10 transition-transform group-hover/avatar:scale-125 shadow-md" style="background-color: white !important;">
@@ -120,20 +117,19 @@ function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
 }
 
 // 🌟 AVATAR ZOOM SİSTEMİ 🌟
-window.zoomAvatar = function(configJson) {
+window.zoomAvatar = function(encodedConfig) {
     try {
-        if (!configJson) return;
-        const config = JSON.parse(configJson.replace(/&quot;/g, '"'));
+        if (!encodedConfig) return;
+        const config = JSON.parse(decodeURIComponent(encodedConfig));
         const modal = document.getElementById('avatarZoomModal');
         const content = document.getElementById('avatarZoomContent');
         
         if (!modal || !content) return;
 
-        // Büyük hali için HTML üret (Pet de dahil)
-        // Zoom modunda tıklanabilirliği ve zoom cursorunu kaldırıyoruz
+        // Büyük hali için HTML üret (Zoom modunda tıklanabilirliği kaldırıyoruz)
         const zoomedHTML = getAvatarPreviewHTML(config, "w-64 h-64 md:w-80 md:h-80")
                             .replace('cursor-zoom-in', '')
-                            .replace('onclick="event.stopPropagation(); zoomAvatar', 'onclick="');
+                            .replace('onclick="event.stopPropagation(); zoomAvatar(this.dataset.avatarConfig)"', 'onclick=""');
         
         content.innerHTML = zoomedHTML;
         
@@ -158,39 +154,8 @@ window.closeAvatarZoom = function() {
 
 // Ekranın herhangi bir yerine tıklayınca zoom'u kapat
 document.addEventListener('click', () => {
-    closeAvatarZoom();
+    if (typeof closeAvatarZoom === 'function') closeAvatarZoom();
 });
-*/
-
-function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
-    if (!config || Object.keys(config).length === 0) return `<div class="${sizeClass} rounded-full bg-indigo-100 flex items-center justify-center text-indigo-400 font-bold shrink-0">?</div>`;
-    let skinImg = "";
-    if (config.skin && config.skin !== -1) {
-        const s = SHOP_DATA.skins.find(x => x.id == config.skin);
-        if (s) skinImg = s.img;
-    }
-    if (!skinImg && config.base !== undefined) {
-        const b = SHOP_DATA.bases.find(x => x.id == config.base);
-        if (b) skinImg = b.img;
-    }
-    let petImg = "";
-    if (config.pet && config.pet !== -1) {
-        const p = SHOP_DATA.pets.find(x => x.id == config.pet);
-        if (p) petImg = p.img;
-    }
-    return `
-        <div class="relative ${sizeClass} shrink-0 group/avatar">
-            <div class="w-full h-full rounded-full border-2 border-gray-100 p-1 overflow-hidden transition-transform group-hover/avatar:scale-110 shadow-sm" style="background-color: white !important;">
-                <img src="${skinImg || 'assets/avatars/base_0_v1.png'}" class="w-full h-full object-contain">
-            </div>
-            ${petImg ? `
-                <div class="absolute -bottom-1 -right-1 w-1/2 h-1/2 rounded-full p-0.5 border border-gray-100 z-10 transition-transform group-hover/avatar:scale-125 shadow-md" style="background-color: white !important;">
-                    <img src="${petImg}" class="w-full h-full object-contain animate-float">
-                </div>
-            ` : ''}
-        </div>
-    `;
-}
 
 
 // ==========================================
