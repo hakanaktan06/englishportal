@@ -406,8 +406,10 @@
                             class="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 relative z-10">
                             SENİN AVATARIN</p>
 
-                        <div
-                            class="w-48 h-48 mx-auto relative z-10 bg-white rounded-full border-8 border-white dark:border-slate-700 shadow-inner flex items-center justify-center overflow-hidden" style="background-color: white !important;">
+                        <div id="mainAvatarContainer"
+                            class="w-48 h-48 mx-auto relative z-10 bg-white rounded-full border-8 border-white dark:border-slate-700 shadow-inner flex items-center justify-center overflow-hidden cursor-pointer group" 
+                            style="background-color: white !important;"
+                            onclick="deselectPet()" title="Hayvanı Kaldır">
                             <!-- Avatar Katmanları -->
                             <div id="avatarBaseLayer"
                                 class="absolute inset-0 bg-contain bg-center bg-no-repeat transition-all"></div>
