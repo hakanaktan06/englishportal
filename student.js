@@ -497,9 +497,14 @@ function applyAvatarConfig(config) {
         const petItem = SHOP_DATA.pets.find(p => p.id == petId);
         
         if (petItem && petItem.img && petId != -1) {
-            petLayer.innerHTML = `<img src="${petItem.img}" class="w-full h-full drop-shadow-md object-contain animate-float">`;
+            petLayer.innerHTML = `<img src="${petItem.img}" class="w-full h-full object-contain animate-float" style="filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3)); mix-blend-mode: multiply;">`;
+            // Karakteri hafif sola çekerek yer açalım
+            const baseLayer = document.getElementById('avatarBaseLayer');
+            if(baseLayer) baseLayer.style.transform = "translateX(-15px)";
         } else {
             petLayer.innerHTML = '';
+            const baseLayer = document.getElementById('avatarBaseLayer');
+            if(baseLayer) baseLayer.style.transform = "translateX(0)";
         }
     }
 
