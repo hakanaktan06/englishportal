@@ -1455,6 +1455,15 @@ window.approveHomework = async function (hwId, studentId) {
 // ==========================================
 // 5. ETKİNLİK MOTORLARI 
 // ==========================================
+// Antigravity için otomatik URL ayıklama fonksiyonu (Akıllı Iframe Ayıklayıcı)
+function cleanUrlInput(inputValue) {
+    if (!inputValue) return '';
+    if (inputValue.includes('<iframe')) {
+        const match = inputValue.match(/src=["']([^"']+)["']/);
+        return match ? match[1] : inputValue;
+    }
+    return inputValue.trim();
+}
 const activityFormEl = document.getElementById('newActivityForm');
 if (activityFormEl) {
     activityFormEl.addEventListener('submit', async (e) => {
@@ -1466,7 +1475,7 @@ if (activityFormEl) {
         const { error } = await supabaseClient.from('activities').insert([{
             title: document.getElementById('actTitle').value,
             category: document.getElementById('actCategory').value,
-            link: document.getElementById('actLink').value,
+            link: cleanUrlInput(document.getElementById('actLink').value),
             teacher_id: currentTeacherId
         }]);
 
@@ -1583,7 +1592,7 @@ window.saveActivityUpdate = async () => {
     const id = document.getElementById('editActId').value;
     const title = document.getElementById('editActTitle').value;
     const category = document.getElementById('editActCategory').value;
-    const link = document.getElementById('editActLink').value;
+    const link = cleanUrlInput(document.getElementById('editActLink').value);
 
     if (!title || !link) { showToast("Alanları boş bırakma!", "error"); return; }
 
