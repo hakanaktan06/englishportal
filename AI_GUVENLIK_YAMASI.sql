@@ -151,8 +151,17 @@ CREATE POLICY "Student_View_Activities" ON activities FOR SELECT USING (
 
 
 -- =========================================================================================
--- 5. ADIM: PASSWORD RESETS KORUMASI
+-- 5. ADIM: PASSWORD RESETS KORUMASI VE TABLO OLUŞTURMA
 -- =========================================================================================
+-- Eğer kurumların şifre sıfırlama işlemi için tablo yoksa (hata almamak için) önce oluşturuyoruz:
+CREATE TABLE IF NOT EXISTS password_resets (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID NOT NULL,
+    new_password TEXT NOT NULL,
+    requested_by UUID,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 ALTER TABLE password_resets ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Only_Teacher_Or_Kurum_Can_Reset" ON password_resets;
