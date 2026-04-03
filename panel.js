@@ -2555,9 +2555,11 @@ if (btnAssignFlashcards) {
         if (studentId === 'all') {
             // Sınıftaki herkese ata
             const { data: allStudents } = await supabaseClient.from('profiles').select('id').eq('role', 'student').eq('teacher_id', currentTeacherId);
-            inserts = allStudents.map(s => ({
-                student_id: s.id, title: taskTitle, description: taskData, due_date: dueDateStr, status: 'Bekliyor', teacher_id: currentTeacherId
-            }));
+            if (allStudents) {
+                inserts = allStudents.map(s => ({
+                    student_id: s.id, title: taskTitle, description: taskData, due_date: dueDateStr, status: 'Bekliyor', teacher_id: currentTeacherId
+                }));
+            }
         } else {
             // Tek öğrenciye ata
             inserts = [{
@@ -2565,30 +2567,41 @@ if (btnAssignFlashcards) {
             }];
         }
 
-        const { error } = await supabaseClient.from('homeworks').insert(inserts);
-
-        if (error) { showToast("Atama hatası!", "error"); }
-        else {
-            showToast("Kelime Kartları öğrenciye başarıyla gönderildi! 🚀", "success");
-            document.getElementById('aiFlashcardModal').classList.add('hidden');
-            document.getElementById('fcPreviewContainer').classList.add('hidden');
-            document.getElementById('fcTopic').value = '';
-            fetchHomeworks(); // Tabloyu güncelle
+        if (inserts.length > 0) {
+            const { error } = await supabaseClient.from('homeworks').insert(inserts);
+            if (error) { 
+                showToast("Atama hatası!", "error"); 
+            } else {
+                showToast("Kelime Kartları öğrenciye başarıyla gönderildi! 🚀", "success");
+                document.getElementById('aiFlashcardModal').classList.add('hidden');
+                document.getElementById('fcPreviewContainer').classList.add('hidden');
+                document.getElementById('fcTopic').value = '';
+                fetchHomeworks(); // Tabloyu güncelle
+            }
+        } else {
+            showToast("Gönderilecek öğrenci bulunamadı!", "error");
         }
         btnAssignFlashcards.innerText = "GÖREVİ GÖNDER";
     });
 }
 
 // ==========================================
-// AKILLI DUYURU ASİSTANI (GLOBAL + KİŞİSEL)
+// AKILLI DUYURU ASİSTANI (GLOBAL + KURUM + KİŞİSEL)
 // ==========================================
 async function checkAnnouncements() {
     try {
         const { data: godData } = await supabaseClient.from('profiles').select('announcement').eq('role', 'god').single();
         const globalMsg = godData?.announcement?.trim();
+
         const { data: { user } } = await supabaseClient.auth.getUser();
-        const { data: myData } = await supabaseClient.from('profiles').select('announcement').eq('id', user.id).single();
+        const { data: myData } = await supabaseClient.from('profiles').select('announcement, school_id').eq('id', user.id).single();
         const personalMsg = myData?.announcement?.trim();
+
+        let kurumMsg = null;
+        if (myData?.school_id) {
+            const { data: schoolData } = await supabaseClient.from('profiles').select('announcement').eq('id', myData.school_id).single();
+            kurumMsg = schoolData?.announcement?.trim();
+        }
 
         const dashboardSection = document.getElementById('section-dashboard');
         const header = dashboardSection ? dashboardSection.querySelector('header') : null;
@@ -2622,15 +2635,24 @@ async function checkAnnouncements() {
                 header.insertAdjacentHTML('afterend', createBannerHTML(globalMsg, 'SİSTEM DUYURUSU', 'amber', 'globalAnnouncement'));
                 setTimeout(() => document.getElementById('globalAnnouncement')?.classList.remove('-translate-y-5', 'opacity-0'), 500);
             }
-            if (personalMsg) {
+            
+            if (kurumMsg) {
                 const target = document.getElementById('globalAnnouncement') || header;
+                target.insertAdjacentHTML('afterend', createBannerHTML(kurumMsg, 'KURUMSAL DUYURU', 'emerald', 'kurumAnnouncement'));
+                setTimeout(() => document.getElementById('kurumAnnouncement')?.classList.remove('-translate-y-5', 'opacity-0'), 600);
+            }
+
+            if (personalMsg) {
+                const target = document.getElementById('kurumAnnouncement') || document.getElementById('globalAnnouncement') || header;
                 target.insertAdjacentHTML('afterend', createBannerHTML(personalMsg, 'SİZE ÖZEL BİLDİRİM', 'indigo', 'personalAnnouncement'));
                 setTimeout(() => document.getElementById('personalAnnouncement')?.classList.remove('-translate-y-5', 'opacity-0'), 700);
             }
         }
-    } catch (e) { console.log("Duyuru asistanı çalıştırılamadı."); }
+    } catch (e) { 
+        console.warn("Duyuru asistanı hatası:", e); 
+    }
 }
-checkAnnouncements(); // Yeni fonksiyonu çağırıyoruz
+checkAnnouncements(); 
 
 
 
