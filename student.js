@@ -627,10 +627,19 @@ async function buyItem(category, itemId) {
         return;
     }
 
+    // 1. Önce envanteri güncelle
     const { error } = await supabaseClient.from('profiles').update({ 
-        coins: balance - item.price,
         avatar_config: { ...currentAvatarConfig, inventory: [...currentAvatarConfig.inventory, itemId] }
     }).eq('id', currentStudentId);
+
+    // 2. Eğer başarılıysa RPC üzerinden güvenli şekilde Coin düş (Hile koruması)
+    if (!error) {
+        await supabaseClient.rpc('add_student_xp', {
+            target_student_id: currentStudentId,
+            xp_amount: 0,
+            coin_amount: -item.price
+        });
+    }
 
     if (error) {
         showToast("Satın alma sırasında bir hata oluştu.", "error");
@@ -1035,10 +1044,11 @@ if(quizFormEl) {
             return; 
         }
 
-        const { data: prof } = await supabaseClient.from('profiles').select('xp, coins').eq('id', currentStudentId).single();
-        const newXp = (prof.xp || 0) + score;
-        const newCoins = (prof.coins || 0) + 20; // Sınav bitirme ödülü Fix: +20 Coin
-        await supabaseClient.from('profiles').update({ xp: newXp, coins: newCoins }).eq('id', currentStudentId);
+        await supabaseClient.rpc('add_student_xp', { 
+            target_student_id: currentStudentId, 
+            xp_amount: score, 
+            coin_amount: 20 
+        });
 
         showToast(`Tebrikler! ${score} Puan, +${score} XP ve +20 EP-Coin kazandın! 🪙`, "success");
         saveLog("Sınav Tamamlandı", `Sonuç: ${score} Puan | Doğru: ${correctAnswers}/${totalQuestions}`);
@@ -1354,12 +1364,11 @@ window.finishFlashcardTask = async function() {
     const { error } = await supabaseClient.from('homeworks').update({ status: 'Tamamlandı' }).eq('id', currentFcTaskId);
     if (error) { showToast("Hata: " + error.message, "error"); return; }
 
-    const { data: prof } = await supabaseClient.from('profiles').select('xp, coins').eq('id', currentStudentId).single();
-    if (prof) {
-        const newXp = (prof.xp || 0) + 50;
-        const newCoins = (prof.coins || 0) + 10;
-        await supabaseClient.from('profiles').update({ xp: newXp, coins: newCoins }).eq('id', currentStudentId);
-    }
+    await supabaseClient.rpc('add_student_xp', {
+        target_student_id: currentStudentId,
+        xp_amount: 50,
+        coin_amount: 10
+    });
 
     showToast("Tebrikler! +50 XP ve +10 EP-Coin kazandın! 🪙", "success");
     saveLog("Kelime Pratiği Tamamlandı", "Görev başarıyla bitirildi.");
