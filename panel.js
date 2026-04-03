@@ -1484,37 +1484,106 @@ window.deleteActivity = async (id) => {
     if (error) showToast("Silinirken hata!", "error"); else fetchActivities();
 };
 
+// ÜCRETSİZ THUMBNAIL MOTORU (ETKİNLİKLER İÇİN)
+function getActivityThumbnail(link, category) {
+    if (category === 'video') {
+        const ytMatch = link.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        if (ytMatch && ytMatch[1]) {
+            return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
+        }
+        return 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&q=80&w=400'; // Fallback Video
+    }
+    if (category === 'game') {
+        return 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=400'; // High-end Gaming Background
+    }
+    if (category === 'pdf') {
+        return 'https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&q=80&w=400'; // Clean Document Background
+    }
+    return '';
+}
+
 async function fetchActivities() {
     const { data, error } = await supabaseClient.from('activities').select('*').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
     const container = document.getElementById('activityCards');
     if (!container || error) return;
 
     if (!data || data.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 italic font-medium p-10">Kütüphane henüz boş.</p>';
+        container.innerHTML = '<p class="text-gray-400 italic font-medium p-10 text-center col-span-full">Kütüphane henüz boş.</p>';
         return;
     }
 
     container.innerHTML = '';
-    const icons = {
-        video: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
-        game: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
-        pdf: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>'
-    };
-
+    
     data.forEach(act => {
+        const thumb = getActivityThumbnail(act.link, act.category);
+        const icon = act.category === 'video' ? '📽️' : (act.category === 'game' ? '🎮' : '📄');
+        
         container.innerHTML += `
-            <div class="activity-card bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col justify-between hover:shadow-md transition" data-category="${act.category}">
-                <div>
-                    <span class="text-indigo-500 dark:text-indigo-400 block mb-3">${icons[act.category] || '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>'}</span>
-                    <h4 class="font-black text-gray-800 dark:text-white uppercase text-xs tracking-widest">${escapeHTML(act.title)}</h4>
-                </div>
-                <div class="mt-5 flex justify-between items-center border-t border-gray-100 dark:border-slate-700 pt-3">
-                    <a href="${escapeHTML(act.link)}" target="_blank" class="text-indigo-600 dark:text-indigo-400 font-black text-[10px] hover:underline uppercase tracking-tighter flex items-center gap-1">AÇ <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>
-                    <button onclick="deleteActivity('${act.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 dark:hover:text-rose-400 transition" title="Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+            <div class="activity-card group relative bg-white dark:bg-slate-800 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden hover:shadow-xl transition-all duration-300 h-64" data-category="${act.category}">
+                <!-- Background Preview -->
+                ${thumb ? `
+                <div class="absolute inset-0 z-0">
+                    <img src="${thumb}" class="w-full h-full object-cover opacity-20 dark:opacity-30 group-hover:scale-105 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-slate-800 dark:via-slate-800/80 dark:to-transparent"></div>
+                </div>` : ''}
+
+                <div class="relative z-10 p-6 h-full flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-2xl">${icon}</span>
+                            <div class="flex gap-2">
+                                <button onclick="editActivity('${act.id}')" class="p-2.5 bg-white/80 dark:bg-slate-700/80 backdrop-blur-md rounded-xl text-gray-500 hover:text-indigo-600 transition shadow-sm border border-gray-100 dark:border-slate-600" title="Düzenle">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                </button>
+                                <button onclick="deleteActivity('${act.id}')" class="p-2.5 bg-white/80 dark:bg-slate-700/80 backdrop-blur-md rounded-xl text-gray-400 hover:text-rose-500 transition shadow-sm border border-gray-100 dark:border-slate-600" title="Sil">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <h4 class="font-black text-gray-800 dark:text-white text-sm tracking-tight leading-tight mb-2">${escapeHTML(act.title)}</h4>
+                        <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">${act.category}</span>
+                    </div>
+                    
+                    <a href="${escapeHTML(act.link)}" target="_blank" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-2xl text-center text-xs tracking-widest shadow-lg shadow-indigo-600/20 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                        AÇ <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
                 </div>
             </div>`;
     });
 }
+
+// ETKİNLİK DÜZENLEME MOTORU
+window.editActivity = async (id) => {
+    const { data: act, error } = await supabaseClient.from('activities').select('*').eq('id', id).single();
+    if (error || !act) return;
+
+    document.getElementById('editActId').value = act.id;
+    document.getElementById('editActTitle').value = act.title;
+    document.getElementById('editActCategory').value = act.category;
+    document.getElementById('editActLink').value = act.link;
+
+    const modal = document.getElementById('activityEditModal');
+    const box = document.getElementById('activityEditBox');
+    modal.classList.remove('hidden');
+    setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); }, 10);
+};
+
+window.saveActivityUpdate = async () => {
+    const id = document.getElementById('editActId').value;
+    const title = document.getElementById('editActTitle').value;
+    const category = document.getElementById('editActCategory').value;
+    const link = document.getElementById('editActLink').value;
+
+    if (!title || !link) { showToast("Alanları boş bırakma!", "error"); return; }
+
+    const { error } = await supabaseClient.from('activities').update({ title, category, link }).eq('id', id);
+    if (error) showToast("Güncellenemedi!", "error");
+    else {
+        showToast("Etkinlik başarıyla güncellendi.", "success");
+        document.getElementById('activityEditModal').classList.add('hidden');
+        fetchActivities();
+    }
+};
 
 // ==========================================
 // 6. SINAV MOTORU VE AKILLI SÜRE SEÇİCİ
@@ -1927,7 +1996,10 @@ async function fetchStudentLessons(studentId) {
                             ${duration ? `<span class="text-[10px] font-black bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800 text-orange-700 dark:text-orange-400 px-2 py-1 rounded-md flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg> ${duration}</span>` : ''}
                             ${priceText}
                         </div>
-                        <button onclick="deleteLesson('${l.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 transition ml-3" title="Kaydı Sil"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        <div class="flex gap-2">
+                            <button onclick="editLesson('${l.id}')" class="text-gray-300 dark:text-gray-600 hover:text-indigo-500 transition" title="Dersi Düzenle"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
+                            <button onclick="deleteLesson('${l.id}')" class="text-gray-300 dark:text-gray-600 hover:text-rose-500 transition" title="Kaydı Sil"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        </div>
                     </div>
                     <p class="text-sm font-bold text-gray-700 dark:text-white mt-1 leading-snug">${escapeHTML(l.topic)}</p>
                     <div class="mt-3 border-t border-gray-50 dark:border-slate-700 pt-2 flex justify-between items-center">
@@ -1994,6 +2066,49 @@ window.deleteLesson = async function (id) {
     fetchStudentLessons(document.getElementById('profStudentId').value);
     fetchStudents();
 }
+
+// DERS DÜZENLEME MOTORU
+window.editLesson = async (id) => {
+    const { data: l, error } = await supabaseClient.from('private_lessons').select('*').eq('id', id).single();
+    if (error || !l) return;
+
+    document.getElementById('editLessonId').value = l.id;
+    document.getElementById('editLessonDate').value = l.lesson_date;
+    document.getElementById('editLessonTime').value = l.lesson_time || '';
+    document.getElementById('editLessonDuration').value = l.duration_hours || '';
+    document.getElementById('editLessonPrice').value = l.price || '';
+    document.getElementById('editLessonIsPaid').value = l.is_paid ? 'true' : 'false';
+    document.getElementById('editLessonTopic').value = l.topic || '';
+
+    const modal = document.getElementById('lessonEditModal');
+    const box = document.getElementById('lessonEditBox');
+    modal.classList.remove('hidden', 'opacity-0');
+    box.classList.remove('scale-95');
+};
+
+window.saveLessonUpdate = async () => {
+    const id = document.getElementById('editLessonId').value;
+    const lDate = document.getElementById('editLessonDate').value;
+    const lTime = document.getElementById('editLessonTime').value;
+    const lDuration = document.getElementById('editLessonDuration').value;
+    const lPrice = document.getElementById('editLessonPrice').value;
+    const lIsPaid = document.getElementById('editLessonIsPaid').value === 'true';
+    const lTopic = document.getElementById('editLessonTopic').value;
+
+    if (!lDate || !lTopic) { showToast("Tarih ve Ders Konusu zorunludur!", "error"); return; }
+
+    const { error } = await supabaseClient.from('private_lessons').update({
+        lesson_date: lDate, lesson_time: lTime, duration_hours: lDuration, price: lPrice, is_paid: lIsPaid, topic: lTopic
+    }).eq('id', id);
+
+    if (error) showToast("Güncellenemedi!", "error");
+    else {
+        showToast("Ders kaydı başarıyla güncellendi.", "success");
+        document.getElementById('lessonEditModal').classList.add('hidden');
+        fetchStudentLessons(document.getElementById('profStudentId').value);
+        fetchStudents();
+    }
+};
 
 window.markAsPaid = async function (lessonId, studentId) {
     showToast("Tahsilat işleniyor...", "info");
