@@ -3382,6 +3382,9 @@ function setupCategorySuggestions() {
             if (actCat.value === 'game' && actSug) actSug.classList.remove('hidden');
             else if (actCat.value === 'video' && vidSug) vidSug.classList.remove('hidden');
         });
+        
+        // İlk açılışta mevcut seçili değeri (varsayılan 'video') tetikleyerek kutuyu göster
+        actCat.dispatchEvent(new Event('change'));
     }
 
     const editCat = document.getElementById('editActCategory');
