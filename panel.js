@@ -641,8 +641,9 @@ async function fetchStudentFlow(containerId = 'studentFlowContainer') {
             // 🌟 GELİŞMİŞ SORGU: RLS (Yetki) sorunlarını aşmak için JOIN (birleştirme) kullanıyoruz
             // audit_logs -> profiles -> teacher_id kontrolü
             const { data: logs, error } = await supabaseClient.from('audit_logs')
-                .select('*, profiles!inner(teacher_id, full_name, avatar_config)')
+                .select('*, profiles!inner(teacher_id, full_name, avatar_config, role)')
                 .eq('profiles.teacher_id', currentTeacherId)
+                .eq('profiles.role', 'student')
                 .order('created_at', { ascending: false })
                 .limit(containerId === 'studentLiveLogs' ? 10 : 50);
 
