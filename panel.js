@@ -1438,9 +1438,11 @@ window.approveHomework = async function (hwId, studentId) {
 
     const { data: prof } = await supabaseClient.from('profiles').select('xp, coins').eq('id', studentId).single();
     if (prof) {
-        const newXp = (prof.xp || 0) + 50;
-        const newCoins = (prof.coins || 0) + 10;
-        await supabaseClient.from('profiles').update({ xp: newXp, coins: newCoins }).eq('id', studentId);
+        await supabaseClient.rpc('add_student_xp', {
+            target_student_id: studentId,
+            xp_amount: 50,
+            coin_amount: 10
+        });
     }
 
     showToast("Ödev onaylandı! +50 XP ve +10 EP-Coin eklendi. 🪙", "success");
