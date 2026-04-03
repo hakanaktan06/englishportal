@@ -1579,9 +1579,18 @@ window.editActivity = async (id) => {
     
     // Suggestion check
     const editSug = document.getElementById('editWordwallSuggestion');
-    if (editSug) {
-        if (act.category === 'game') editSug.classList.remove('hidden');
-        else editSug.classList.add('hidden');
+    const editVidSug = document.getElementById('editVideoSuggestion');
+    if (editSug && editVidSug) {
+        if (act.category === 'game') {
+            editSug.classList.remove('hidden');
+            editVidSug.classList.add('hidden');
+        } else if (act.category === 'video') {
+            editSug.classList.add('hidden');
+            editVidSug.classList.remove('hidden');
+        } else {
+            editSug.classList.add('hidden');
+            editVidSug.classList.add('hidden');
+        }
     }
 
     modal.classList.remove('hidden');
@@ -3359,24 +3368,32 @@ window.saveLessonUrl = async function () {
 }
 
 // ==========================================
-// WORDWALL ÖNERİ MOTORU (DİNAMİK)
+// ETKİNLİK ÖNERİ MOTORU (DİNAMİK)
 // ==========================================
-function setupWordwallSuggestions() {
+function setupCategorySuggestions() {
     const actCat = document.getElementById('actCategory');
     const actSug = document.getElementById('wordwallSuggestion');
-    if (actCat && actSug) {
+    const vidSug = document.getElementById('videoSuggestion');
+    if (actCat) {
         actCat.addEventListener('change', () => {
-            if (actCat.value === 'game') actSug.classList.remove('hidden');
-            else actSug.classList.add('hidden');
+            if (actSug) actSug.classList.add('hidden');
+            if (vidSug) vidSug.classList.add('hidden');
+            
+            if (actCat.value === 'game' && actSug) actSug.classList.remove('hidden');
+            else if (actCat.value === 'video' && vidSug) vidSug.classList.remove('hidden');
         });
     }
 
     const editCat = document.getElementById('editActCategory');
     const editSug = document.getElementById('editWordwallSuggestion');
-    if (editCat && editSug) {
+    const editVidSug = document.getElementById('editVideoSuggestion');
+    if (editCat) {
         editCat.addEventListener('change', () => {
-            if (editCat.value === 'game') editSug.classList.remove('hidden');
-            else editSug.classList.add('hidden');
+            if (editSug) editSug.classList.add('hidden');
+            if (editVidSug) editVidSug.classList.add('hidden');
+            
+            if (editCat.value === 'game' && editSug) editSug.classList.remove('hidden');
+            else if (editCat.value === 'video' && editVidSug) editVidSug.classList.remove('hidden');
         });
     }
 }
@@ -3385,11 +3402,11 @@ function setupWordwallSuggestions() {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         checkActiveSession();
-        setupWordwallSuggestions();
+        setupCategorySuggestions();
     });
 } else {
     checkActiveSession();
-    setupWordwallSuggestions();
+    setupCategorySuggestions();
 }
 
 // EOF (Stage 3 Ready)
