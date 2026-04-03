@@ -1,6 +1,7 @@
 -- =========================================================================================
--- ENGLISH PORTAL VIP - MASTER SECURITY PATCH v3 (KUSURSUZ GÜVENLİK DUVARI)
--- Bu script, Claude AI'ın güvenlik raporundaki 9 kritik açığı yamamak için hazırlanmıştır.
+-- ENGLISH PORTAL VIP - MASTER SECURITY PATCH v4 (KUSURSUZ GÜVENLİK DUVARI)
+-- Bu script, sistemin güvenliğini maksimuma çıkarırken platformun sorunsuz çalışmasını sağlayan
+-- KESİN DÜZELTMELERİ içerir.
 -- SUPABASE SQL EDİTÖRÜNE YAPIŞTIRIP ÇALIŞTIRIN!
 -- =========================================================================================
 
@@ -13,6 +14,8 @@ DROP POLICY IF EXISTS "Teacher_View_Results" ON quiz_results;
 DROP POLICY IF EXISTS "Student_View_Whiteboard" ON whiteboard;
 DROP POLICY IF EXISTS "Log_Insert_Safe" ON audit_logs;
 DROP POLICY IF EXISTS "Student_View_Activities" ON activities;
+DROP POLICY IF EXISTS "Profile_Select_Safe" ON profiles;
+DROP POLICY IF EXISTS "Student_Update_HW" ON homeworks;
 
 -- =========================================================================================
 -- 2. ADIM: HİLE VE MANİPÜLASYONA KARŞI ADD_STUDENT_XP (SECURITY DEFINER)
@@ -99,12 +102,14 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- =========================================================================================
 
 -- [QUIZZES VE QUESTIONS] "Herkese Açık" (USING true) tehlikesi kapatıldı
+DROP POLICY IF EXISTS "Auth_Select_Quizzes" ON quizzes;
 CREATE POLICY "Auth_Select_Quizzes" ON quizzes FOR SELECT USING (
     auth.uid() = teacher_id OR
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND teacher_id = quizzes.teacher_id) OR
     get_my_role_safe() = 'god'
 );
 
+DROP POLICY IF EXISTS "Auth_Select_Questions" ON questions;
 CREATE POLICY "Auth_Select_Questions" ON questions FOR SELECT USING (
     EXISTS (SELECT 1 FROM quizzes WHERE id = questions.quiz_id AND teacher_id = auth.uid()) OR
     EXISTS (
@@ -116,6 +121,7 @@ CREATE POLICY "Auth_Select_Questions" ON questions FOR SELECT USING (
 );
 
 -- [QUIZ_RESULTS] Öğretmenin kendi öğrencilerini değil de kendisini gördüğü mantık hatası düzeltildi
+DROP POLICY IF EXISTS "Teacher_View_Results" ON quiz_results;
 CREATE POLICY "Teacher_View_Results" ON quiz_results FOR SELECT USING (
     EXISTS (
         SELECT 1 FROM profiles p
@@ -126,19 +132,47 @@ CREATE POLICY "Teacher_View_Results" ON quiz_results FOR SELECT USING (
 );
 
 -- [WHITEBOARD] Herkese açık olması engellendi
+DROP POLICY IF EXISTS "Student_View_Whiteboard" ON whiteboard;
 CREATE POLICY "Student_View_Whiteboard" ON whiteboard FOR SELECT USING (
     auth.uid() = teacher_id OR
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND teacher_id = whiteboard.teacher_id) OR
     get_my_role_safe() = 'god'
 );
 
+-- [PROFILES] Öğrencilerin/Velilerin öğretmen profilini (IBAN, İsim, Link) görebilmesi için Güvenli Fonksiyon (Sonsuz Döngü Engeli)
+CREATE OR REPLACE FUNCTION can_read_profile(target_id UUID) RETURNS BOOLEAN AS $$
+BEGIN
+    IF auth.uid() = target_id THEN RETURN TRUE; END IF;
+    IF get_my_role_safe() = 'god' THEN RETURN TRUE; END IF;
+    -- Veli/Öğrenci ise kendi öğretmeninin verilerini çekebilir
+    IF EXISTS (
+        SELECT 1 FROM profiles 
+        WHERE id = auth.uid() AND (teacher_id = target_id OR school_id = target_id)
+    ) THEN RETURN TRUE; END IF;
+    
+    RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP POLICY IF EXISTS "Profile_Select_Safe" ON profiles;
+CREATE POLICY "Profile_Select_Safe" ON profiles FOR SELECT USING (
+  auth.uid() = id OR auth.uid() = teacher_id OR auth.uid() = school_id OR get_my_role_safe() = 'god' OR can_read_profile(id)
+);
+
+-- [HOMEWORKS] Öğrencilerin Kendi Ödevlerini Tamamlayabilmesi için UPDATE Yetkisi (AI Raporunda unutulmuş platform çökerten bir hata düzeltildi)
+DROP POLICY IF EXISTS "Student_Update_HW" ON homeworks;
+CREATE POLICY "Student_Update_HW" ON homeworks FOR UPDATE USING (auth.uid() = student_id);
+
 -- [AUDIT LOGS] Başkası log silemez veya değiştiremez
+DROP POLICY IF EXISTS "No_Log_Update" ON audit_logs;
 CREATE POLICY "No_Log_Update" ON audit_logs FOR UPDATE USING (false);
+DROP POLICY IF EXISTS "No_Log_Delete" ON audit_logs;
 CREATE POLICY "No_Log_Delete" ON audit_logs FOR DELETE USING (get_my_role_safe() = 'god');
 
 -- Mevcut Log_Insert_Safe Policy'si kalabilir ama loglar artık değiştirilemez oldu!
 
 -- [ACTIVITIES] Ağır subquery (SELECT id ...) yerine performanslı EXISTS modeline geçildi
+DROP POLICY IF EXISTS "Student_View_Activities" ON activities;
 CREATE POLICY "Student_View_Activities" ON activities FOR SELECT USING (
     auth.uid() = teacher_id OR
     EXISTS (
