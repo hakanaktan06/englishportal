@@ -41,6 +41,12 @@ async function initKurumPortal() {
     currentAdminName = profile.full_name;
     currentSchoolName = profile.school_name || "Yeni Akademi";
 
+    // Duyuruyu Yükle
+    if (profile.announcement) {
+        const annInput = document.getElementById('kurumAnnouncementInput');
+        if (annInput) annInput.value = profile.announcement;
+    }
+
     // UI Güncelle
     document.getElementById('headerAdminName').innerText = currentAdminName;
     document.getElementById('headerSchoolName').innerText = currentSchoolName;
@@ -48,11 +54,45 @@ async function initKurumPortal() {
     document.getElementById('setSchoolLogo').value = profile.school_logo || '';
     if (profile.school_logo) document.getElementById('previewLogo').src = profile.school_logo;
 
+    // Tema Başlat
+    initDarkMode();
+
     switchTab('dashboard');
     setTimeout(() => {
         const splash = document.getElementById('splashScreen');
         if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.classList.add('hidden'), 700); }
     }, 400);
+}
+
+// ==========================================
+// 🌙 KARANLIK MOD MOTORU
+// ==========================================
+function initDarkMode() {
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+    updateThemeIcons();
+
+    const toggle = document.getElementById('darkModeToggle');
+    if (toggle) {
+        toggle.onclick = () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcons();
+        };
+    }
+}
+
+function updateThemeIcons() {
+    const moon = document.getElementById('icon-moon');
+    const sun = document.getElementById('icon-sun');
+    if (document.documentElement.classList.contains('dark')) {
+        if (moon) moon.classList.add('hidden');
+        if (sun) sun.classList.remove('hidden');
+    } else {
+        if (moon) moon.classList.remove('hidden');
+        if (sun) sun.classList.add('hidden');
+    }
 }
 
 // ==========================================
@@ -253,6 +293,24 @@ document.getElementById('schoolSettingsForm').onsubmit = async (e) => {
     }
 };
 
+window.saveKurumAnnouncement = async function() {
+    const text = document.getElementById('kurumAnnouncementInput').value.trim();
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if(!user) return;
+
+    try {
+        const { error } = await supabaseClient.from('profiles').update({
+            announcement: text
+        }).eq('id', user.id);
+
+        if (error) throw error;
+        showToast("Kurumsal duyuru yayınlandı!", "success");
+        saveKurumLog("Duyuru Yayınlandı", text.substring(0, 50) + (text.length > 50 ? "..." : ""));
+    } catch (e) {
+        showToast("Duyuru kaydedilemedi: " + e.message, "error");
+    }
+};
+
 // ==========================================
 // LOGLAR VE YARDIMCILAR
 // ==========================================
@@ -314,98 +372,9 @@ document.getElementById('logoutBtn').onclick = async () => {
     window.location.href = 'index.html';
 };
 
-// ==========================================
-// 10. VIP KURUM REHBERİ (PREMIUM TOUR)
-// ==========================================
-window.startKurumTour = function () {
-    const driver = window.driver.js.driver;
-    const tour = driver({
-        showProgress: true,
-        animate: true,
-        allowClose: true,
-        smoothScroll: true,
-        popoverClass: 'vip-tour-popover',
-        stagePadding: 10,
-        doneBtnText: 'Kurumu Yönetmeye Başla 🚀',
-        nextBtnText: 'İleri',
-        prevBtnText: 'Geri',
-        onHighlightStarted: (element) => {
-            if (element?.id === 'headerSchoolName' && typeof confetti === 'function') {
-                confetti({
-                    particleCount: 150,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#4f46e5', '#fbbf24', '#ffffff']
-                });
-            }
-        },
-        steps: [
-            { 
-                element: '#headerSchoolName', 
-                popover: { 
-                    title: 'Kurumsal Yönetim Merkezi 🏛️', 
-                    description: 'VIP Rehber çözüm ortağınız olarak kurumunuzun kimliğini buradan yönetebilirsiniz.', 
-                    side: "bottom", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '.grid-cols-1.md\\:grid-cols-3', 
-                popover: { 
-                    title: 'Akademi Analitiği', 
-                    description: 'Okulunuzdaki toplam aktif öğretmen ve öğrenci trafiğini tek bakışta analiz edin.', 
-                    side: "bottom", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#teacherList', 
-                popover: { 
-                    title: 'Kadronuzu Yönetin', 
-                    description: 'Eğitmenlerinizi sisteme ekleyin, şifrelerini güncelleyin ve hangi sınıflardan sorumlu olduklarını buradan belirleyin.', 
-                    side: "top", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#schoolBrandingSection', 
-                popover: { 
-                    title: 'Kendi Markanızı Yaratın', 
-                    description: 'Okulunuzun logosunu ve ismini buraya yüklediğinizde, tüm öğretmen ve öğrencilerimiz sizin markanızı görecek!', 
-                    side: "top", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#kurumLogsList', 
-                popover: { 
-                    title: 'Şeffaf Kayıtlar', 
-                    description: 'Sistemde yapılan tüm kritik işlemlerin loglarını (kim neyi ne zaman değiştirdi) buradan anlık takip edin.', 
-                    side: "top", 
-                    align: 'start' 
-                } 
-            },
-            { 
-                element: '#btnTour', 
-                popover: { 
-                    title: 'Pusula Her Zaman Burada', 
-                    description: 'Sisteme yeni bir özellik eklendiğinde veya yardıma ihtiyaç duyduğunuzda bu butona basarak turu tekrarlayabilirsiniz.', 
-                    side: "bottom", 
-                    align: 'end' 
-                } 
-            }
-        ]
-    });
-
-    tour.drive();
-    localStorage.setItem('ep_kurum_tour_v19', 'completed');
-};
-
-// İlk girişte otomatik başlat
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        if (!localStorage.getItem('ep_kurum_tour_v19')) {
-            startKurumTour();
-        }
-    }, 2500);
-});
+// Sistemi Başlat
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initKurumPortal);
+} else {
+    initKurumPortal();
+}
