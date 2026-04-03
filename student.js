@@ -761,11 +761,22 @@ async function fetchMyHomeworks() {
 // ==========================================
 let currentActivityFilter = 'all';
 
-async function fetchActivities() {
-    if (!currentStudentTeacherId) {
-        console.warn("Hoca ID bulunamadı, filtreleme yapılamıyor.");
-        return;
+// ÜCRETSİZ THUMBNAIL MOTORU (ETKİNLİKLER İÇİN)
+function getActivityThumbnail(link, category) {
+    if (category === 'video') {
+        const ytMatch = link.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        if (ytMatch && ytMatch[1]) {
+            return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
+        }
+        return 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&q=80&w=400';
     }
+    if (category === 'game') return 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=400';
+    if (category === 'pdf') return 'https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&q=80&w=400';
+    return '';
+}
+
+async function fetchActivities() {
+    if (!currentStudentTeacherId) return;
 
     const { data } = await supabaseClient.from('activities').select('*').eq('teacher_id', currentStudentTeacherId).order('created_at', { ascending: false });
     const container = document.getElementById('myActivitiesList');
@@ -777,26 +788,33 @@ async function fetchActivities() {
     }
     
     container.innerHTML = ''; 
-    const icons = { 
-        video: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>', 
-        game: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>', 
-        pdf: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>' 
-    };
-
     data.forEach(act => {
         const displayStyle = (currentActivityFilter === 'all' || act.category === currentActivityFilter) ? 'flex' : 'none';
+        const thumb = getActivityThumbnail(act.link, act.category);
+        const icon = act.category === 'video' ? '📽️' : (act.category === 'game' ? '🎮' : '📄');
 
         container.innerHTML += `
-            <div class="activity-card bg-white dark:bg-slate-800 p-6 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-xl hover:border-purple-300 dark:hover:border-purple-800 transition flex flex-col h-full group" data-category="${act.category}" style="display: ${displayStyle};">
-                <div class="flex items-center gap-4 mb-5">
-                    <div class="bg-purple-50 dark:bg-purple-900/30 p-3.5 rounded-2xl text-2xl border border-purple-100 dark:border-purple-800 text-purple-600 dark:text-purple-400 shadow-inner group-hover:scale-110 transition transform">
-                        ${icons[act.category] || '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>'}
+            <div class="activity-card group relative bg-white dark:bg-slate-800 rounded-[30px] shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden hover:shadow-xl transition-all duration-300 h-64 flex-col" data-category="${act.category}" style="display: ${displayStyle};">
+                <!-- Background Preview -->
+                ${thumb ? `
+                <div class="absolute inset-0 z-0">
+                    <img src="${thumb}" class="w-full h-full object-cover opacity-20 dark:opacity-30 group-hover:scale-105 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-slate-800 dark:via-slate-800/80 dark:to-transparent"></div>
+                </div>` : ''}
+
+                <div class="relative z-10 p-6 h-full flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-2xl">${icon}</span>
+                            <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest bg-white/50 dark:bg-slate-700/50 px-2 py-1 rounded-lg backdrop-blur-sm border border-indigo-100/30 dark:border-slate-600/30">${act.category}</span>
+                        </div>
+                        <h4 class="font-black text-gray-800 dark:text-white text-base tracking-tight leading-tight mb-2 group-hover:text-indigo-600 dark:group-hover:text-white transition">${escapeHTML(act.title)}</h4>
                     </div>
-                    <h4 class="text-sm md:text-base font-black text-gray-800 dark:text-white flex-1 line-clamp-2 leading-tight group-hover:text-purple-600 dark:group-hover:text-purple-400 transition">${escapeHTML(act.title)}</h4>
+                    
+                    <button onclick="openActivity('${escapeHTML(act.link)}', '${escapeHTML(act.title)}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-2xl text-center text-xs tracking-widest shadow-lg shadow-indigo-600/20 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                        AÇ VE İNCELE <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </button>
                 </div>
-                <button onclick="openActivity('${escapeHTML(act.link)}', '${escapeHTML(act.title)}')" class="mt-auto w-full bg-slate-50 dark:bg-slate-900 hover:bg-purple-600 text-gray-500 hover:text-white border border-gray-200 dark:border-slate-700 hover:border-purple-600 transition font-black py-3 rounded-xl text-center text-xs tracking-widest uppercase shadow-sm flex justify-center items-center gap-2">
-                    AÇ VE İNCELE <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                </button>
             </div>`;
     });
 }
