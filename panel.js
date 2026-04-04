@@ -403,8 +403,13 @@ function initRealtimeProfileListener() {
 
 function updatePremiumUI() {
     const locks = document.querySelectorAll('.vip-lock, .lock-icon');
+    const badge = document.getElementById('vipBadge');
+    const premiumBadge = document.getElementById('premiumBadge');
+
     if (isPremiumTeacher) {
         locks.forEach(el => el.classList.add('hidden'));
+        if (badge) badge.classList.remove('hidden');
+        if (premiumBadge) premiumBadge.classList.remove('hidden');
         const logo = document.getElementById('panelLogo');
         if (logo) {
             logo.src = 'assets/logo_premium.png';
@@ -412,6 +417,8 @@ function updatePremiumUI() {
         }
     } else {
         locks.forEach(el => el.classList.remove('hidden'));
+        if (badge) badge.classList.add('hidden');
+        if (premiumBadge) premiumBadge.classList.add('hidden');
     }
 }
 
@@ -3410,9 +3417,6 @@ window.generateWeeklyWhatsAppReport = async function() {
         return;
     }
 
-    const isConfirmed = confirm("Bu işlem tüm öğrencilerinizin son ödev ve sınav verilerini toplayarak panonuza kopyalayacak ve WhatsApp'a aktarmanızı sağlayacaktır. İşlem 10-15 saniye sürebilir, devam edilsin mi?");
-    if (!isConfirmed) return;
-
     showToast("Öğrenci verileri analiz ediliyor...", "info");
 
     try {
@@ -3451,20 +3455,33 @@ window.generateWeeklyWhatsAppReport = async function() {
 
         reportText += `\n💬 Detaylı analiz ve sorularınız için iletişime geçebilirsiniz.`;
 
-        // Panoya kopyala
-        await navigator.clipboard.writeText(reportText);
-        showToast("Rapor panoya kopyalandı! WhatsApp açılıyor...", "success");
-
-        saveLog("Sistem", "Toplu WhatsApp Haftalık Raporu OLuşturuldu.");
+        // Modala aktar ve göster
+        const contentEl = document.getElementById('whatsappReportContent');
+        if (contentEl) contentEl.value = reportText;
         
-        setTimeout(() => {
-            window.open("https://web.whatsapp.com/", "_blank");
-        }, 1500);
+        const modalEl = document.getElementById('whatsappReportModal');
+        if (modalEl) modalEl.classList.remove('hidden');
+
+        saveLog("Sistem", "Toplu WhatsApp Haftalık Raporu Oluşturuldu.");
 
     } catch (err) {
         console.error("Rapor hatası:", err);
-        showToast("Rapor oluşturulurken hata meydan geldi.", "error");
+        showToast("Rapor oluşturulurken hata meydana geldi.", "error");
     }
+};
+
+window.copyWhatsappReport = async function() {
+    const text = document.getElementById('whatsappReportContent').value;
+    try {
+        await navigator.clipboard.writeText(text);
+        showToast("Rapor başarıyla panoya kopyalandı!", "success");
+    } catch (err) {
+        showToast("Kopyalama başarısız oldu.", "error");
+    }
+};
+
+window.openWhatsappWeb = function() {
+    window.open("https://web.whatsapp.com/", "_blank");
 };
 
 // ==========================================
