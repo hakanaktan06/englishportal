@@ -210,8 +210,8 @@ registerForm.addEventListener('submit', async (e) => {
             full_name: name,
             email: email,
             role: targetRole,
-            is_premium: (targetRole === 'kurum') ? true : false, // Kurumlar deneme amaçlı direkt premium başlar
-            school_id: authData.user.id // Kendisi bir kurumsa, school_id kendisidir
+            is_premium: false, // Kurum dahil herkes standart başlar, God panelden yükseltilir
+            school_id: (targetRole === 'kurum') ? authData.user.id : null // Sadece kurum ise kendisi tenant master olur
         }]);
 
         if (profileError) {
