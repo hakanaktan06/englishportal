@@ -3485,7 +3485,7 @@ window.openWhatsappWeb = function() {
 };
 
 // ==========================================
-// YENİ: VIP AKTİVASYON KODU KULLANMA
+// YENİ: VIP AKTİVASYON KODU KULLANMA (GÜVENLİ RPC)
 // ==========================================
 window.redeemActivationCode = async function() {
     const codeInput = document.getElementById('activationCodeInput').value.trim().toUpperCase();
@@ -3499,57 +3499,45 @@ window.redeemActivationCode = async function() {
         return;
     }
 
-    showToast("Kod doğrulanıyor...", "info");
+    const btn = event.currentTarget;
+    const oldText = btn.innerHTML;
+    btn.innerHTML = "Doğrulanıyor... ⏳";
+    btn.disabled = true;
 
     try {
-        // 1. Kodu kontrol et
-        const { data: codeData, error: codeErr } = await supabaseClient.from('activation_codes').select('*').eq('code', codeInput).single();
-        
-        if (codeErr || !codeData) {
-            showToast("Geçersiz aktivasyon kodu.", "error");
-            return;
+        // 🌟 GÜVENLİK YAMASI: 
+        // Profil tablosunda 'is_premium' sütunu yetki korumalı (RLS) olduğu için 
+        // JavaScript ile frontend'den güncellenemez (Hacklenmeye karşı koruma).
+        // Bu yüzden işlemi Supabase içindeki güvenli RPC (Fonksiyon) üzerinden çalıştırıyoruz.
+
+        const { data, error } = await supabaseClient.rpc('redeem_vip_code', { 
+            target_code: codeInput 
+        });
+
+        if (error) {
+            throw error;
         }
 
-        if (codeData.is_used) {
-            showToast("Bu kod daha önce kullanılmış.", "warning");
-            return;
+        if (data && data.success) {
+            showToast(`Tebrikler! ${data.message}`, "success");
+            saveLog("Sistem", `VIP Aktivasyon Kodu kullanıldı: ${codeInput}`);
+
+            document.getElementById('activationModal').classList.add('hidden');
+            document.getElementById('activationCodeInput').value = "";
+
+            // UI'ı yenile (RLS tetiklenmesi için 2.5 saniye bekle)
+            setTimeout(() => window.location.reload(), 2500);
+        } else {
+            showToast(data.message || "Geçersiz veya kullanılmış kod.", "error");
         }
-
-        // 2. Eğitmenin mevcut süresini bul
-        const { data: profile } = await supabaseClient.from('profiles').select('premium_until, is_premium').eq('id', currentTeacherId).single();
-        
-        let baseDate = new Date();
-        if (profile && profile.is_premium && profile.premium_until) {
-            const currentExpiry = new Date(profile.premium_until);
-            if (currentExpiry > baseDate) baseDate = currentExpiry;
-        }
-
-        // Süreyi ekle (gün bazlı)
-        const extendDays = Number(codeData.duration_days) || 30;
-        baseDate.setDate(baseDate.getDate() + extendDays);
-        const expiryStr = baseDate.toISOString();
-
-        // 3. Veritabanını güncelle
-        const { error: profileErr } = await supabaseClient.from('profiles').update({ is_premium: true, premium_until: expiryStr }).eq('id', currentTeacherId);
-        
-        if (profileErr) throw profileErr;
-
-        // 4. Kodu kullanıldı olarak işaretle
-        await supabaseClient.from('activation_codes').update({ is_used: true, used_by: currentTeacherId, used_at: new Date().toISOString() }).eq('id', codeData.id);
-
-        showToast(`Tebrikler! VIP Eğitim Seti ${extendDays} gün uzatıldı.`, "success");
-        saveLog("Sistem", `VIP Aktivasyon Kodu kullanıldı: +${extendDays} Gün`);
-
-        document.getElementById('activationModal').classList.add('hidden');
-        document.getElementById('activationCodeInput').value = "";
-
-        // UI'ı yenile
-        setTimeout(() => window.location.reload(), 2000);
 
     } catch (err) {
         console.error("Aktivasyon Hatası:", err);
-        showToast("Güvenlik protokolü devrede, lütfen tekrar deneyin.", "error");
+        showToast("Güvenlik protokolü devrede veya geçersiz işlem.", "error");
     }
+
+    btn.innerHTML = oldText;
+    btn.disabled = false;
 };
 
 // Sistemi Başlat
