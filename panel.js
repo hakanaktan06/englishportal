@@ -317,7 +317,8 @@ async function checkActiveSession() {
 
 async function loadExtendedTeacherProfile(userId) {
     try {
-        const { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
+        // 🚀 OPTİMİZASYON: Sadece gerekli kolonları çek (select('*') yerine)
+        const { data: profile, error } = await supabaseClient.from('profiles').select('full_name, bank_iban, bank_receiver, school_id, school_name, school_logo, is_premium, premium_until').eq('id', userId).single();
 
         if (error || !profile) {
             console.warn("Profil detayları çekilemedi (Bazı kolonlar eksik olabilir):", error);
@@ -335,16 +336,16 @@ async function loadExtendedTeacherProfile(userId) {
         const agendaNameEl = document.getElementById('agendaTeacherName');
         if (agendaNameEl) agendaNameEl.innerText = currentTeacherName + " Öğretmenim, şimdi çalışma vakti!";
 
-        // Markalama (B2B Kurumsal Yapı)
+        // 🚀 OPTİMİZASYON: Kurum verisi + VIP kontrolü TEK SORGUDA
+        let schoolData = null;
         if (profile.school_id) {
-            // Eğer hoca bir kuruma bağlıysa, kurumun logosunu ve adını çek
-            const { data: schoolData } = await supabaseClient.from('profiles').select('school_name, school_logo').eq('id', profile.school_id).single();
+            const { data: sd } = await supabaseClient.from('profiles').select('school_name, school_logo, is_premium').eq('id', profile.school_id).single();
+            schoolData = sd;
             if (schoolData) {
                 if (schoolData.school_name) document.querySelectorAll('.school-name-display').forEach(el => el.innerText = schoolData.school_name);
                 if (schoolData.school_logo) document.querySelectorAll('.school-logo-display').forEach(el => el.src = schoolData.school_logo);
             }
         } else {
-            // Bağımsız hoca ise kendi verilerini kullan
             if (profile.school_name) document.querySelectorAll('.school-name-display').forEach(el => el.innerText = profile.school_name);
             if (profile.school_logo) document.querySelectorAll('.school-logo-display').forEach(el => el.src = profile.school_logo);
         }
@@ -354,19 +355,15 @@ async function loadExtendedTeacherProfile(userId) {
             const today = new Date();
             const expiry = new Date(profile.premium_until);
             isPremiumTeacher = (today <= expiry);
-            window.currentPremiumExpiry = expiry; // 3 gün uyarısı için sakla
+            window.currentPremiumExpiry = expiry;
         } else {
             isPremiumTeacher = profile.is_premium;
             window.currentPremiumExpiry = null;
         }
 
-        // 4. KURUMLAR İÇİN VIP KONTROLÜ (GÜNCELLENDİ: Kurum VIP mirası)
-        if (profile.school_id && !isPremiumTeacher) {
-            // Eğer hoca kendisi VIP değilse ama bir kuruma bağlıysa, kurumun durumuna bakıyoruz
-            const { data: schoolProfile } = await supabaseClient.from('profiles').select('is_premium').eq('id', profile.school_id).single();
-            if (schoolProfile && schoolProfile.is_premium) {
-                isPremiumTeacher = true; // Kurum VIP ise hoca da VIP'dir!
-            }
+        // 🚀 OPTİMİZASYON: Kurum VIP mirası — zaten yukarıda çekildi, ekstra sorgu YOK
+        if (profile.school_id && !isPremiumTeacher && schoolData && schoolData.is_premium) {
+            isPremiumTeacher = true;
         }
 
         if (isPremiumTeacher) {
@@ -839,23 +836,27 @@ window.saveBankSettings = async function () {
 async function fetchDashboardStats() {
     if (!currentTeacherId) return;
 
-    // SAYILARI AL VE LİMİT İÇİN HAFIZAYA KAYDET
-    const { count: studentCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student').eq('teacher_id', currentTeacherId);
-    currentStudentCount = studentCount || 0;
+    // 🚀 OPTİMİZASYON: 4 sıralı sorgu → 1 paralel grup (3-4x hızlı)
+    const [studRes, quizRes, hwRes, scoreRes] = await Promise.all([
+        supabaseClient.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'student').eq('teacher_id', currentTeacherId),
+        supabaseClient.from('quizzes').select('id', { count: 'exact', head: true }).eq('teacher_id', currentTeacherId),
+        supabaseClient.from('homeworks').select('id', { count: 'exact', head: true }).eq('teacher_id', currentTeacherId),
+        supabaseClient.from('quiz_results').select('score, profiles!inner(teacher_id)').eq('profiles.teacher_id', currentTeacherId)
+    ]);
+
+    currentStudentCount = studRes.count || 0;
     const dStud = document.getElementById('dashStudentCount');
-    if (dStud) dStud.innerText = studentCount || 0;
+    if (dStud) dStud.innerText = currentStudentCount;
 
-    const { count: quizCount } = await supabaseClient.from('quizzes').select('*', { count: 'exact', head: true }).eq('teacher_id', currentTeacherId);
-    currentQuizCount = quizCount || 0;
+    currentQuizCount = quizRes.count || 0;
     const dQuiz = document.getElementById('dashQuizCount');
-    if (dQuiz) dQuiz.innerText = quizCount || 0;
+    if (dQuiz) dQuiz.innerText = currentQuizCount;
 
-    const { count: hwCount } = await supabaseClient.from('homeworks').select('*', { count: 'exact', head: true }).eq('teacher_id', currentTeacherId);
     const dHw = document.getElementById('dashHwCount');
-    if (dHw) dHw.innerText = hwCount || 0;
+    if (dHw) dHw.innerText = hwRes.count || 0;
 
-    const { data: results } = await supabaseClient.from('quiz_results').select('score, profiles!inner(*)').eq('profiles.teacher_id', currentTeacherId);
     let avgScore = 0;
+    const results = scoreRes.data;
     if (results && results.length > 0) {
         const total = results.reduce((sum, r) => sum + r.score, 0);
         avgScore = Math.round(total / results.length);
@@ -864,7 +865,7 @@ async function fetchDashboardStats() {
     if (dAvg) dAvg.innerText = avgScore ? `%${avgScore}` : '%0';
 
     fetchAgenda();
-    fetchStudentLiveLogs(); // 🌟 YENİ: Dashboard loglarını da getir!
+    fetchStudentLiveLogs();
 }
 
 // ==========================================
@@ -878,25 +879,25 @@ async function fetchAgenda() {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const startDateStr = sevenDaysAgo.toISOString().split('T')[0];
 
-    console.log("AJANDA_SORGUSU_PARAMETRELERI:", { startDateStr, currentTeacherId });
+
 
     try {
-        const { data: lessons, error: lErr } = await supabaseClient.from('private_lessons')
-            .select('lesson_date, lesson_time, topic, profiles!inner(full_name)')
-            .gte('lesson_date', startDateStr)
-            .eq('teacher_id', currentTeacherId);
+        // 🚀 OPTİMİZASYON: 2 sıralı sorgu → 1 paralel grup
+        const [lessonRes, hwRes] = await Promise.all([
+            supabaseClient.from('private_lessons')
+                .select('lesson_date, lesson_time, topic, profiles!inner(full_name)')
+                .gte('lesson_date', startDateStr)
+                .eq('teacher_id', currentTeacherId),
+            supabaseClient.from('homeworks')
+                .select('due_date, title, status, profiles!inner(full_name)')
+                .gte('due_date', startDateStr)
+                .eq('teacher_id', currentTeacherId)
+        ]);
 
-        if (lErr) console.error("Ajanda Ders Hatası:", lErr);
-
-        const { data: homeworks, error: hErr } = await supabaseClient.from('homeworks')
-            .select('due_date, title, status, profiles!inner(full_name)')
-            .gte('due_date', startDateStr)
-            .eq('teacher_id', currentTeacherId);
-
-        if (hErr) console.error("Ajanda Ödev Hatası:", hErr);
-
-        console.log("AJANDA_HAM_VERI (Dersler):", lessons);
-        console.log("AJANDA_HAM_VERI (Ödevler):", homeworks);
+        const lessons = lessonRes.data;
+        const homeworks = hwRes.data;
+        if (lessonRes.error) console.error("Ajanda Ders Hatası:", lessonRes.error);
+        if (hwRes.error) console.error("Ajanda Ödev Hatası:", hwRes.error);
 
         let agendaItems = [];
 
@@ -1167,10 +1168,17 @@ async function fetchStudents() {
 
     listContainer.innerHTML = '<div class="w-full py-10 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 animate-pulse"><svg class="w-8 h-8 mb-3 opacity-50 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg><span class="text-sm font-bold uppercase tracking-widest">Öğrenci Verileri Yükleniyor...</span></div>';
 
-    const { data: students, error: studErr } = await supabaseClient.from('profiles').select('*').eq('role', 'student').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false });
-    const { data: quizResults } = await supabaseClient.from('quiz_results').select('student_id, score, profiles!inner(*)').eq('profiles.teacher_id', currentTeacherId);
-    const { data: lessons } = await supabaseClient.from('private_lessons').select('student_id, price, is_paid').eq('teacher_id', currentTeacherId);
-    const { data: homeworks } = await supabaseClient.from('homeworks').select('student_id, status').eq('teacher_id', currentTeacherId);
+    // 🚀 OPTİMİZASYON: 4 sıralı sorgu → 1 paralel grup + spesifik kolonlar
+    const [studRes, qrRes, lesRes, hwRes] = await Promise.all([
+        supabaseClient.from('profiles').select('id, full_name, email, avatar_config, xp, coins, created_at').eq('role', 'student').eq('teacher_id', currentTeacherId).order('created_at', { ascending: false }),
+        supabaseClient.from('quiz_results').select('student_id, score, profiles!inner(teacher_id)').eq('profiles.teacher_id', currentTeacherId),
+        supabaseClient.from('private_lessons').select('student_id, price, is_paid').eq('teacher_id', currentTeacherId),
+        supabaseClient.from('homeworks').select('student_id, status').eq('teacher_id', currentTeacherId)
+    ]);
+    const students = studRes.data, studErr = studRes.error;
+    const quizResults = qrRes.data;
+    const lessons = lesRes.data;
+    const homeworks = hwRes.data;
 
     if (studErr || !students || students.length === 0) {
         document.getElementById('statTotalStudents').innerText = "0";
