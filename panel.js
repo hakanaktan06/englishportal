@@ -3523,7 +3523,7 @@ window.redeemActivationCode = async function() {
         }
 
         if (data && data.success) {
-            showToast(`Tebrikler! ${data.message}`, "success");
+            showToast(`🟢 Tebrikler! ${data.message}`, "success");
             saveLog("Sistem", `VIP Aktivasyon Kodu kullanıldı: ${codeInput}`);
 
             document.getElementById('activationModal').classList.add('hidden');
