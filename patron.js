@@ -267,7 +267,8 @@ function timeAgo(dateString) {
 // ==========================================
 const sections = {
     teachers: document.getElementById('teacherList').parentElement,
-    kurum: document.getElementById('section-kurum')
+    kurum: document.getElementById('section-kurum'),
+    avatars: document.getElementById('section-avatars')
 };
 
 function switchTab(target) {
@@ -282,10 +283,12 @@ function switchTab(target) {
 
     if(target === 'teachers') fetchTeachers();
     if(target === 'kurum') fetchKurumlar();
+    if(target === 'avatars') loadShopItems();
 }
 
 document.getElementById('btn-teachers').onclick = (e) => { e.preventDefault(); switchTab('teachers'); };
 document.getElementById('btn-kurum').onclick = (e) => { e.preventDefault(); switchTab('kurum'); };
+document.getElementById('btn-avatars').onclick = (e) => { e.preventDefault(); switchTab('avatars'); };
 
 async function fetchTeachers() {
     const listContainer = document.getElementById('teacherList');
@@ -916,3 +919,301 @@ window.generateActivationCode = async function(days) {
 // ==========================================
 // SİSTEMİ BAŞLAT (Tek noktadan tetikleme - Satır 136'da zaten çağrıldı)
 // ==========================================
+
+// ==========================================
+// 🎨 AVATAR DÜKKÂN YÖNETİM MOTORU
+// ==========================================
+let avatarPendingFile = null; // Yükleme için bekleyen sıkıştırılmış blob
+
+// --- RESİM SIKIŞTIRMA (Canvas API — WebP, 512×512 max) ---
+function compressAvatarImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX = 512; // Boyut (512×512 = 1024'ün yarısı, storage tasarrufu)
+                let w = img.width, h = img.height;
+                if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+                else { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                canvas.toBlob((blob) => {
+                    if (!blob) { reject(new Error('Sıkıştırma başarısız')); return; }
+                    resolve(blob);
+                }, 'image/webp', 0.85);
+            };
+            img.onerror = () => reject(new Error('Görsel yüklenemedi'));
+            img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error('Dosya okunamadı'));
+        reader.readAsDataURL(file);
+    });
+}
+
+// --- DOSYA SEÇİCİ ---
+const avatarFileInput = document.getElementById('avatarFileInput');
+if (avatarFileInput) {
+    avatarFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) { showToast('Lütfen bir görsel dosyası seçin.', 'error'); return; }
+
+        try {
+            const compressed = await compressAvatarImage(file);
+            avatarPendingFile = compressed;
+            const sizeKB = Math.round(compressed.size / 1024);
+            
+            // Önizleme göster
+            const previewImg = document.getElementById('avatarPreviewImg');
+            previewImg.src = URL.createObjectURL(compressed);
+            document.getElementById('avatarFileSizeInfo').textContent = `${sizeKB} KB (Sıkıştırıldı)`;
+            document.getElementById('avatarDropContent').classList.add('hidden');
+            document.getElementById('avatarPreviewBox').classList.remove('hidden');
+        } catch (err) {
+            showToast('Görsel işlenemedi: ' + err.message, 'error');
+        }
+    });
+}
+
+// --- TÜR DEĞİŞİMİNDE BASE SEÇİCİ GÖSTER/GİZLE ---
+const avatarTypeSelect = document.getElementById('avatarType');
+if (avatarTypeSelect) {
+    avatarTypeSelect.addEventListener('change', (e) => {
+        const row = document.getElementById('avatarBaseSelectRow');
+        const priceInput = document.getElementById('avatarPrice');
+        if (e.target.value === 'skin') {
+            row.classList.remove('hidden');
+            if (priceInput.value === '0') priceInput.value = '250';
+        } else {
+            row.classList.add('hidden');
+            priceInput.value = '0';
+        }
+    });
+}
+
+// --- MODAL AÇ/KAPAT ---
+window.openAvatarModal = async function(editItem = null) {
+    const modal = document.getElementById('avatarFormModal');
+    const box = document.getElementById('avatarFormBox');
+    
+    // Base'leri dropdown'a yükle
+    const baseSelect = document.getElementById('avatarBaseSelect');
+    const { data: bases } = await supabaseClient.from('shop_items').select('id, name').eq('type', 'base').order('sort_order');
+    baseSelect.innerHTML = '<option value="">-- Base Seç --</option>';
+    if (bases) bases.forEach(b => {
+        baseSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`;
+    });
+
+    // Formu sıfırla
+    document.getElementById('avatarEditId').value = '';
+    document.getElementById('avatarName').value = '';
+    document.getElementById('avatarDesc').value = '';
+    document.getElementById('avatarType').value = 'base';
+    document.getElementById('avatarPrice').value = '0';
+    document.getElementById('avatarBaseSelect').value = '';
+    document.getElementById('avatarBaseSelectRow').classList.add('hidden');
+    document.getElementById('avatarDropContent').classList.remove('hidden');
+    document.getElementById('avatarPreviewBox').classList.add('hidden');
+    document.getElementById('avatarModalTitle').textContent = 'Yeni Avatar Ekle';
+    document.getElementById('avatarSaveText').textContent = 'KAYDET VE YAYINLA';
+    avatarPendingFile = null;
+    if (avatarFileInput) avatarFileInput.value = '';
+
+    // Eğer düzenleme ise değerleri doldur
+    if (editItem) {
+        document.getElementById('avatarEditId').value = editItem.id;
+        document.getElementById('avatarName').value = editItem.name;
+        document.getElementById('avatarDesc').value = editItem.description || '';
+        document.getElementById('avatarType').value = editItem.type;
+        document.getElementById('avatarPrice').value = editItem.coin_price;
+        document.getElementById('avatarModalTitle').textContent = 'Avatarı Düzenle';
+        document.getElementById('avatarSaveText').textContent = 'GÜNCELLE';
+        
+        if (editItem.type === 'skin') {
+            document.getElementById('avatarBaseSelectRow').classList.remove('hidden');
+            document.getElementById('avatarBaseSelect').value = editItem.base_id || '';
+        }
+        
+        // Mevcut görseli göster
+        document.getElementById('avatarPreviewImg').src = editItem.image_url;
+        document.getElementById('avatarFileSizeInfo').textContent = 'Mevcut görsel';
+        document.getElementById('avatarDropContent').classList.add('hidden');
+        document.getElementById('avatarPreviewBox').classList.remove('hidden');
+    }
+
+    modal.classList.remove('hidden');
+    setTimeout(() => { modal.style.opacity = '1'; box.classList.remove('scale-95'); }, 10);
+};
+
+window.closeAvatarModal = function() {
+    const modal = document.getElementById('avatarFormModal');
+    const box = document.getElementById('avatarFormBox');
+    modal.style.opacity = '0';
+    box.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+};
+
+// --- FORM GÖNDER (KAYDET / GÜNCELLE) ---
+const avatarForm = document.getElementById('avatarItemForm');
+if (avatarForm) {
+    avatarForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('avatarEditId').value;
+        const name = document.getElementById('avatarName').value.trim();
+        const desc = document.getElementById('avatarDesc').value.trim();
+        const type = document.getElementById('avatarType').value;
+        const price = parseInt(document.getElementById('avatarPrice').value) || 0;
+        const baseId = type === 'skin' ? (parseInt(document.getElementById('avatarBaseSelect').value) || null) : null;
+
+        if (!name) { showToast('Karakter adı boş olamaz!', 'error'); return; }
+        if (type === 'skin' && !baseId) { showToast('Skin için bağlı base karakter seçmelisin!', 'error'); return; }
+        if (!avatarPendingFile && !editId) { showToast('Lütfen bir görsel yükle!', 'error'); return; }
+
+        const saveBtn = avatarForm.querySelector('button[type="submit"]');
+        const origText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<span class="animate-pulse">YÜKLENİYOR...</span>';
+        saveBtn.disabled = true;
+
+        try {
+            let imageUrl = '';
+
+            // Yeni dosya yüklendiyse Storage'a at
+            if (avatarPendingFile) {
+                const fileName = `avatar_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.webp`;
+                const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                    .from('avatars')
+                    .upload(fileName, avatarPendingFile, {
+                        contentType: 'image/webp',
+                        cacheControl: '31536000', // 1 yıl cache
+                        upsert: false
+                    });
+
+                if (uploadError) throw new Error('Storage hatası: ' + uploadError.message);
+                
+                const { data: urlData } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
+                imageUrl = urlData.publicUrl;
+            }
+
+            if (editId) {
+                // GÜNCELLEME
+                const updateData = { name, description: desc, type, coin_price: price, base_id: baseId };
+                if (imageUrl) updateData.image_url = imageUrl;
+                
+                const { error } = await supabaseClient.from('shop_items').update(updateData).eq('id', editId);
+                if (error) throw error;
+                showToast('Avatar güncellendi!', 'success');
+            } else {
+                // YENİ EKLEME
+                const { data: lastItem } = await supabaseClient.from('shop_items').select('sort_order').order('sort_order', { ascending: false }).limit(1).single();
+                const nextOrder = (lastItem?.sort_order || 0) + 1;
+
+                const { error } = await supabaseClient.from('shop_items').insert([{
+                    name, description: desc, type, coin_price: price, base_id: baseId,
+                    image_url: imageUrl, sort_order: nextOrder, is_active: true
+                }]);
+                if (error) throw error;
+                showToast('Yeni avatar dükkâna eklendi!', 'success');
+            }
+
+            closeAvatarModal();
+            loadShopItems();
+        } catch (err) {
+            console.error('Avatar kayıt hatası:', err);
+            showToast('Hata: ' + (err.message || 'İşlem başarısız'), 'error');
+        } finally {
+            saveBtn.innerHTML = origText;
+            saveBtn.disabled = false;
+        }
+    });
+}
+
+// --- LİSTELE (KART GÖRÜNÜMLERİ) ---
+window.loadShopItems = async function() {
+    const baseList = document.getElementById('avatarBaseList');
+    const skinList = document.getElementById('avatarSkinList');
+    if (!baseList || !skinList) return;
+
+    baseList.innerHTML = '<p class="col-span-full text-center text-slate-500 py-4 text-xs animate-pulse">Yükleniyor...</p>';
+    skinList.innerHTML = '<p class="col-span-full text-center text-slate-500 py-4 text-xs animate-pulse">Yükleniyor...</p>';
+
+    const { data: items, error } = await supabaseClient.from('shop_items').select('*').eq('is_active', true).order('sort_order');
+
+    if (error || !items || items.length === 0) {
+        baseList.innerHTML = '<p class="col-span-full text-center text-slate-500 py-6 text-xs font-bold uppercase tracking-widest">Henüz avatar eklenmemiş. "Yeni Avatar Ekle" butonunu kullan.</p>';
+        skinList.innerHTML = '';
+        return;
+    }
+
+    const bases = items.filter(i => i.type === 'base');
+    const skins = items.filter(i => i.type === 'skin');
+
+    // Base kartları
+    if (bases.length === 0) {
+        baseList.innerHTML = '<p class="col-span-full text-center text-slate-500 py-4 text-xs">Henüz base karakter yok.</p>';
+    } else {
+        baseList.innerHTML = bases.map(item => renderAvatarCard(item)).join('');
+    }
+
+    // Skin kartları
+    if (skins.length === 0) {
+        skinList.innerHTML = '<p class="col-span-full text-center text-slate-500 py-4 text-xs">Henüz skin yok.</p>';
+    } else {
+        skinList.innerHTML = skins.map(item => {
+            const parentBase = bases.find(b => b.id === item.base_id);
+            return renderAvatarCard(item, parentBase?.name);
+        }).join('');
+    }
+};
+
+function renderAvatarCard(item, parentBaseName) {
+    const isBase = item.type === 'base';
+    const borderColor = isBase ? 'border-amber-500/30' : 'border-pink-500/30';
+    const priceTag = item.coin_price > 0
+        ? `<span class="text-amber-400 font-black text-xs">${item.coin_price} EP</span>`
+        : `<span class="text-emerald-400 font-black text-[10px] uppercase">Ücretsiz</span>`;
+
+    return `
+        <div class="bg-slate-800/60 border ${borderColor} rounded-2xl p-3 flex flex-col items-center text-center group hover:border-pink-400 transition-all relative overflow-hidden">
+            <img src="${item.image_url}" class="w-24 h-24 object-contain rounded-xl mb-2 group-hover:scale-105 transition-transform" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=1e293b&color=f472b6&size=96'">
+            <h5 class="text-xs font-black text-white leading-tight mb-0.5 truncate max-w-full">${item.name}</h5>
+            ${parentBaseName ? `<p class="text-[9px] text-pink-400/70 font-bold uppercase tracking-wider mb-1">${parentBaseName}</p>` : ''}
+            ${item.description ? `<p class="text-[9px] text-slate-400 italic leading-snug mb-2 line-clamp-2">${item.description}</p>` : ''}
+            <div class="mb-2">${priceTag}</div>
+            <div class="flex gap-1.5 w-full">
+                <button onclick='openAvatarModal(${JSON.stringify(item).replace(/'/g, "\\u0027")})' class="flex-1 py-1.5 bg-slate-700 hover:bg-pink-500/20 text-slate-300 hover:text-pink-400 rounded-lg text-[9px] font-black uppercase transition">Düzenle</button>
+                <button onclick="deleteShopItem(${item.id})" class="flex-1 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg text-[9px] font-black uppercase transition">Sil</button>
+            </div>
+        </div>`;
+}
+
+// --- SİLME ---
+window.deleteShopItem = async function(id) {
+    const onay = await customConfirm('Bu avatarı dükkândan kalıcı olarak silmek istediğinden emin misin?', 'Evet, Sil');
+    if (!onay) return;
+
+    showToast('Siliniyor...', 'info');
+
+    // Önce görselin storage path'ini bul
+    const { data: item } = await supabaseClient.from('shop_items').select('image_url').eq('id', id).single();
+    
+    if (item && item.image_url && item.image_url.includes('/avatars/')) {
+        const parts = item.image_url.split('/avatars/');
+        const filePath = parts[parts.length - 1];
+        if (filePath) {
+            await supabaseClient.storage.from('avatars').remove([filePath]);
+        }
+    }
+
+    // Tablodan sil
+    const { error } = await supabaseClient.from('shop_items').delete().eq('id', id);
+    if (error) {
+        showToast('Silme hatası: ' + error.message, 'error');
+        return;
+    }
+    showToast('Avatar silindi!', 'success');
+    loadShopItems();
+};
