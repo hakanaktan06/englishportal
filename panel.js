@@ -2396,9 +2396,13 @@ if (btnGenerateAI) {
         */
 
         try {
+            const { data: { session: aiSession } } = await supabaseClient.auth.getSession();
             const response = await fetch('/api/generate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${aiSession?.access_token || ''}`
+                },
                 body: JSON.stringify({
                     model: 'gpt-4o-mini',
                     messages: [
@@ -2556,9 +2560,13 @@ if (btnGenerateFlashcards) {
         */
 
         try {
+            const { data: { session: aiSession2 } } = await supabaseClient.auth.getSession();
             const response = await fetch('/api/generate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${aiSession2?.access_token || ''}`
+                },
                 body: JSON.stringify({
                     model: 'gpt-4o-mini',
                     messages: [
@@ -3000,9 +3008,13 @@ window.openAIReportModal = async function () {
     const promptText = `Öğrencinin Adı: ${studentName}. İngilizce Sınav Ortalaması: %${avg}. Ödev Yapma Oranı: %${hwRate}. Son işlenen konular: ${recentTopics || 'Genel İngilizce'}. Sen profesyonel, VIP bir İngilizce öğretmenisin. Veliye WhatsApp üzerinden atılmak üzere, öğrencinin bu istatistiklerine dayanarak kibar, motive edici ve pedagojik bir durum değerlendirme raporu yaz. Veliye doğrudan hitap et. Çok uzun olmasın, maksimum 3-4 cümle. ${debt > 0 ? 'Not: Velinin sana ' + debt + ' TL ödenmemiş ders borcu var, bunu da metnin sonuna son derece kibar ve nazik bir dille "gecikmiş ödemeniz bulunuyor" gibi bir ifadeyle iliştir.' : 'Borç yok, paradan kesinlikle bahsetme.'} Sonuna da "Detaylı gelişim raporu ve canlı takip için linke tıklayın:" yazıp bırak (ben linki ekleyeceğim).`;
 
     try {
+        const { data: { session: aiSession3 } } = await supabaseClient.auth.getSession();
         const response = await fetch('/api/generate', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${aiSession3?.access_token || ''}`
+            },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
                 messages: [
