@@ -405,6 +405,7 @@ function updatePremiumUI() {
     const locks = document.querySelectorAll('.vip-lock, .lock-icon');
     const badge = document.getElementById('vipBadge');
     const premiumBadge = document.getElementById('premiumBadge');
+    const vipActivateBtn = document.getElementById('vipActivateBtn');
 
     if (isPremiumTeacher) {
         locks.forEach(el => el.classList.add('hidden'));
@@ -415,10 +416,21 @@ function updatePremiumUI() {
             logo.src = 'assets/logo_premium.png';
             logo.classList.remove('grayscale', 'brightness-0');
         }
+        
+        // Zaten Premium ise buton "SÜRE UZAT" olsun
+        if (vipActivateBtn) {
+            const iconHTML = `<svg class="w-4 h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            vipActivateBtn.innerHTML = `${iconHTML}<span>SÜRENİZİ UZATIN</span>`;
+        }
     } else {
         locks.forEach(el => el.classList.remove('hidden'));
         if (badge) badge.classList.add('hidden');
         if (premiumBadge) premiumBadge.classList.add('hidden');
+        
+        if (vipActivateBtn) {
+            const iconHTML = `<svg class="w-4 h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>`;
+            vipActivateBtn.innerHTML = `${iconHTML}<span>VIP KOD GİR</span>`;
+        }
     }
 }
 
