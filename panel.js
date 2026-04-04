@@ -3401,6 +3401,140 @@ function setupCategorySuggestions() {
     }
 }
 
+// ==========================================
+// YENİ: WHATSAPP HAFTALIK RAPOR MOTORU
+// ==========================================
+window.generateWeeklyWhatsAppReport = async function() {
+    if (!currentTeacherId) {
+        showToast("Oturum tam yüklenmedi, lütfen bekleyin.", "warning");
+        return;
+    }
+
+    const isConfirmed = confirm("Bu işlem tüm öğrencilerinizin son ödev ve sınav verilerini toplayarak panonuza kopyalayacak ve WhatsApp'a aktarmanızı sağlayacaktır. İşlem 10-15 saniye sürebilir, devam edilsin mi?");
+    if (!isConfirmed) return;
+
+    showToast("Öğrenci verileri analiz ediliyor...", "info");
+
+    try {
+        const { data: students, error: stdErr } = await supabaseClient.from('profiles').select('id, full_name').eq('teacher_id', currentTeacherId).eq('role', 'student');
+        if (stdErr || !students || students.length === 0) {
+            showToast("Kayıtlı öğrenciniz bulunamadı.", "warning");
+            return;
+        }
+
+        const { data: hwData } = await supabaseClient.from('homework_status').select('status, student_id');
+        const { data: qzData } = await supabaseClient.from('quiz_results').select('score, student_id');
+
+        let reportText = `🏆 *HAFTALIK ÖDEV VE GELİŞİM RAPORU* 🏆\nEğitmen: English Portal VIP Panel\nTarih: ${new Date().toLocaleDateString('tr-TR')}\n\n`;
+
+        students.forEach(student => {
+            const studentHw = hwData ? hwData.filter(h => h.student_id === student.id) : [];
+            const completedHw = studentHw.filter(h => h.status === 'completed').length;
+            const totalHw = studentHw.length;
+            const hwRate = totalHw === 0 ? 0 : Math.round((completedHw / totalHw) * 100);
+
+            const studentQz = qzData ? qzData.filter(q => q.student_id === student.id) : [];
+            let totalScore = 0;
+            studentQz.forEach(q => totalScore += Number(q.score));
+            const avgScore = studentQz.length === 0 ? 0 : Math.round(totalScore / studentQz.length);
+
+            let emoji = "🙂";
+            if (hwRate >= 80 && avgScore >= 80) emoji = "🌟";
+            else if (hwRate < 50) emoji = "⚠️";
+
+            reportText += `👤 *${student.full_name.toUpperCase()}*\n`;
+            reportText += `📚 Ödev Tamamlama: %${hwRate}\n`;
+            reportText += `🎯 Sınav Ortalaması: %${avgScore}\n`;
+            reportText += `Durum: ${emoji}\n`;
+            reportText += `------------------------------\n`;
+        });
+
+        reportText += `\n💬 Detaylı analiz ve sorularınız için iletişime geçebilirsiniz.`;
+
+        // Panoya kopyala
+        await navigator.clipboard.writeText(reportText);
+        showToast("Rapor panoya kopyalandı! WhatsApp açılıyor...", "success");
+
+        saveLog("Sistem", "Toplu WhatsApp Haftalık Raporu OLuşturuldu.");
+        
+        setTimeout(() => {
+            window.open("https://web.whatsapp.com/", "_blank");
+        }, 1500);
+
+    } catch (err) {
+        console.error("Rapor hatası:", err);
+        showToast("Rapor oluşturulurken hata meydan geldi.", "error");
+    }
+};
+
+// ==========================================
+// YENİ: VIP AKTİVASYON KODU KULLANMA
+// ==========================================
+window.redeemActivationCode = async function() {
+    const codeInput = document.getElementById('activationCodeInput').value.trim().toUpperCase();
+    if (!codeInput) {
+        showToast("Lütfen kodu girin.", "warning");
+        return;
+    }
+
+    if (!currentTeacherId) {
+        showToast("Oturum zaman aşımına uğradı.", "error");
+        return;
+    }
+
+    showToast("Kod doğrulanıyor...", "info");
+
+    try {
+        // 1. Kodu kontrol et
+        const { data: codeData, error: codeErr } = await supabaseClient.from('activation_codes').select('*').eq('code', codeInput).single();
+        
+        if (codeErr || !codeData) {
+            showToast("Geçersiz aktivasyon kodu.", "error");
+            return;
+        }
+
+        if (codeData.is_used) {
+            showToast("Bu kod daha önce kullanılmış.", "warning");
+            return;
+        }
+
+        // 2. Eğitmenin mevcut süresini bul
+        const { data: profile } = await supabaseClient.from('profiles').select('premium_until, is_premium').eq('id', currentTeacherId).single();
+        
+        let baseDate = new Date();
+        if (profile && profile.is_premium && profile.premium_until) {
+            const currentExpiry = new Date(profile.premium_until);
+            if (currentExpiry > baseDate) baseDate = currentExpiry;
+        }
+
+        // Süreyi ekle (gün bazlı)
+        const extendDays = Number(codeData.duration_days) || 30;
+        baseDate.setDate(baseDate.getDate() + extendDays);
+        const expiryStr = baseDate.toISOString();
+
+        // 3. Veritabanını güncelle
+        const { error: profileErr } = await supabaseClient.from('profiles').update({ is_premium: true, premium_until: expiryStr }).eq('id', currentTeacherId);
+        
+        if (profileErr) throw profileErr;
+
+        // 4. Kodu kullanıldı olarak işaretle
+        await supabaseClient.from('activation_codes').update({ is_used: true, used_by: currentTeacherId, used_at: new Date().toISOString() }).eq('id', codeData.id);
+
+        showToast(`Tebrikler! VIP Eğitim Seti ${extendDays} gün uzatıldı.`, "success");
+        saveLog("Sistem", `VIP Aktivasyon Kodu kullanıldı: +${extendDays} Gün`);
+
+        document.getElementById('activationModal').classList.add('hidden');
+        document.getElementById('activationCodeInput').value = "";
+
+        // UI'ı yenile
+        setTimeout(() => window.location.reload(), 2000);
+
+    } catch (err) {
+        console.error("Aktivasyon Hatası:", err);
+        showToast("Güvenlik protokolü devrede, lütfen tekrar deneyin.", "error");
+    }
+};
+
 // Sistemi Başlat
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
@@ -3412,4 +3546,11 @@ if (document.readyState === 'loading') {
     setupCategorySuggestions();
 }
 
-// EOF (Stage 3 Ready)
+// ==========================================
+// PROD LOG CLEARING
+// ==========================================
+window.IS_DEV = false; // Production ortamında burayı false tutun
+if (!window.IS_DEV) {
+    console.log = function() {}; // Logları sustur
+    // console.warn = function() {}; // Gerekirse uyarıları da sustur
+}
