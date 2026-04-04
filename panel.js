@@ -3499,10 +3499,14 @@ window.redeemActivationCode = async function() {
         return;
     }
 
-    const btn = event.currentTarget;
-    const oldText = btn.innerHTML;
-    btn.innerHTML = "Doğrulanıyor... ⏳";
-    btn.disabled = true;
+    // Buton animasyonu
+    const btn = document.querySelector('#activationModal button');
+    let oldText = "HESABI YÜKSELT";
+    if (btn) {
+        oldText = btn.innerHTML;
+        btn.innerHTML = "Doğrulanıyor... ⏳";
+        btn.disabled = true;
+    }
 
     try {
         // 🌟 GÜVENLİK YAMASI: 
@@ -3533,11 +3537,13 @@ window.redeemActivationCode = async function() {
 
     } catch (err) {
         console.error("Aktivasyon Hatası:", err);
-        showToast("Güvenlik protokolü devrede veya geçersiz işlem.", "error");
+        showToast("Hata: İşlem geçersiz veya sunucuya uylaşılamadı.", "error");
     }
 
-    btn.innerHTML = oldText;
-    btn.disabled = false;
+    if (btn) {
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+    }
 };
 
 // Sistemi Başlat
