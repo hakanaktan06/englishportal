@@ -328,8 +328,10 @@ async function loadExtendedTeacherProfile(userId) {
             const today = new Date();
             const expiry = new Date(profile.premium_until);
             isPremiumTeacher = (today <= expiry);
+            window.currentPremiumExpiry = expiry; // 3 gün uyarısı için sakla
         } else {
             isPremiumTeacher = profile.is_premium;
+            window.currentPremiumExpiry = null;
         }
 
         // 4. KURUMLAR İÇİN VIP KONTROLÜ (GÜNCELLENDİ: Kurum VIP mirası)
@@ -406,6 +408,7 @@ function updatePremiumUI() {
     const badge = document.getElementById('vipBadge');
     const premiumBadge = document.getElementById('premiumBadge');
     const vipActivateBtn = document.getElementById('vipActivateBtn');
+    const warningBanner = document.getElementById('vipWarningBanner');
 
     if (isPremiumTeacher) {
         locks.forEach(el => el.classList.add('hidden'));
@@ -422,10 +425,36 @@ function updatePremiumUI() {
             const iconHTML = `<svg class="w-4 h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
             vipActivateBtn.innerHTML = `${iconHTML}<span>SÜRENİZİ UZATIN</span>`;
         }
+
+        // 3 GÜN KALA UYARISI YÖNETİMİ
+        if (warningBanner) {
+            if (window.currentPremiumExpiry) {
+                const today = new Date();
+                const diffTime = window.currentPremiumExpiry.getTime() - today.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays <= 3 && diffDays > 0) {
+                    const daysText = document.getElementById('vipDaysLeftText');
+                    if(daysText) daysText.innerText = diffDays;
+                    warningBanner.classList.remove('hidden');
+                    warningBanner.classList.add('flex');
+                } else {
+                    warningBanner.classList.add('hidden');
+                    warningBanner.classList.remove('flex');
+                }
+            } else {
+                warningBanner.classList.add('hidden');
+                warningBanner.classList.remove('flex');
+            }
+        }
     } else {
         locks.forEach(el => el.classList.remove('hidden'));
         if (badge) badge.classList.add('hidden');
         if (premiumBadge) premiumBadge.classList.add('hidden');
+        if (warningBanner) {
+            warningBanner.classList.add('hidden');
+            warningBanner.classList.remove('flex');
+        }
         
         if (vipActivateBtn) {
             const iconHTML = `<svg class="w-4 h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>`;
