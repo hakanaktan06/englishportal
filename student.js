@@ -220,7 +220,8 @@ async function initStudentPortal() {
 
 async function loadExtendedStudentProfile(userId) {
     try {
-        const { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
+        // 🚀 OPTİMİZASYON: Sadece gerekli kolonları çek
+        const { data: profile, error } = await supabaseClient.from('profiles').select('full_name, school_name, school_logo, xp, coins, avatar_config, teacher_id').eq('id', userId).single();
         
         if (error || !profile) {
             console.warn("Profil detayları çekilemedi (Bazı kolonlar eksik olabilir):", error);
