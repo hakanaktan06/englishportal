@@ -1277,9 +1277,13 @@ window.startListening = async function() {
             const base64Audio = reader.result.split(',')[1];
 
             try {
+                const { data: { session: micSession } } = await supabaseClient.auth.getSession();
                 const response = await fetch('/api/transcribe', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${micSession?.access_token || ''}`
+                    },
                     body: JSON.stringify({ 
                         audioBase64: base64Audio, 
                         ext: ext, 
@@ -1418,9 +1422,13 @@ window.submitWritingTask = async function() {
     btn.disabled = true;
 
     try {
+        const { data: { session: stuSession } } = await supabaseClient.auth.getSession();
         const response = await fetch('/api/generate', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${stuSession?.access_token || ''}`
+            },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
                 messages: [
