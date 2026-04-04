@@ -3509,35 +3509,44 @@ window.redeemActivationCode = async function() {
     }
 
     try {
-        // 🌟 GÜVENLİK YAMASI: 
-        // Profil tablosunda 'is_premium' sütunu yetki korumalı (RLS) olduğu için 
-        // JavaScript ile frontend'den güncellenemez (Hacklenmeye karşı koruma).
-        // Bu yüzden işlemi Supabase içindeki güvenli RPC (Fonksiyon) üzerinden çalıştırıyoruz.
+        // 🌟 GÜVENLİK YAMASI VE KESİN ÇÖZÜM: 
+        // Supabase RPC ve Postgres RLS çatışması nedeniyle, aktivasyon işlemini 
+        // GOD / Vercel Sunucu Katmanına taşıdık. Sınırları tamamen kırar!
 
-        const { data, error } = await supabaseClient.rpc('redeem_vip_code', { 
-            target_code: codeInput 
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) { showToast("Oturum zaman aşımına uğradı.", "error"); return; }
+
+        const apiUrl = window.location.protocol === 'file:'
+            ? 'https://englishportalvip.vercel.app/api/redeem-code' // Yerel denemeler için API zorlaması
+            : '/api/redeem-code';
+
+        const res = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ codeInput: codeInput })
         });
 
-        if (error) {
-            throw error;
-        }
+        const data = await res.json();
 
-        if (data && data.success) {
-            showToast(`🟢 Tebrikler! ${data.message}`, "success");
+        if (res.ok && data.success) {
+            showToast(`🚀 ${data.message}`, "success");
             saveLog("Sistem", `VIP Aktivasyon Kodu kullanıldı: ${codeInput}`);
 
             document.getElementById('activationModal').classList.add('hidden');
             document.getElementById('activationCodeInput').value = "";
 
-            // UI'ı yenile (RLS tetiklenmesi için 2.5 saniye bekle)
+            // UI'ı yenile
             setTimeout(() => window.location.reload(), 2500);
         } else {
-            showToast(data.message || "Geçersiz veya kullanılmış kod.", "error");
+            showToast(data.error || "Geçersiz veya kullanılmış kod.", "error");
         }
 
     } catch (err) {
         console.error("Aktivasyon Hatası:", err);
-        showToast("Hata: İşlem geçersiz veya sunucuya uylaşılamadı.", "error");
+        showToast("Hata: Vercel Sunucusuna erişilemiyor.", "error");
     }
 
     if (btn) {
