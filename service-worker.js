@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ep-vip-v4'; // Versiyon Atlatıldı (Restoration)
+const CACHE_NAME = 'ep-vip-v5-20260404'; // Güvenlik yaması sonrası force-refresh
 const urlsToCache = [
   '/',
   '/index.html',
