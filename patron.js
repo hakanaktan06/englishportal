@@ -353,7 +353,7 @@ async function fetchTeachers() {
             </div>
             <div class="flex justify-end gap-3">
                 <button onclick="resetTeacherPassword('${teacher.id}')" class="flex flex-1 items-center justify-center gap-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-indigo-500/20 transition" title="Şifreyi Sıfırla"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4v-3l8.44-8.44A6 6 0 0115 7h0z"></path></svg> Şifreyi Sıfırla</button>
-                <button onclick="deleteTeacher('${teacher.id}')" class="flex flex-1 items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-rose-500/20 transition" title="Öğretmeni Sil"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Sistemi Kapat</button>
+                <button onclick="deleteTeacher('${teacher.id}')" class="flex flex-1 items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-rose-500/20 transition" title="Öğretmeni Sil"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Hesabı Sil</button>
             </div>`;
 
         const currentPersonalMsg = teacher.announcement || '';
@@ -914,10 +914,5 @@ window.generateActivationCode = async function(days) {
 };
 
 // ==========================================
-// SİSTEMİ BAŞLAT
+// SİSTEMİ BAŞLAT (Tek noktadan tetikleme - Satır 136'da zaten çağrıldı)
 // ==========================================
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', checkGodSecurity);
-} else {
-    checkGodSecurity();
-}
