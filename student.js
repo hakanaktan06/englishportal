@@ -208,7 +208,8 @@ async function initStudentPortal() {
         // 🌟 STEP 2: Detaylı Verileri Arkadan Çek (Non-blocking)
         loadExtendedStudentProfile(user.id);
         
-        // 🌟 4. AVATAR & SHOP MOUNT
+        // 🌟 4. AVATAR & SHOP MOUNT — Önce DB'den yükle, sonra dükkânı başlat
+        await loadShopDataFromDB();
         initShop();
         preloadImages(); 
 
@@ -356,7 +357,8 @@ function playSound(type) {
 // ==========================================
 let currentAvatarConfig = { base: 0, skin: -1, inventory: [] };
 
-const SHOP_DATA = {
+// Hardcoded fallback (DB boşsa bu kullanılır)
+let SHOP_DATA = {
     bases: [
         { id: 0, name: "Kâşif", price: 0, img: "/assets/avatars/base_0_v1.png", desc: "Yeni dünyalar keşfetmeye hazır, meraklı bir gezgin." },
         { id: 1, name: "Savaşçı", price: 100, img: "/assets/avatars/base_1_v1.png", desc: "Cesareti ve kılıcıyla adalet dağıtan bir şövalye." },
@@ -410,6 +412,32 @@ const SHOP_DATA = {
     ],
     pets: []
 };
+
+// 🌟 VERİTABANINDAN AVATAR VERİSİ YÜKLE (God Panel'den eklenenler)
+async function loadShopDataFromDB() {
+    try {
+        const { data: items, error } = await supabaseClient.from('shop_items').select('*').eq('is_active', true).order('sort_order');
+        if (error || !items || items.length === 0) {
+            console.log("DB'de avatar yok, hardcoded SHOP_DATA kullanılıyor.");
+            return; // Fallback: eski hardcoded veri kalır
+        }
+
+        const dbBases = items.filter(i => i.type === 'base').map(i => ({
+            id: i.id, name: i.name, price: i.coin_price, img: i.image_url, desc: i.description || ''
+        }));
+        const dbSkins = items.filter(i => i.type === 'skin').map(i => ({
+            id: i.id, baseId: i.base_id, name: i.name, price: i.coin_price, img: i.image_url, desc: i.description || ''
+        }));
+
+        if (dbBases.length > 0) {
+            SHOP_DATA.bases = dbBases;
+            SHOP_DATA.skins = dbSkins;
+            console.log(`DB'den ${dbBases.length} base + ${dbSkins.length} skin yüklendi.`);
+        }
+    } catch (e) {
+        console.warn("Shop DB yükleme hatası, fallback kullanılıyor:", e);
+    }
+}
 
 // 🌟 RESİM ÖN YÜKLEME (PRELOADING)
 function preloadImages() {
