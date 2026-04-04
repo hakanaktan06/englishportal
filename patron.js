@@ -470,19 +470,88 @@ window.sendPersonalMessage = async function (teacherId) {
 
 // 🌟 ULTRA GÜÇLÜ ÖĞRETMEN SİLME MOTORU (DERİN TEMİZLİK - SERVER-SIDE) 🌟
 window.deleteTeacher = async function (id) {
-    const isConfirmed = await customConfirm("BU ÖĞRETMENİ VE TÜM EKOSİSTEMİNİ (Öğrenciler, Ödevler, Sınavlar, Kayıtlar vb.) SİSTEMDEN TAMAMEN KAZIMAK İSTEDİĞİNİZE EMİN MİSİNİZ?\n\n⚠️ DİKKAT: Bu hocaya bağlı tüm öğrenciler ve verileri de silinecektir!", "KÖKTEN SİL");
+    // 1. Önce kaç öğrenci etkileneceğini göster
+    const { count: studentCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true }).eq('teacher_id', id).eq('role', 'student');
+    const { count: quizCount } = await supabaseClient.from('quizzes').select('*', { count: 'exact', head: true }).eq('teacher_id', id);
+
+    // 2. Onay modalını oluştur
+    const impactModal = document.createElement('div');
+    impactModal.className = 'fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[10000] p-4';
+    impactModal.innerHTML = `
+      <div class="bg-slate-900 border-2 border-red-500/50 rounded-[30px] p-8 max-w-sm w-full">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-black text-white mb-2">Kalıcı Silme Uyarısı</h3>
+          <p class="text-slate-400 text-sm">Bu işlem şunları silecek:</p>
+        </div>
+        
+        <div class="space-y-3 mb-6">
+          <div class="flex justify-between bg-slate-800 rounded-xl px-4 py-3">
+            <span class="text-slate-400 text-sm">Öğrenci Hesabı</span>
+            <span class="text-red-400 font-black">${studentCount || 0} kişi</span>
+          </div>
+          <div class="flex justify-between bg-slate-800 rounded-xl px-4 py-3">
+            <span class="text-slate-400 text-sm">Sınav ve Sorular</span>
+            <span class="text-red-400 font-black">${quizCount || 0} sınav</span>
+          </div>
+          <div class="flex justify-between bg-slate-800 rounded-xl px-4 py-3">
+            <span class="text-slate-400 text-sm">Tüm Ödev Kayıtları</span>
+            <span class="text-red-400 font-black">Hepsi</span>
+          </div>
+        </div>
+        
+        <p class="text-[10px] text-slate-500 text-center mb-4 uppercase tracking-widest">Onaylamak için aşağıya "SİL" yazın</p>
+        <input type="text" id="deleteConfirmText" class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl text-center font-black tracking-widest mb-4 outline-none focus:border-red-500" placeholder="...">
+        <div class="flex gap-3">
+          <button id="cancelDeleteBtn" class="flex-1 py-3 bg-slate-800 text-slate-400 rounded-xl font-black text-sm">İptal</button>
+          <button id="confirmDeleteBtn" disabled class="flex-1 py-3 bg-red-600/50 text-red-300 rounded-xl font-black text-sm disabled:cursor-not-allowed transition">SİL</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(impactModal);
+    
+    const input = impactModal.querySelector('#deleteConfirmText');
+    const confirmBtn = impactModal.querySelector('#confirmDeleteBtn');
+    const cancelBtn = impactModal.querySelector('#cancelDeleteBtn');
+    
+    input.addEventListener('input', (e) => {
+      if (e.target.value.trim().toUpperCase() === 'SİL') {
+        confirmBtn.disabled = false;
+        confirmBtn.className = 'flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-black text-sm transition';
+      } else {
+        confirmBtn.disabled = true;
+        confirmBtn.className = 'flex-1 py-3 bg-red-600/50 text-red-300 rounded-xl font-black text-sm disabled:cursor-not-allowed transition';
+      }
+    });
+    
+    const isConfirmed = await new Promise((resolve) => {
+      confirmBtn.onclick = () => { impactModal.remove(); resolve(true); };
+      cancelBtn.onclick = () => { impactModal.remove(); resolve(false); };
+    });
+
     if (!isConfirmed) return;
 
     if (typeof showToast === "function") showToast("Cihazlar arası derin temizlik başlatıldı...", "info");
 
     try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) { showToast("Oturum bulunamadı, silme başarısız.", "error"); return; }
+
         const apiUrl = window.location.protocol === 'file:'
             ? 'https://englishportalvip.vercel.app/api/delete-user' // Yerel test için fallback
             : '/api/delete-user';
 
         const res = await fetch(apiUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+            },
             body: JSON.stringify({ targetUserId: id })
         });
 
@@ -570,13 +639,19 @@ window.resetTeacherPassword = async function (id) {
     if (typeof showToast === "function") showToast("Ağ sistemlerine müdahale ediliyor...", "info");
 
     try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) { showToast("Oturum bulunamadı.", "error"); return; }
+        
         const apiUrl = window.location.protocol === 'file:'
             ? 'https://englishportalvip.vercel.app/api/reset-password' // Yerel test için fallback
             : '/api/reset-password';
 
         const res = await fetch(apiUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+            },
             body: JSON.stringify({ targetUserId: id, newPassword: newPassword })
         });
 
@@ -674,13 +749,19 @@ window.deleteKurum = async (id, name) => {
     if (typeof showToast === "function") showToast("Kurumsal derin temizlik başlatıldı...", "info");
 
     try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) { showToast("Oturum bulunamadı.", "error"); return; }
+
         const apiUrl = window.location.protocol === 'file:'
             ? 'https://englishportalvip.vercel.app/api/delete-user' // Yerel test için fallback
             : '/api/delete-user';
 
         const res = await fetch(apiUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+            },
             body: JSON.stringify({ targetUserId: id })
         });
 
@@ -781,6 +862,28 @@ if (saveAnnouncementBtn) {
         if (error) showToast("Hata: " + error.message, "error");
         else showToast(text.trim() === "" ? "Duyuru kaldırıldı!" : "Duyuru tüm panellere gönderildi!", "success");
     });
+}
+
+// 🌟 AKTİVASYON KODU MOTORU 🌟
+window.generateActivationCode = async function(days) {
+  const code = Math.random().toString(36).substring(2,8).toUpperCase() + '-' + Math.random().toString(36).substring(2,8).toUpperCase();
+  const { error } = await supabaseClient.from('activation_codes').insert([{ code, duration_days: days }]);
+  if (!error) {
+    showToast(`Kod üretildi: ${code}`, 'success');
+    const codeDisplay = document.getElementById('lastGeneratedCode');
+    if (codeDisplay) {
+        codeDisplay.innerText = code;
+        codeDisplay.parentElement.classList.remove('hidden');
+    } else {
+        const codeDiv = document.createElement('div');
+        codeDiv.className = "flex items-center justify-between border-2 border-dashed border-amber-500/50 p-4 rounded-2xl bg-amber-500/10 mt-4 mb-4";
+        codeDiv.innerHTML = `<div><p class="text-[10px] text-amber-500/70 font-bold uppercase tracking-widest mb-1">Yeni Üretilen Kod</p><p class="text-xl font-black text-amber-500 font-mono tracking-widest">${code}</p></div><button onclick="navigator.clipboard.writeText('${code}'); showToast('Kopyalandı', 'success');" class="bg-amber-500 text-white px-3 py-2 rounded-xl text-xs font-black uppercase shadow-lg shadow-amber-500/30">KOPYALA</button>`;
+        const btnContainer = document.querySelector('#generateCodePanel') || document.querySelector('#section-settings .grid') || document.body;
+        btnContainer.prepend(codeDiv);
+    }
+  } else {
+    showToast(`Hata oluştu: ${error.message}`, 'error');
+  }
 }
 
 // ==========================================
