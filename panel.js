@@ -23,7 +23,8 @@ function escapeHTML(str) {
 // ==========================================
 // 🌟 RPG SİSTEMİ VERİLERİ (DÜKKAN VE AVATAR) 🌟
 // ==========================================
-const SHOP_DATA = {
+// Hardcoded fallback (DB boşsa bu kullanılır)
+let SHOP_DATA = {
     bases: [
         { id: 0, name: "Kâşif", img: "assets/avatars/base_0_v1.png" },
         { id: 1, name: "Savaşçı", img: "assets/avatars/base_1_v1.png" },
@@ -73,6 +74,28 @@ const SHOP_DATA = {
         { id: 206, img: "assets/avatars/pet_eagle.png" }
     ]
 };
+
+// 🌟 VERİTABANINDAN AVATAR VERİSİ YÜKLE (God Panel'den eklenenler)
+async function loadShopDataFromDB() {
+    try {
+        const { data: items, error } = await supabaseClient.from('shop_items').select('*').eq('is_active', true).order('sort_order');
+        if (error || !items || items.length === 0) return;
+
+        const dbBases = items.filter(i => i.type === 'base').map(i => ({
+            id: i.id, name: i.name, img: i.image_url
+        }));
+        const dbSkins = items.filter(i => i.type === 'skin').map(i => ({
+            id: i.id, baseId: i.base_id, img: i.image_url
+        }));
+
+        if (dbBases.length > 0) {
+            SHOP_DATA.bases = dbBases;
+            SHOP_DATA.skins = dbSkins;
+        }
+    } catch (e) {
+        console.warn("Panel Shop DB hatası, fallback kullanılıyor:", e);
+    }
+}
 
 function getAvatarPreviewHTML(config, sizeClass = "w-12 h-12") {
     if (!config || Object.keys(config).length === 0) return `<div class="${sizeClass} rounded-full bg-indigo-100 flex items-center justify-center text-indigo-400 font-bold shrink-0">?</div>`;
@@ -281,7 +304,10 @@ async function checkActiveSession() {
 
         currentTeacherId = user.id;
 
-        // 🌟 STEP 2: Detaylı Verileri Arkadan Çek (Non-blocking)
+        // 🌟 STEP 2: Veritabanından avatar verilerini çek (Non-blocking)
+        loadShopDataFromDB();
+
+        // 🌟 STEP 3: Detaylı Verileri Arkadan Çek (Non-blocking)
         loadExtendedTeacherProfile(user.id);
 
     } catch (e) {
