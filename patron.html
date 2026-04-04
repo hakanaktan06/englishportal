@@ -37,6 +37,10 @@
                 <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m4 0h1m-5 4h1m4 0h1m-5 4h1m4 0h1"></path></svg>
                 Kurum Yönetimi
             </a>
+            <a href="#" id="btn-avatars" class="menu-btn flex items-center p-3 hover:bg-slate-800 rounded-xl transition font-bold text-sm text-slate-400 hover:text-white group border border-transparent">
+                <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Avatar Dükkânı
+            </a>
         </nav>
         <div class="p-4 border-t border-slate-800">
             <button id="godLogoutBtn" class="w-full flex items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white px-4 py-4 md:py-3 rounded-xl text-sm md:text-xs font-black transition-all border border-rose-500/20 group">
@@ -232,6 +236,43 @@
                 </div>
             </div>
 
+            <!-- 🎨 AVATAR DÜKKÂNI YÖNETİMİ -->
+            <div id="section-avatars" class="hidden mt-8 space-y-6">
+                <div class="bg-slate-800/50 border border-slate-700/50 p-5 md:p-6 rounded-[24px] shadow-lg backdrop-blur-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center border border-pink-500/30">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-black text-white">Avatar Dükkânı Yönetimi</h3>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Base Karakterler, Skinler ve Fiyatlar</p>
+                            </div>
+                        </div>
+                        <button onclick="openAvatarModal()" class="bg-pink-500 hover:bg-pink-400 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition shadow-lg shadow-pink-500/20 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                            Yeni Avatar Ekle
+                        </button>
+                    </div>
+
+                    <!-- BASE KARAKTERLERİN LİSTESİ -->
+                    <div class="mb-6">
+                        <h4 class="text-xs font-black text-amber-400 uppercase tracking-widest mb-3">Base Karakterler (Ücretsiz)</h4>
+                        <div id="avatarBaseList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            <p class="col-span-full text-center text-slate-500 py-6 text-xs font-bold uppercase tracking-widest">Yükleniyor...</p>
+                        </div>
+                    </div>
+
+                    <!-- SKİNLER LİSTESİ -->
+                    <div>
+                        <h4 class="text-xs font-black text-pink-400 uppercase tracking-widest mb-3">Skin Varyantları (EP Coin)</h4>
+                        <div id="avatarSkinList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            <p class="col-span-full text-center text-slate-500 py-6 text-xs font-bold uppercase tracking-widest">Yükleniyor...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -302,6 +343,85 @@
                 <div class="pt-4">
                     <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-amber-500/20 transform active:scale-[0.98] transition flex items-center justify-center gap-2">
                         KURUMU KAYDET VE YAYINLA
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 🎨 AVATAR EKLEME/DÜZENLEME MODALI -->
+    <div id="avatarFormModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center z-[9999] p-4 transition-all duration-300">
+        <div class="bg-slate-900 border border-slate-800 rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-all duration-300 max-h-[90vh] overflow-y-auto" id="avatarFormBox">
+            <div class="p-6 md:p-8 border-b border-slate-800 bg-gradient-to-b from-pink-900/20 to-slate-900">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="w-12 h-12 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-2xl flex items-center justify-center shadow-inner">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <button onclick="closeAvatarModal()" class="text-slate-500 hover:text-white text-2xl transition">&times;</button>
+                </div>
+                <h3 class="text-2xl font-black text-white tracking-tight" id="avatarModalTitle">Yeni Avatar Ekle</h3>
+                <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Görsel yükle, isim ve hikaye gir</p>
+            </div>
+            
+            <form id="avatarItemForm" class="p-6 md:p-8 space-y-5">
+                <input type="hidden" id="avatarEditId" value="">
+
+                <!-- RESİM YÜKLEME ALANI -->
+                <div>
+                    <label class="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-2 px-1">GÖRSEL (1024×1024 önerilir)</label>
+                    <div id="avatarDropZone" class="border-2 border-dashed border-slate-700 hover:border-pink-500 rounded-2xl p-8 text-center transition cursor-pointer bg-slate-950/50 relative group">
+                        <input type="file" id="avatarFileInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div id="avatarDropContent">
+                            <svg class="w-10 h-10 text-slate-600 group-hover:text-pink-400 mx-auto mb-3 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Dosya Seç veya Sürükle Bırak</p>
+                            <p class="text-[10px] text-slate-600 mt-1">PNG, JPG, WebP — Otomatik sıkıştırılacak</p>
+                        </div>
+                        <div id="avatarPreviewBox" class="hidden">
+                            <img id="avatarPreviewImg" src="" class="w-32 h-32 object-contain mx-auto rounded-2xl border border-pink-500/30 shadow-lg">
+                            <p class="text-[10px] text-pink-400 font-bold uppercase tracking-widest mt-2" id="avatarFileSizeInfo"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- İSİM -->
+                <div>
+                    <label class="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-2 px-1">KARAKTER / SKİN ADI</label>
+                    <input type="text" id="avatarName" required class="w-full bg-slate-950 border border-slate-800 text-white px-4 py-3.5 rounded-2xl outline-none focus:border-pink-500 transition shadow-inner font-bold" placeholder="Ör: Ateş Büyücüsü">
+                </div>
+
+                <!-- HİKAYE / LORE -->
+                <div>
+                    <label class="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-2 px-1">HİKAYE / TANITIM (kart altında görünür)</label>
+                    <textarea id="avatarDesc" rows="2" class="w-full bg-slate-950 border border-slate-800 text-white px-4 py-3 rounded-2xl outline-none focus:border-pink-500 transition shadow-inner text-sm resize-none" placeholder="Ör: Karanlık diyarlardan gelen, ruhlara hükmeden korkutucu güç."></textarea>
+                </div>
+
+                <!-- TÜR SEÇİMİ -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-2 px-1">TÜR</label>
+                        <select id="avatarType" class="w-full bg-slate-950 border border-slate-800 text-white px-4 py-3.5 rounded-2xl outline-none focus:border-pink-500 transition shadow-inner font-bold text-sm">
+                            <option value="base">Base Karakter (Ücretsiz)</option>
+                            <option value="skin">Skin Varyant (Ücretli)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-2 px-1">EP COİN FİYATI</label>
+                        <input type="number" id="avatarPrice" value="0" min="0" class="w-full bg-slate-950 border border-slate-800 text-amber-400 px-4 py-3.5 rounded-2xl outline-none focus:border-amber-500 transition shadow-inner font-black text-sm">
+                    </div>
+                </div>
+
+                <!-- BAĞLI BASE SEÇİMİ (Sadece skin için) -->
+                <div id="avatarBaseSelectRow" class="hidden">
+                    <label class="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-2 px-1">BAĞLI OLDUĞU BASE KARAKTER</label>
+                    <select id="avatarBaseSelect" class="w-full bg-slate-950 border border-slate-800 text-white px-4 py-3.5 rounded-2xl outline-none focus:border-pink-500 transition shadow-inner font-bold text-sm">
+                        <option value="">-- Base Seç --</option>
+                    </select>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-pink-500/20 transform active:scale-[0.98] transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span id="avatarSaveText">KAYDET VE YAYINLA</span>
                     </button>
                 </div>
             </form>
