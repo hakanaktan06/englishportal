@@ -131,6 +131,7 @@ async function initGodPortal() {
     fetchGodMetrics();
     fetchTeachers();
     loadAnnouncements();
+    if(typeof loadActivationCodes === 'function') loadActivationCodes();
 }
 checkGodSecurity();
 
@@ -865,26 +866,52 @@ if (saveAnnouncementBtn) {
 }
 
 // 🌟 AKTİVASYON KODU MOTORU 🌟
+window.loadActivationCodes = async function() {
+    const wrapper = document.getElementById('codeDisplayWrapper');
+    if (!wrapper) return;
+
+    wrapper.classList.remove('hidden');
+    wrapper.innerHTML = '<p class="text-center text-[10px] text-amber-500/70 font-bold uppercase tracking-widest p-4">Kodlar yükleniyor...</p>';
+
+    const { data: codes, error } = await supabaseClient.from('activation_codes')
+        .select('*')
+        .eq('is_used', false)
+        .order('created_at', { ascending: false });
+
+    if (error || !codes || codes.length === 0) {
+        wrapper.innerHTML = '<p class="text-center text-[10px] text-amber-500/50 font-bold uppercase tracking-widest p-4">Şu an boşta VIP kodu bulunmuyor.</p>';
+        return;
+    }
+
+    wrapper.innerHTML = '<p class="text-[10px] text-amber-500/70 font-bold uppercase tracking-widest mb-3 mb-2">Kullanılmamış VIP Kodları</p> <div class="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar"></div>';
+    const listContainer = wrapper.querySelector('div');
+
+    codes.forEach(c => {
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl";
+        item.innerHTML = `
+            <div>
+                <p class="text-lg font-black text-amber-500 font-mono tracking-widest leading-none">${c.code}</p>
+                <p class="text-[9px] text-amber-600/70 font-bold uppercase tracking-widest mt-1">${c.duration_days} Günlük Paket</p>
+            </div>
+            <button onclick="navigator.clipboard.writeText('${c.code}'); showToast('Kopyalandı', 'success');" class="bg-amber-500 hover:bg-amber-400 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-amber-500/20 transition transform active:scale-95">KOPYALA</button>
+        `;
+        listContainer.appendChild(item);
+    });
+};
+
 window.generateActivationCode = async function(days) {
+  showToast("Kod üretiliyor...", "info");
   const code = Math.random().toString(36).substring(2,8).toUpperCase() + '-' + Math.random().toString(36).substring(2,8).toUpperCase();
   const { error } = await supabaseClient.from('activation_codes').insert([{ code, duration_days: days }]);
+  
   if (!error) {
-    showToast(`Kod üretildi: ${code}`, 'success');
-    const codeDisplay = document.getElementById('lastGeneratedCode');
-    if (codeDisplay) {
-        codeDisplay.innerText = code;
-        codeDisplay.parentElement.classList.remove('hidden');
-    } else {
-        const codeDiv = document.createElement('div');
-        codeDiv.className = "flex items-center justify-between border-2 border-dashed border-amber-500/50 p-4 rounded-2xl bg-amber-500/10 mt-4 mb-4";
-        codeDiv.innerHTML = `<div><p class="text-[10px] text-amber-500/70 font-bold uppercase tracking-widest mb-1">Yeni Üretilen Kod</p><p class="text-xl font-black text-amber-500 font-mono tracking-widest">${code}</p></div><button onclick="navigator.clipboard.writeText('${code}'); showToast('Kopyalandı', 'success');" class="bg-amber-500 text-white px-3 py-2 rounded-xl text-xs font-black uppercase shadow-lg shadow-amber-500/30">KOPYALA</button>`;
-        const btnContainer = document.querySelector('#generateCodePanel') || document.querySelector('#section-settings .grid') || document.body;
-        btnContainer.prepend(codeDiv);
-    }
+    showToast(`Kod üretildi!`, 'success');
+    loadActivationCodes(); // Sadece kullanılmamış olanları tazeleyerek getir
   } else {
     showToast(`Hata oluştu: ${error.message}`, 'error');
   }
-}
+};
 
 // ==========================================
 // SİSTEMİ BAŞLAT
