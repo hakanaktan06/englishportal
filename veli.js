@@ -346,3 +346,12 @@ function showError() {
 }
 
 loadVeliPortal();
+
+// ==========================================
+// PROD LOG CLEARING
+// ==========================================
+window.IS_DEV = false; // Production ortamında burayı false tutun
+if (!window.IS_DEV) {
+    console.log = function() {}; // Logları sustur
+    // console.warn = function() {}; // Gerekirse uyarıları da sustur
+}
