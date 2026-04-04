@@ -3500,7 +3500,7 @@ window.redeemActivationCode = async function() {
     }
 
     // Buton animasyonu
-    const btn = document.querySelector('#activationModal button');
+    const btn = document.querySelector('#activationModal button.w-full');
     let oldText = "HESABI YÜKSELT";
     if (btn) {
         oldText = btn.innerHTML;
