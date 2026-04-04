@@ -144,6 +144,15 @@ CREATE OR REPLACE FUNCTION can_read_profile(target_id UUID) RETURNS BOOLEAN AS $
 BEGIN
     IF auth.uid() = target_id THEN RETURN TRUE; END IF;
     IF get_my_role_safe() = 'god' THEN RETURN TRUE; END IF;
+    
+    -- YENİ: God profili (Global sistem ayarları, fiyatlar ve duyurular) herkes tarafından okunabilir
+    IF EXISTS (
+        SELECT 1 FROM profiles 
+        WHERE id = target_id AND role = 'god'
+    ) THEN 
+        RETURN TRUE; 
+    END IF;
+
     -- Veli/Öğrenci ise kendi öğretmeninin verilerini çekebilir
     IF EXISTS (
         SELECT 1 FROM profiles 
@@ -163,13 +172,21 @@ CREATE POLICY "Profile_Select_Safe" ON profiles FOR SELECT USING (
 DROP POLICY IF EXISTS "Student_Update_HW" ON homeworks;
 CREATE POLICY "Student_Update_HW" ON homeworks FOR UPDATE USING (auth.uid() = student_id);
 
--- [AUDIT LOGS] Başkası log silemez veya değiştiremez
+-- [AUDIT LOGS] Başkası log silemez veya değiştiremez, Kendi logunu girebilir, Öğretmen görebilir
+DROP POLICY IF EXISTS "Log_Insert_Safe" ON audit_logs;
+CREATE POLICY "Log_Insert_Safe" ON audit_logs FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Log_Select_Safe" ON audit_logs;
+CREATE POLICY "Log_Select_Safe" ON audit_logs FOR SELECT USING (
+    auth.uid() = user_id OR
+    get_my_role_safe() = 'god' OR
+    EXISTS (SELECT 1 FROM profiles WHERE profiles.id = audit_logs.user_id AND (profiles.teacher_id = auth.uid() OR profiles.school_id = auth.uid()))
+);
+
 DROP POLICY IF EXISTS "No_Log_Update" ON audit_logs;
 CREATE POLICY "No_Log_Update" ON audit_logs FOR UPDATE USING (false);
 DROP POLICY IF EXISTS "No_Log_Delete" ON audit_logs;
 CREATE POLICY "No_Log_Delete" ON audit_logs FOR DELETE USING (get_my_role_safe() = 'god');
-
--- Mevcut Log_Insert_Safe Policy'si kalabilir ama loglar artık değiştirilemez oldu!
 
 -- [ACTIVITIES] Ağır subquery (SELECT id ...) yerine performanslı EXISTS modeline geçildi
 DROP POLICY IF EXISTS "Student_View_Activities" ON activities;
