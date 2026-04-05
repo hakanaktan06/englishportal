@@ -493,9 +493,9 @@ function applyAvatarConfig(config) {
         // Önizleme Rozeti Kontrolü
         const isSkinOwned = !currentAvatarConfig.skin || currentAvatarConfig.skin === -1 || currentAvatarConfig.inventory.includes(currentAvatarConfig.skin) || (SHOP_DATA.skins.find(s => s.id === currentAvatarConfig.skin)?.price === 0);
         
-        
-        // 🌟 MANTIK GÜNCELLEMESİ: 0'dan 5'e kadar olan 6 ana karakter HER ZAMAN "owned" sayılır, önizleme rozeti çıkartmaz.
-        const isBaseOwned = (currentAvatarConfig.base >= 0 && currentAvatarConfig.base <= 5);
+        // 🌟 DÜZELTME: Tüm base karakterler (SHOP_DATA.bases'te olan) HER ZAMAN "owned"
+        const currentBase = SHOP_DATA.bases.find(b => b.id == currentAvatarConfig.base);
+        const isBaseOwned = !!currentBase; // bases listesinde varsa sahipsin
 
         let previewBadge = document.getElementById('previewBadge');
         if (!isSkinOwned || !isBaseOwned) {
@@ -543,12 +543,15 @@ function renderShopItems(category) {
 
     let items = [];
     if (category === 'inventory') {
-        const allItems = [...SHOP_DATA.bases, ...SHOP_DATA.skins, ...SHOP_DATA.pets];
-        // 🌟 MANTIK GÜNCELLEMESİ: 6 Ana Karakter her zaman var, diğerleri envanterde olmalı
-        items = allItems.filter(item => {
-            const isBase = item.id >= 0 && item.id <= 5; // İlk 6 karakter (v1'ler)
-            return isBase || currentAvatarConfig.inventory.includes(item.id);
-        });
+        // 🌟 DÜZELTME: Tüm base karakterler + sahip olunan skinler
+        const ownedBases = SHOP_DATA.bases; // Tüm base'ler her zaman sahip
+        const ownedSkins = SHOP_DATA.skins.filter(s => 
+            s.price === 0 || currentAvatarConfig.inventory.includes(s.id)
+        );
+        const ownedPets = SHOP_DATA.pets.filter(p => 
+            currentAvatarConfig.inventory.includes(p.id)
+        );
+        items = [...ownedBases, ...ownedSkins, ...ownedPets];
     } else if (category === 'skins') {
         items = SHOP_DATA.skins.filter(s => s.baseId === (currentAvatarConfig.base || 0));
     } else {
@@ -562,9 +565,9 @@ function renderShopItems(category) {
     }
 
     items.forEach(item => {
-        // 🌟 MANTIK GÜNCELLEMESİ: 0-5 arası ana karakterler HER YERDE (market, envanter, kostüm sekmeleri) SAHİP olunmuş sayılır.
-        const isDefaultBase = (item.id >= 0 && item.id <= 5);
-        const isOwned = isDefaultBase || category === 'inventory' || category === 'bases' || currentAvatarConfig.inventory.includes(item.id) || item.price === 0;
+        // 🌟 DÜZELTME: Base'ler her zaman owned, skinler price veya envanter bazlı
+        const isBaseItem = SHOP_DATA.bases.some(b => b.id === item.id);
+        const isOwned = isBaseItem || category === 'inventory' || category === 'bases' || currentAvatarConfig.inventory.includes(item.id) || item.price === 0;
         const isActive = (category === 'bases' && currentAvatarConfig.base == item.id) || 
                          (category === 'skins' && currentAvatarConfig.skin == item.id) || 
                          (category === 'pets' && currentAvatarConfig.pet == item.id);
@@ -689,7 +692,8 @@ async function saveAvatarConfig() {
     const base = SHOP_DATA.bases.find(b => b.id === currentAvatarConfig.base);
 
     const isSkinLocked = skin && skin.price > 0 && !currentAvatarConfig.inventory.includes(skin.id);
-    const isBaseLocked = base && (base.id < 0 || base.id > 5) && base.price > 0 && !currentAvatarConfig.inventory.includes(base.id);
+    // 🌟 DÜZELTME: Tüm base'ler her zaman erişilebilir (kilit yok)
+    const isBaseLocked = false;
 
     if (isSkinLocked || isBaseLocked) {
         showToast("Sahip olmadığın bir öğeyi kaydedemezsin! Lütfen önce satın al.", "error");
