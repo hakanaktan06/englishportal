@@ -376,8 +376,10 @@ async function loadExtendedTeacherProfile(userId) {
         // Kilitleri ve UI'ı güncelle
         updatePremiumUI();
 
-        // 🌟 PANELİ BAŞLAT (Kokpit Sekmesini Aç)
-        switchTab('dashboard');
+        // 🌟 PANELİ BAŞLAT (Hash varsa o sekmeyi aç, yoksa Kokpit)
+        const initialTab = window._initialTabOverride || 'dashboard';
+        delete window._initialTabOverride;
+        switchTab(initialTab);
 
         // 🌟 REALTIME LİSTENER'LARI BAŞLAT
         initRealtimeProfileListener();
@@ -552,10 +554,29 @@ const sectionClasses = document.getElementById('section-classes');
 const sectionWhiteboard = document.getElementById('section-whiteboard');
 const sectionStudentFlow = document.getElementById('section-student-flow');
 
-function switchTab(target) {
+function switchTab(target, skipHistory = false) {
     if (sidebarMain && window.innerWidth < 768 && !sidebarMain.classList.contains('-translate-x-full')) {
         toggleMobileSidebar();
     }
+
+    // 🌟 HASH NAVIGATION: Geri tuşu login'e götürmesin, bir önceki sekmeye dönsün
+    if (!skipHistory && window.location.hash !== '#' + target) {
+        history.pushState({ tab: target }, '', '#' + target);
+    }
+
+    // 🌟 MOBİL FIX: Ana header (burger menü) her zaman görünsün diye scroll'u sıfırla
+    const mainEl = document.querySelector('main');
+    if (mainEl) mainEl.scrollTop = 0;
+
+    // 🌟 MOBİL: Aktif sekme adını üst barda göster
+    const tabNames = {
+        'dashboard': 'Kokpit', 'students': 'Öğrenciler', 'classes': 'Sınıflarım',
+        'homeworks': 'Ödevler', 'activities': 'Etkinlikler', 'quizzes': 'Sınavlar',
+        'results': 'Sonuçlar', 'logs': 'İşlem Geçmişi', 'whiteboard': 'Beyaz Tahta',
+        'student-flow': 'Öğrenci Akışı'
+    };
+    const mobileTabNameEl = document.getElementById('mobileTabName');
+    if (mobileTabNameEl) mobileTabNameEl.textContent = tabNames[target] || 'Panel';
 
     // Tüm butonlardan aktiflik sınıflarını kaldır
     [btnDashboard, btnStudents, btnClasses, btnHomeworks, btnActivities, btnQuizzes, btnResults, btnLogs, btnWhiteboard, btnStudentFlow].forEach(btn => {
@@ -622,6 +643,32 @@ if (btnQuizzes) btnQuizzes.onclick = () => switchTab('quizzes');
 if (btnResults) btnResults.onclick = () => switchTab('results');
 if (btnLogs) btnLogs.onclick = () => switchTab('logs');
 if (btnStudentFlow) btnStudentFlow.onclick = () => switchTab('student-flow');
+
+// 🌟 HASH NAVIGATION: Geri tuşu ile sekme geçişi
+window.addEventListener('popstate', (e) => {
+    if (e.state && e.state.tab) {
+        switchTab(e.state.tab, true);
+    } else {
+        // Hash'ten oku veya dashboard'a dön
+        const hash = window.location.hash.replace('#', '');
+        const validTabs = ['dashboard','students','classes','homeworks','activities','quizzes','results','logs','whiteboard','student-flow'];
+        if (hash && validTabs.includes(hash)) {
+            switchTab(hash, true);
+        } else {
+            switchTab('dashboard', true);
+        }
+    }
+});
+
+// Sayfa ilk yüklendiğinde hash varsa o sekmeyi aç
+(function checkInitialHash() {
+    const hash = window.location.hash.replace('#', '');
+    const validTabs = ['dashboard','students','classes','homeworks','activities','quizzes','results','logs','whiteboard','student-flow'];
+    if (hash && validTabs.includes(hash)) {
+        // loadExtendedTeacherProfile zaten switchTab('dashboard') çağırıyor, onu override edeceğiz
+        window._initialTabOverride = hash;
+    }
+})();
 
 async function saveLog(action, details = "") {
     try {
