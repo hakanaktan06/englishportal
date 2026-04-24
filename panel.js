@@ -633,16 +633,16 @@ function switchTab(target, skipHistory = false) {
     }
 }
 
-if (btnDashboard) btnDashboard.onclick = () => switchTab('dashboard');
-if (btnStudents) btnStudents.onclick = () => switchTab('students');
-if (btnClasses) btnClasses.onclick = () => switchTab('classes');
-if (btnWhiteboard) btnWhiteboard.onclick = () => switchTab('whiteboard');
-if (btnHomeworks) btnHomeworks.onclick = () => switchTab('homeworks');
-if (btnActivities) btnActivities.onclick = () => switchTab('activities');
-if (btnQuizzes) btnQuizzes.onclick = () => switchTab('quizzes');
-if (btnResults) btnResults.onclick = () => switchTab('results');
-if (btnLogs) btnLogs.onclick = () => switchTab('logs');
-if (btnStudentFlow) btnStudentFlow.onclick = () => switchTab('student-flow');
+if (btnDashboard) btnDashboard.onclick = (e) => { e.preventDefault(); switchTab('dashboard'); };
+if (btnStudents) btnStudents.onclick = (e) => { e.preventDefault(); switchTab('students'); };
+if (btnClasses) btnClasses.onclick = (e) => { e.preventDefault(); switchTab('classes'); };
+if (btnWhiteboard) btnWhiteboard.onclick = (e) => { e.preventDefault(); switchTab('whiteboard'); };
+if (btnHomeworks) btnHomeworks.onclick = (e) => { e.preventDefault(); switchTab('homeworks'); };
+if (btnActivities) btnActivities.onclick = (e) => { e.preventDefault(); switchTab('activities'); };
+if (btnQuizzes) btnQuizzes.onclick = (e) => { e.preventDefault(); switchTab('quizzes'); };
+if (btnResults) btnResults.onclick = (e) => { e.preventDefault(); switchTab('results'); };
+if (btnLogs) btnLogs.onclick = (e) => { e.preventDefault(); switchTab('logs'); };
+if (btnStudentFlow) btnStudentFlow.onclick = (e) => { e.preventDefault(); switchTab('student-flow'); };
 
 // 🌟 HASH NAVIGATION: Geri tuşu ile sekme geçişi
 window.addEventListener('popstate', (e) => {
