@@ -21,6 +21,39 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
+/* 🌟 MOBİL OPTİMİZASYON 🌟 */
+@media (max-width: 768px) {
+    /* iOS notch / safe area desteği */
+    #mainTopHeader {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+    }
+
+    /* Section header'lar scroll ile kaymasın */
+    .page-section > header {
+        will-change: transform;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+
+    /* Beyaz tahta textarea mobilde optimize */
+    #whiteboardInput {
+        font-size: 16px !important; /* iOS zoom'u engellemek için */
+        min-height: 200px;
+    }
+
+    /* Mobil dokunma alanları minimum 44px */
+    #openSidebarBtn svg {
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    /* Smooth scroll on main content */
+    main {
+        scroll-behavior: smooth;
+    }
+}
+
 /* ============================================ */
 /* 🌞 LIGHT THEME PREMIUM OVERHAUL             */
 /* ============================================ */
