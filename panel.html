@@ -194,8 +194,8 @@
 
     <main class="flex-1 flex flex-col h-[100dvh] overflow-y-auto overflow-x-hidden relative w-full"
         style="-webkit-overflow-scrolling:touch">
-        <header
-            class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 p-4 flex justify-between items-center sticky top-0 z-20 transition-colors duration-300">
+        <header id="mainTopHeader"
+            class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 p-4 flex justify-between items-center sticky top-0 z-30 transition-colors duration-300 min-h-[56px]">
             <div class="flex items-center">
                 <button id="openSidebarBtn"
                     class="md:hidden text-indigo-900 dark:text-indigo-400 mr-4 focus:outline-none">
@@ -204,6 +204,8 @@
                             d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
+                <!-- Mobilde aktif sekme adını göster -->
+                <span id="mobileTabName" class="md:hidden text-xs font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-widest truncate max-w-[180px]">Kokpit</span>
                 <h1
                     class="text-sm font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-widest hidden md:block">
                     Öğretmen Yönetim Paneli</h1>
@@ -253,7 +255,7 @@
             </div>
 
             <header
-                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center sticky top-0 z-10 gap-4 border-b border-gray-100 dark:border-slate-700">
+                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center sticky top-[56px] md:top-0 z-10 gap-4 border-b border-gray-100 dark:border-slate-700">
                 <div class="w-full">
                     <h2
                         class="text-2xl md:text-3xl font-black text-gray-800 dark:text-white tracking-tight leading-tight md:leading-snug mb-3 flex items-center flex-wrap gap-2">
@@ -441,7 +443,7 @@
 
         <div id="section-students" class="page-section w-full hidden pb-10">
             <header
-                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
+                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-[56px] md:top-0 z-10 border-b border-gray-100 dark:border-slate-700">
                 <div>
                     <h2 class="text-xl md:text-2xl font-extrabold text-gray-800 dark:text-white">VIP Öğrenci Paneli</h2>
                     <p
@@ -536,7 +538,7 @@
 
         <div id="section-classes" class="page-section w-full hidden pb-10">
             <header
-                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
+                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-[56px] md:top-0 z-10 border-b border-gray-100 dark:border-slate-700">
                 <div>
                     <h2 class="text-xl md:text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">Sınıf Yönetimi</h2>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-widest font-bold">Öğrencileri Gruplandırın</p>
@@ -554,7 +556,7 @@
         </div>
         <div id="section-homeworks" class="page-section w-full hidden pb-10">
             <header
-                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
+                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-[56px] md:top-0 z-10 border-b border-gray-100 dark:border-slate-700">
                 <div>
                     <h2 class="text-xl md:text-2xl font-extrabold text-gray-800 dark:text-white">Ödev Yönetimi</h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400 hidden md:block">Öğrencilere ödev verin ve
@@ -680,7 +682,7 @@
 
         <div id="section-activities" class="page-section w-full hidden pb-10">
             <header
-                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
+                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-[56px] md:top-0 z-10 border-b border-gray-100 dark:border-slate-700">
                 <h2 class="text-xl md:text-2xl font-extrabold text-purple-600 dark:text-purple-400">Etkinlik Kütüphanesi
                 </h2>
             </header>
@@ -763,7 +765,7 @@
 
         <div id="section-quizzes" class="page-section w-full hidden pb-10">
             <header
-                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center sticky top-0 z-10 gap-4 border-b border-gray-100 dark:border-slate-700">
+                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center sticky top-[56px] md:top-0 z-10 gap-4 border-b border-gray-100 dark:border-slate-700">
                 <div>
                     <h2
                         class="text-2xl md:text-3xl font-black text-gray-800 dark:text-white tracking-tight flex items-center gap-2">
@@ -788,7 +790,7 @@
 
         <div id="section-results" class="page-section w-full hidden pb-10">
             <header
-                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 flex justify-between items-center border-b border-gray-100 dark:border-slate-700">
+                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-[56px] md:top-0 z-10 flex justify-between items-center border-b border-gray-100 dark:border-slate-700">
                 <div>
                     <h2 class="text-xl md:text-2xl font-extrabold text-blue-600 dark:text-blue-400">Öğrenci Sınav Sonuçları</h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Öğrencilerin çözdüğü sınavları takip edin.</p>
@@ -816,7 +818,7 @@
 
         <div id="section-student-flow" class="page-section w-full hidden pb-10">
             <header
-                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 flex justify-between items-center border-b border-gray-100 dark:border-slate-700">
+                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-[56px] md:top-0 z-10 flex justify-between items-center border-b border-gray-100 dark:border-slate-700">
                 <div>
                     <h2 class="text-xl md:text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">Canlı Öğrenci Akışı</h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Öğrencilerinizin platform üzerindeki tüm hareketlerini anlık takip edin.</p>
@@ -854,7 +856,7 @@
 
         <div id="section-logs" class="page-section w-full hidden pb-10">
             <header
-                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
+                class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 sticky top-[56px] md:top-0 z-10 border-b border-gray-100 dark:border-slate-700">
                 <div>
                     <h2 class="text-xl md:text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">Sistem İşlem Geçmişi</h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Portal üzerindeki kritik hareketleri buradan takip edebilirsiniz.</p>
@@ -2022,10 +2024,16 @@
 
 
         <div id="section-whiteboard" class="page-section w-full hidden pb-10">
-            <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-6 flex justify-between items-center sticky top-0 z-10 border-b border-gray-100 dark:border-slate-700">
-                <div>
-                    <h2 class="text-2xl font-black text-gray-800 dark:text-white">Dijital Beyaz Tahta</h2>
-                    <p class="text-xs text-indigo-500 font-bold uppercase tracking-widest mt-1">Öğrencilere Anlık Notlar Paylaşın</p>
+            <header class="bg-white/80 dark:bg-slate-800/50 backdrop-blur-md shadow-sm p-4 md:p-6 flex justify-between items-center sticky top-[56px] md:top-0 z-10 border-b border-gray-100 dark:border-slate-700">
+                <div class="flex items-center gap-3">
+                    <!-- Mobilde Geri Butonu -->
+                    <button onclick="switchTab('dashboard')" class="md:hidden w-9 h-9 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center shrink-0 transition hover:bg-indigo-100">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <div>
+                        <h2 class="text-xl md:text-2xl font-black text-gray-800 dark:text-white">Dijital Beyaz Tahta</h2>
+                        <p class="text-xs text-indigo-500 font-bold uppercase tracking-widest mt-1 hidden sm:block">Öğrencilere Anlık Notlar Paylaşın</p>
+                    </div>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="saveWhiteboard()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg transition transform active:scale-95 flex items-center gap-2">
